@@ -13,17 +13,15 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/${META_PROJECT_N
 
 # Libraries
 set(IDE_FOLDER "")
-add_subdirectory(libclimate)
-add_subdirectory(libhealth)
-add_subdirectory(libio)
-add_subdirectory(libmass)
-add_subdirectory(libsensors)
+add_subdirectory(climate)
+add_subdirectory(health)
+add_subdirectory(hw)
+add_subdirectory(io)
+add_subdirectory(mass)
+add_subdirectory(reporting)
 
 # Executable
-# TODO: Figure out how to manage dependencies with libraries
-if(OPTION_BUILD_EXE)
-    add_subdirectory(beewatch)
-endif()
+add_subdirectory(${META_PROJECT_NAME})
 
 # Tests
 if(OPTION_BUILD_TESTS)

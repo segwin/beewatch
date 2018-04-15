@@ -10,7 +10,9 @@ find_package(${META_PROJECT_NAME} REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/..
 # 
 
 # Target name
-set(target testclimate)
+set(SUBPROJECT climate)
+
+set(target "test${SUBPROJECT}")
 message(STATUS "Test ${target}")
 
 
@@ -18,9 +20,11 @@ message(STATUS "Test ${target}")
 # Sources
 # 
 
+set(headers
+)
+
 set(sources
     main.cpp
-    climate_test.cpp
 )
 
 
@@ -31,6 +35,7 @@ set(sources
 # Build executable
 add_executable(${target}
     ${sources}
+    ${headers}
 )
 
 # Create namespaced alias
@@ -66,7 +71,7 @@ target_include_directories(${target}
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    ${META_PROJECT_NAME}::libclimate
+    ${META_PROJECT_NAME}::${SUBPROJECT}
     gmock-dev
 )
 

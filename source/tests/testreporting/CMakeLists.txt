@@ -10,7 +10,7 @@ find_package(${META_PROJECT_NAME} REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/..
 # 
 
 # Target name
-set(SUBPROJECT health)
+set(SUBPROJECT reporting)
 
 set(target "test${SUBPROJECT}")
 message(STATUS "Test ${target}")

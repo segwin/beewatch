@@ -83,6 +83,7 @@ set_target_properties(test PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
 
 add_test_without_ctest(testclimate)
 add_test_without_ctest(testhealth)
+add_test_without_ctest(testhw)
 add_test_without_ctest(testio)
 add_test_without_ctest(testmass)
-add_test_without_ctest(testsensors)
+add_test_without_ctest(testreporting)

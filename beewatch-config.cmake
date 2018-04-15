@@ -7,8 +7,12 @@
 
 # List of modules
 set(MODULE_NAMES
-    baselib
-    fiblib
+    climate
+    health
+    hw
+    io
+    mass
+    reporting
 )
 
 

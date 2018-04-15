@@ -10,7 +10,9 @@ find_package(${META_PROJECT_NAME} REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/..
 # 
 
 # Target name
-set(target testio)
+set(SUBPROJECT io)
+
+set(target "test${SUBPROJECT}")
 message(STATUS "Test ${target}")
 
 
@@ -18,9 +20,12 @@ message(STATUS "Test ${target}")
 # Sources
 # 
 
+set(headers
+)
+
 set(sources
     main.cpp
-    io_test.cpp
+    test_pwm.cpp
 )
 
 
@@ -31,6 +36,7 @@ set(sources
 # Build executable
 add_executable(${target}
     ${sources}
+    ${headers}
 )
 
 # Create namespaced alias
@@ -66,7 +72,7 @@ target_include_directories(${target}
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    ${META_PROJECT_NAME}::libio
+    ${META_PROJECT_NAME}::${SUBPROJECT}
     gmock-dev
 )
 

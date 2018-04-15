@@ -19,7 +19,7 @@ endif()
 
 set(DEFAULT_PROJECT_OPTIONS
     DEBUG_POSTFIX             "d"
-    CXX_STANDARD              17 # Not available before CMake 3.1; see below for manual command line argument addition
+    CXX_STANDARD              14 # Not available before CMake 3.1; see below for manual command line argument addition
     LINKER_LANGUAGE           "CXX"
     POSITION_INDEPENDENT_CODE ON
     CXX_VISIBILITY_PRESET     "hidden"
@@ -87,7 +87,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
         /GF           # -> enable string pooling
         >
         
-        /std:c++17
+        /std:c++14
     )
 endif ()
 
