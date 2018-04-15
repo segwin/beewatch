@@ -51,6 +51,7 @@ set(sources
     "${pigpio_path}/pigpio.c"
 
     "${source_path}/gpio.cpp"
+    "${source_path}/pigpio.cpp"
     "${source_path}/pwm.cpp"
     "${source_path}/tachometer.cpp"
 )
