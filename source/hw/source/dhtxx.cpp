@@ -8,6 +8,7 @@
 #include <util/logging.h>
 #include <util/priority.h>
 
+#include <ctime>
 #include <iostream>
 
 namespace beewatch
@@ -43,14 +44,12 @@ namespace beewatch
         //================================================================
         ClimateData DHTxx::read()
         {
-            using namespace std::chrono;
-
             // Only one read is allowed at a time
             std::lock_guard<std::mutex> lock(_readMutex);
 
             // Allocate memory for time point & binary arrays
-            time_point<high_resolution_clock> startTimes[NUM_BITS_PER_READ];
-            time_point<high_resolution_clock> endTimes[NUM_BITS_PER_READ];
+            struct timespec startTimes[NUM_BITS_PER_READ];
+            struct timespec endTimes[NUM_BITS_PER_READ];
 
             uint8_t bytes[NUM_BYTES_PER_READ];
 
@@ -79,17 +78,22 @@ namespace beewatch
             {
                 // HI for 26-28us if 0, 70us if 1
                 _gpio->waitForState(LogicalState::HI);
-                startTimes[i] = high_resolution_clock::now();
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &startTimes[i]);
 
                 // LO for 50us
                 _gpio->waitForState(LogicalState::LO);
-                endTimes[i] = high_resolution_clock::now();
+                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &endTimes[i]);
             }
 
             // 4. Calculate bit values
             for (int i = 0; i < NUM_BITS_PER_READ; ++i)
             {
-                auto hiTime = endTimes[i] - startTimes[i];
+                using std::chrono::seconds;
+                using std::chrono::microseconds;
+                using std::chrono::nanoseconds;
+
+                auto hiTime = seconds(endTimes[i].tv_sec - startTimes[i].tv_sec) +
+                              nanoseconds(endTimes[i].tv_nsec - startTimes[i].tv_nsec);
 
                 // Mid-point between bit value times is 48.5
                 int byte = i / 8;
