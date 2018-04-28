@@ -11,7 +11,7 @@
 # 
 
 # Target name
-set(target hw)
+set(target util)
 
 # Exit here if required dependencies are not met
 message(STATUS "Lib ${target}")
@@ -33,25 +33,20 @@ set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include/${target}")
 set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 set(headers
-    "${include_path}/hwlib.h"
+    "${include_path}/utillib.h"
     
-    "${include_path}/dhtxx.h"
-    "${include_path}/fan.h"
-    "${include_path}/hx711.h"
-    "${include_path}/max9814.h"
+    "${include_path}/logging.h"
+    "${include_path}/priority.h"
 )
 
 set(sources
-    "${source_path}/dhtxx.cpp"
-    "${source_path}/fan.cpp"
-    "${source_path}/hx711.cpp"
-    "${source_path}/max9814.cpp"
+    "${source_path}/logging.cpp"
+    "${source_path}/priority.cpp"
 )
 
 # Group source files
 set(header_group "Header Files (API)")
 set(source_group "Source Files")
-
 source_group_by_path(${include_path} "\\\\.h$|\\\\.hpp$" 
     ${header_group} ${headers})
 source_group_by_path(${source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
@@ -145,8 +140,6 @@ target_include_directories(${target}
 
 target_link_libraries(${target}
     PRIVATE
-    ${META_PROJECT_NAME}::io
-    ${META_PROJECT_NAME}::util
 
     PUBLIC
     ${DEFAULT_LIBRARIES}

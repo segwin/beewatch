@@ -2,10 +2,16 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //================================================================
 
-#pragma once
+#include "hw/hx711.h"
 
-#include "dhtxx.h"
-#include "gpio.h"
-#include "io.h"
-#include "pwm.h"
-#include "tachometer.h"
+#include <algorithm>
+
+namespace beewatch
+{
+    namespace hw
+    {
+
+
+
+    } // namespace hw
+} // namespace beewatch

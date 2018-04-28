@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <io/io_api.h>
+
 #include "io.h"
 #include "gpio.h"
 

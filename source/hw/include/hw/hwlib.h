@@ -4,3 +4,6 @@
 
 #pragma once
 
+#include "dhtxx.h"
+#include "fan.h"
+#include "hx711.h"

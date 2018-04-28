@@ -68,6 +68,9 @@ namespace beewatch
             // Take ownership of GPIO
             _id = id;
             _claimedGPIOList[id] = true;
+
+            // Set initial direction to input
+            setDirection(In);
         }
 
         GPIO::~GPIO()
@@ -126,9 +129,20 @@ namespace beewatch
         //================================================================
         void GPIO::setDirection(Direction direction)
         {
-            _direction = direction;
+            unsigned mode;
 
-            // TODO: set GPIO direction
+            if (direction == In)
+            {
+                mode = PI_INPUT;
+            }
+            else
+            {
+                mode = PI_OUTPUT;
+            }
+
+            gpioSetMode(_id, mode);
+
+            _direction = direction;
         }
 
         GPIO::Direction GPIO::getDirection()
@@ -140,21 +154,105 @@ namespace beewatch
         //================================================================
         void GPIO::write(LogicalState state)
         {
-            // TODO: write GPIO state
+            switch (state)
+            {
+            case LogicalState::HI:
+                gpioWrite(_id, PI_ON);
+                break;
+
+            case LogicalState::LO:
+                gpioWrite(_id, PI_OFF);
+                break;
+
+            default:
+
+                break;
+            }
         }
 
         LogicalState GPIO::read() const
         {
-            // TODO: read GPIO state
+            switch (gpioRead(_id))
+            {
+            case PI_ON:
+                return LogicalState::HI;
+                break;
 
-            return LogicalState::INVALID;
+            case PI_OFF:
+                return LogicalState::LO;
+                break;
+
+            default:
+                return LogicalState::INVALID;
+                break;
+            }
+        }
+
+
+        //================================================================
+        void GPIO::enableEdgeDetection()
+        {
+            if (!_edgeDetectionActive)
+            {
+                gpioSetISRFuncEx(_id, EITHER_EDGE, -1, &GPIO::signalEdgeDetection, this);
+                _edgeDetectionActive = true;
+            }
+        }
+
+        void GPIO::disableEdgeDetection()
+        {
+            if (_edgeDetectionActive)
+            {
+                gpioSetISRFuncEx(_id, EITHER_EDGE, -1, nullptr, nullptr);
+                _edgeDetectionActive = false;
+            }
         }
 
         LogicalState GPIO::waitForStateChange()
         {
-            // TODO: configure GPIO interrupt
+            // Ensure edge detection is activated
+            enableEdgeDetection();
 
-            return LogicalState::INVALID;
+            // Wait for state change signal
+            std::unique_lock<std::mutex> lock(_stateChangeMutex);
+            _stateChangeVariable.wait(lock);
+
+            return _currentState;
+        }
+
+        void GPIO::waitForState(LogicalState state)
+        {
+            if (read() == state)
+            {
+                return;
+            }
+            else
+            {
+                while (waitForStateChange() != state)
+                {
+                    // wait
+                }
+            }
+        }
+
+        void GPIO::signalEdgeDetection(int, int level, uint32_t, void * gpioPtr)
+        {
+            // De-obfuscate GPIO pointer
+            GPIO * gpio = (GPIO*)gpioPtr;
+
+            // Signal state change
+            std::lock_guard<std::mutex> lock(gpio->_stateChangeMutex);
+            gpio->_stateChangeVariable.notify_all();
+
+            // Write post-transition GPIO state
+            if (level > PI_OFF)
+            {
+                gpio->_currentState = LogicalState::HI;
+            }
+            else
+            {
+                gpio->_currentState = LogicalState::LO;
+            }
         }
 
     } // namespace io

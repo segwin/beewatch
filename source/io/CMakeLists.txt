@@ -49,7 +49,7 @@ set(headers
 set(sources
     "${pigpio_path}/command.c"
     "${pigpio_path}/pigpio.c"
-
+    
     "${source_path}/gpio.cpp"
     "${source_path}/pigpio.cpp"
     "${source_path}/pwm.cpp"

@@ -4,8 +4,4 @@
 
 #pragma once
 
-#include "dhtxx.h"
-#include "gpio.h"
-#include "io.h"
-#include "pwm.h"
-#include "tachometer.h"
+#include "priority.h"

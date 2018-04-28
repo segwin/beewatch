@@ -8,11 +8,13 @@
 # List of modules
 set(MODULE_NAMES
     climate
+    ctrl
     health
     hw
     io
     mass
     reporting
+    util
 )
 
 

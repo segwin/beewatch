@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include <io/io_api.h>
+
 #include "io.h"
+#include "pigpio.h"
 
 #include <array>
 #include <mutex>
@@ -35,11 +38,13 @@ namespace beewatch
              */
             using Ptr = std::unique_ptr<GPIO>;
 
+
             //================================================================
             /**
              * @brief Relinquish ownership of and destroy GPIO object
              */
             virtual ~GPIO();
+
 
             //================================================================
             /**
@@ -54,6 +59,7 @@ namespace beewatch
              * @returns Shared pointer to GPIO object if successful, nullptr otherwise
              */
             static GPIO::Ptr claim(unsigned gpioId);
+
 
             //================================================================
             /**
@@ -147,8 +153,8 @@ namespace beewatch
              */
             enum Direction
             {
-                IN,
-                OUT
+                In,
+                Out
             };
 
             /**
@@ -156,14 +162,15 @@ namespace beewatch
              *
              * @param [in] direction  Direction to use on GPIO
              */
-            virtual void setDirection(Direction direction);
+            void setDirection(Direction direction);
 
             /**
              * @brief Get current GPIO direction
              *
              * @returns Current GPIO direction
              */
-            virtual Direction getDirection();
+            Direction getDirection();
+
 
             //================================================================
             /**
@@ -183,6 +190,18 @@ namespace beewatch
              */
             virtual LogicalState read() const override;
 
+
+            //================================================================
+            /**
+             * @brief Configures GPIO to signal all state changes
+             */
+            void enableEdgeDetection();
+
+            /**
+            * @brief Disables interrupt signaling on state changes
+            */
+            void disableEdgeDetection();
+
             /**
              * @brief Wait for GPIO state to change and return new value
              *
@@ -191,7 +210,31 @@ namespace beewatch
              *
              * @returns New GPIO state
              */
-            virtual LogicalState waitForStateChange();
+            LogicalState waitForStateChange();
+
+            /**
+             * @brief Wait for GPIO state to match given state
+             *
+             * Returns immediately if GPIO is already on given state.
+             *
+             * NB: This operation blocks the calling thread until the GPIO
+             * changes state.
+             */
+            void waitForState(LogicalState state);
+
+            /**
+             * @brief Notify waiting threads about a state change
+             *
+             * Uses the ISR function format required by the pigpio library
+             * (gpioISRFuncEx_t).
+             *
+             * @param unused
+             * @param [in] level    New GPIO state (0 = LO, 1 = HI)
+             * @param unused
+             * @param [in] gpioPtr  Pointer to bound GPIO object
+             */
+            static void signalEdgeDetection(int, int level, uint32_t, void * gpioPtr);
+
 
             //================================================================
             /**
@@ -200,6 +243,7 @@ namespace beewatch
              * @returns GPIO number
              */
             unsigned getId() { return _id; }
+
 
         protected:
             //================================================================
@@ -214,10 +258,17 @@ namespace beewatch
              */
             GPIO(const unsigned id);
 
+
         private:
             //================================================================
             static bool _claimedGPIOList[NUM_GPIO];
             static std::mutex _claimMutex[NUM_GPIO];
+
+            bool _edgeDetectionActive;
+            std::mutex _stateChangeMutex;
+            std::condition_variable _stateChangeVariable;
+            LogicalState _currentState;
+
 
             //================================================================
             unsigned _id;

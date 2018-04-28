@@ -70,11 +70,13 @@ target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
     ${META_PROJECT_NAME}::climate
+    ${META_PROJECT_NAME}::ctrl
     ${META_PROJECT_NAME}::health
     ${META_PROJECT_NAME}::hw
     ${META_PROJECT_NAME}::io
     ${META_PROJECT_NAME}::mass
     ${META_PROJECT_NAME}::reporting
+    ${META_PROJECT_NAME}::util
 )
 
 
