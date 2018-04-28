@@ -36,7 +36,7 @@ namespace beewatch
 
 
         //================================================================
-        double Tachometer::read() const
+        double Tachometer::read()
         {
             // TODO
         }

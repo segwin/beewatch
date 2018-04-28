@@ -63,7 +63,7 @@ namespace beewatch
              *
              * @returns Relative humidity and temperature
              */
-            virtual ClimateData read() const override;
+            virtual ClimateData read() override;
 
         private:
             //================================================================

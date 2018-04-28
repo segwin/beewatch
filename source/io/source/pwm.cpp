@@ -73,7 +73,7 @@ namespace beewatch
 
 
         //================================================================
-        double PWM::read() const
+        double PWM::read()
         {
             unsigned gpioId = _gpio->getId();
 

@@ -170,7 +170,7 @@ namespace beewatch
             }
         }
 
-        LogicalState GPIO::read() const
+        LogicalState GPIO::read()
         {
             switch (gpioRead(_id))
             {

@@ -41,7 +41,7 @@ namespace beewatch
 
 
         //================================================================
-        ClimateData DHTxx::read() const
+        ClimateData DHTxx::read()
         {
             using namespace std::chrono;
 

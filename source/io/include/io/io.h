@@ -27,7 +27,7 @@ namespace beewatch
             using Ptr = std::shared_ptr<Input<T>>;
 
             //================================================================
-            virtual T read() const = 0;
+            virtual T read() = 0;
         };
 
 

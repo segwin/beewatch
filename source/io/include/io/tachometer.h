@@ -49,7 +49,7 @@ namespace beewatch
             using Ptr = std::shared_ptr<Tachometer>;
 
             //================================================================
-            virtual double read() const override;
+            virtual double read() override;
 
         protected:
             //================================================================

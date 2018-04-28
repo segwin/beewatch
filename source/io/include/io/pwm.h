@@ -77,7 +77,7 @@ namespace beewatch
              *
              * @returns Current duty cycle expressed as a ratio between 0 and 1
              */
-            virtual double read() const override;
+            virtual double read() override;
 
             /**
              * @brief Set the PWM duty cycle to the given ratio

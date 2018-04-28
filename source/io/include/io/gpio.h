@@ -188,7 +188,7 @@ namespace beewatch
              *
              * @returns Current GPIO state
              */
-            virtual LogicalState read() const override;
+            virtual LogicalState read() override;
 
 
             //================================================================
