@@ -27,7 +27,7 @@ namespace beewatch
 
         //==============================================================================
         Logger::Logger()
-            : _verbosity(LOG_WARNING)
+            : _verbosity((Logger::Level)LOG_WARNING)
         {
             // Open log file
             openlog(BEEWATCH_PROJECT_NAME, LOG_CONS | LOG_NDELAY, LOG_USER);

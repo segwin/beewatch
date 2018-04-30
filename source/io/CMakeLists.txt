@@ -65,6 +65,10 @@ source_group_by_path(${include_path} "\\\\.h$|\\\\.hpp$"
 source_group_by_path(${source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
 
+# Disable warnings for external librairies
+set_source_files_properties("${pigpio_path}/command.c" PROPERTIES COMPILE_FLAGS "-w")
+set_source_files_properties("${pigpio_path}/pigpio.c" PROPERTIES COMPILE_FLAGS "-w")
+
 
 # 
 # Create library

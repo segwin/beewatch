@@ -10,6 +10,7 @@
 #include "pigpio.h"
 
 #include <array>
+#include <condition_variable>
 #include <mutex>
 
 namespace beewatch
