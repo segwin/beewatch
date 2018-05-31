@@ -20,6 +20,20 @@ release_build
 /lib
 /install
 
+# cmake-generated files
+CMakeFiles
+CMakeCache*
+CPack*
+cmake/*/*
+cmake_install.cmake
+Makefile
+
+VERSION
+*_api.h
+*_export.h
+*_features.h
+source/include/
+
 # Qt cache
 CMakeLists.txt.user
 CMakeLists.txt.user.*
