@@ -7,10 +7,13 @@
 
 #ifdef __linux__
 #include <errno.h>
+#include <pthread.h>
+#include <sys/resource.h>
 #elif WIN32
 #include <windows.h>
 #endif
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
 
@@ -23,28 +26,28 @@ namespace beewatch
         UTIL_API void setPriority(Priority priority)
         {
 #ifdef __linux__
-            int priority;
+            int procPriority;
             int schedPolicy;
             struct sched_param schedParams;
 
             switch (priority)
             {
             case Priority::REALTIME:
-                priority = -20;
-                policy = SCHED_FIFO;
+                procPriority = -20;
+                schedPolicy = SCHED_FIFO;
                 schedParams.sched_priority = sched_get_priority_max(SCHED_FIFO);
                 break;
 
             default:
             //case Priority::NORMAL:
-                priority = 0;
-                policy = SCHED_OTHER;
+                procPriority = 0;
+                schedPolicy = SCHED_OTHER;
                 schedParams.sched_priority = 0;
                 break;
             }
 
-            if (!setpriority(PRIO_PROCESS, 0, priority) ||
-                !pthread_setSchedParam(pthread_self(), policy, &schedParams))
+            if (!setpriority(PRIO_PROCESS, 0, procPriority) ||
+                !pthread_setschedparam(pthread_self(), schedPolicy, &schedParams))
             {
                 logger.dualPrint(Logger::Error,
                                  std::string("Unable to set requested priority: ") + strerror(errno));

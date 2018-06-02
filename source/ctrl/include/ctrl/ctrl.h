@@ -6,7 +6,7 @@
 
 #include <ctrl/ctrl_api.h>
 
-#include <hw/dht11.h>
+#include <hw/dhtxx.h>
 #include <hw/fan.h>
 
 #include <memory>
