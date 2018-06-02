@@ -72,8 +72,6 @@ namespace beewatch
             //================================================================
             static constexpr int NUM_BITS_PER_READ = 40;
             static constexpr int NUM_BYTES_PER_READ = NUM_BITS_PER_READ / 8;
-
-            mutable std::mutex _readMutex;
         };
 
     } // namespace hw

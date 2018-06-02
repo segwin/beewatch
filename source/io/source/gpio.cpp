@@ -5,6 +5,8 @@
 #include "io/gpio.h"
 #include "io/pigpio.h"
 
+#include "pigpio/pigpio.h"
+
 #include <algorithm>
 
 namespace beewatch
@@ -123,6 +125,11 @@ namespace beewatch
             }
 
             return -1;
+        }
+
+        void GPIO::setMode(int mode)
+        {
+            gpioSetMode(_id, mode);
         }
 
 

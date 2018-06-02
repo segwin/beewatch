@@ -147,6 +147,13 @@ namespace beewatch
              */
             static int findFunction(unsigned gpioId, Fn function);
 
+            /**
+             * @brief Set GPIO mode
+             *
+             * @param [in] mode Mode to use on GPIO
+             */
+            void setMode(int mode);
+
 
             //================================================================
             /**

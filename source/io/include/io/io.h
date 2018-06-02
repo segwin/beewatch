@@ -7,6 +7,7 @@
 #include <io/io_api.h>
 
 #include <memory>
+#include <mutex>
 
 namespace beewatch
 {
@@ -28,6 +29,10 @@ namespace beewatch
 
             //================================================================
             virtual T read() = 0;
+
+        protected:
+            //================================================================
+            mutable std::mutex _readMutex;
         };
 
 
@@ -46,6 +51,10 @@ namespace beewatch
 
             //================================================================
             virtual void write(T) = 0;
+
+        protected:
+            //================================================================
+            mutable std::mutex _writeMutex;
         };
 
 

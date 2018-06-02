@@ -5,6 +5,8 @@
 #include "io/pwm.h"
 #include "io/pigpio.h"
 
+#include "pigpio/pigpio.h"
+
 #include <string>
 
 namespace beewatch
@@ -37,7 +39,7 @@ namespace beewatch
             // Configure PWM output
             PiGPIOLib::init();
 
-            gpioSetMode(_gpio->getId(), gpioPwmMode);
+            _gpio->setMode(gpioPwmMode);
             write(0.5);
         }
 

@@ -27,7 +27,7 @@ namespace beewatch
             // Configure GPIO
             PiGPIOLib::init();
 
-            gpioSetMode(_gpio->getId(), PI_INPUT);
+            _gpio->setDirection(GPIO::In);
         }
 
         Tachometer::~Tachometer()
