@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <io/io_api.h>
+
 #include <stdexcept>
 
 namespace beewatch
@@ -17,7 +19,7 @@ namespace beewatch
         *
         * Basic wrapper implementing RAII semantics for the pigpio library
         */
-        class PiGPIOLib
+        class IO_API PiGPIOLib
         {
         public:
             //================================================================
@@ -29,7 +31,7 @@ namespace beewatch
              * 
              * @returns pigpio version
              */
-            static int init();
+            static IO_API int init();
 
         private:
             //================================================================

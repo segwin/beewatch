@@ -112,7 +112,7 @@ namespace beewatch
             Level _verbosity;
         };
 
-        extern Logger& logger;
+        extern UTIL_API Logger& logger;
 
     } // namespace util
 
