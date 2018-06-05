@@ -1,6 +1,3 @@
-[submodule "source/io/pigpio"]
-	path = source/io/pigpio
-	url = https://github.com/joan2937/pigpio.git
 [submodule "source/tests/googletest"]
 	path = source/tests/googletest
 	url = https://github.com/google/googletest.git

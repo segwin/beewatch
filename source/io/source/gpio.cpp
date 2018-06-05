@@ -3,11 +3,19 @@
 //================================================================
 
 #include "io/gpio.h"
-#include "io/pigpio.h"
+#include "io/bcm2835.h"
 
-#include "pigpio/pigpio.h"
+#include <util/assert.h>
 
 #include <algorithm>
+#include <cstring>
+#include <thread>
+
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace beewatch
 {
@@ -18,68 +26,31 @@ namespace beewatch
         bool GPIO::_claimedGPIOList[NUM_GPIO] = { 0 };
         std::mutex GPIO::_claimMutex[NUM_GPIO];
 
-        const GPIO::Fn GPIO::gpioModeLookup[NUM_GPIO][NUM_MODES] = {
-            {INPUT, OUTPUT, SDA0,       SA5,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO0
-            {INPUT, OUTPUT, SCL0,       SA4,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO1
-            {INPUT, OUTPUT, SDA1,       SA3,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO2
-            {INPUT, OUTPUT, SCL1,       SA2,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO3
-            {INPUT, OUTPUT, GPCLK0,     SA1,         RESERVED, INVALID,        INVALID,    ARM_TDI},  // GPIO4
-            {INPUT, OUTPUT, GPCLK1,     SA0,         RESERVED, INVALID,        INVALID,    ARM_TDO},  // GPIO5
-            {INPUT, OUTPUT, GPCLK2,     SOE_N_SE,    RESERVED, INVALID,        INVALID,    ARM_RTCK}, // GPIO6
-            {INPUT, OUTPUT, SPI0_CE1_N, SWE_N_SRW_N, RESERVED, INVALID,        INVALID,    INVALID},  // GPIO7
-            {INPUT, OUTPUT, SPI0_CE0_N, SD0,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO8
-            {INPUT, OUTPUT, SPI0_MISO,  SD1,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO9
-            {INPUT, OUTPUT, SPI0_MOSI,  SD2,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO10
-            {INPUT, OUTPUT, SPI0_SCLK,  SD3,         RESERVED, INVALID,        INVALID,    INVALID},  // GPIO11
-            {INPUT, OUTPUT, PWM0,       SD4,         RESERVED, INVALID,        INVALID,    ARM_TMS},  // GPIO12
-            {INPUT, OUTPUT, PWM1,       SD5,         RESERVED, INVALID,        INVALID,    ARM_TCK},  // GPIO13
-            {INPUT, OUTPUT, TXD0,       SD6,         RESERVED, INVALID,        INVALID,    TXD1},     // GPIO14
-            {INPUT, OUTPUT, RXD0,       SD7,         RESERVED, INVALID,        INVALID,    RXD1},     // GPIO15
-            {INPUT, OUTPUT, RESERVED,   SD8,         RESERVED, CTS0,           SPI1_CE2_N, CTS1},     // GPIO16
-            {INPUT, OUTPUT, RESERVED,   SD9,         RESERVED, RTS0,           SPI1_CE1_N, RTS1},     // GPIO17
-            {INPUT, OUTPUT, PCM_CLK,    SD10,        RESERVED, BSCSL_SDA_MOSI, SPI1_CE0_N, PWM0},     // GPIO18
-            {INPUT, OUTPUT, PCM_FS,     SD11,        RESERVED, BSCSL_SCL_SCLK, SPI1_MISO,  PWM1},     // GPIO19
-            {INPUT, OUTPUT, PCM_DIN,    SD12,        RESERVED, BSCSL_MISO,     SPI1_MOSI,  GPCLK0},   // GPIO20
-            {INPUT, OUTPUT, PCM_DOUT,   SD13,        RESERVED, BSCSL_CE_N,     SPI1_SCLK,  GPCLK1},   // GPIO21
-            {INPUT, OUTPUT, RESERVED,   SD14,        RESERVED, SD1_CLK,        ARM_TRST,   INVALID},  // GPIO22
-            {INPUT, OUTPUT, RESERVED,   SD15,        RESERVED, SD1_CMD,        ARM_RTCK,   INVALID},  // GPIO23
-            {INPUT, OUTPUT, RESERVED,   SD16,        RESERVED, SD1_DAT0,       ARM_TDO,    INVALID},  // GPIO24
-            {INPUT, OUTPUT, RESERVED,   SD17,        RESERVED, SD1_DAT1,       ARM_TCK,    INVALID},  // GPIO25
-            {INPUT, OUTPUT, RESERVED,   RESERVED,    RESERVED, SD1_DAT2,       ARM_TDI,    INVALID},  // GPIO26
-            {INPUT, OUTPUT, RESERVED,   RESERVED,    RESERVED, SD1_DAT3,       ARM_TMS,    INVALID},  // GPIO27
-            {INPUT, OUTPUT, SDA0,       SA5,         PCM_CLK,  RESERVED,       INVALID,    INVALID},  // GPIO28
-            {INPUT, OUTPUT, SCL0,       SA4,         PCM_FS,   RESERVED,       INVALID,    INVALID},  // GPIO29
-            {INPUT, OUTPUT, RESERVED,   SA3,         PCM_DIN,  CTS0,           INVALID,    CTS1},     // GPIO30
-            {INPUT, OUTPUT, RESERVED,   SA2,         PCM_DOUT, RTS0,           INVALID,    RTS1},     // GPIO31
-            {INPUT, OUTPUT, GPCLK0,     SA1,         RESERVED, TXD0,           INVALID,    TXD1},     // GPIO32
-            {INPUT, OUTPUT, RESERVED,   SA0,         RESERVED, RXD0,           INVALID,    RXD1},     // GPIO33
-            {INPUT, OUTPUT, GPCLK0,     SOE_N_SE,    RESERVED, RESERVED,       INVALID,    INVALID},  // GPIO34
-            {INPUT, OUTPUT, SPI0_CE1_N, SWE_N_SRW_N, INVALID,  RESERVED,       INVALID,    INVALID},  // GPIO35
-            {INPUT, OUTPUT, SPI0_CE0_N, SD0,         TXD0,     RESERVED,       INVALID,    INVALID},  // GPIO36
-            {INPUT, OUTPUT, SPI0_MISO,  SD1,         RXD0,     RESERVED,       INVALID,    INVALID},  // GPIO37
-            {INPUT, OUTPUT, SPI0_MOSI,  SD2,         RTS0,     RESERVED,       INVALID,    INVALID},  // GPIO38
-            {INPUT, OUTPUT, SPI0_SCLK,  SD3,         CTS0,     RESERVED,       INVALID,    INVALID}   // GPIO39
-        };
-
         //================================================================
         GPIO::GPIO(const unsigned id)
         {
-            // Ensure pigpio is initialised
-            PiGPIOLib::init();
+            // Ensure GPIOs are initialised
+            GPIO::Init();
+
+            if (_claimedGPIOList[id])
+            {
+                throw std::invalid_argument("Requested GPIO is already claimed");
+            }
 
             // Take ownership of GPIO
             _id = id;
             _claimedGPIOList[id] = true;
 
-            // Set initial direction to input
-            setDirection(In);
+            // Set mode to input
+            setFunction(Fn::Input);
         }
 
         GPIO::~GPIO()
         {
             // Reset GPIO configuration
-            gpioSetMode(_id, PI_INPUT);
-            gpioSetPullUpDown(_id, PI_PUD_OFF);
+            setFunction(Fn::Input);
+            setResistorMode(Resistor::Off);
+            disableEdgeDetection();
 
             // Relinquish GPIO ownership
             _claimedGPIOList[_id] = false;
@@ -107,122 +78,207 @@ namespace beewatch
 
 
         //================================================================
-        int GPIO::findFunction(Fn function)
-        {
-            return findFunction(_id, function);
-        }
+        void * GPIO::_gpioMmap = nullptr;
+        volatile uint32_t * _gpio = nullptr;
 
-        int GPIO::findFunction(unsigned gpioId, Fn function)
+        void GPIO::Init()
         {
-            auto gpioModes = gpioModeLookup[gpioId];
-
-            for (int i = 0; i < NUM_MODES; ++i)
+            // Based on sample code from:
+            // https://elinux.org/RPi_GPIO_Code_Samples#Direct_register_access
+            
+            if (_gpio != nullptr)
             {
-                if (gpioModes[i] == function)
-                {
-                    return i;
-                }
+                return;
+            }
+            
+            // Open /dev/mem
+            int memFd = open("/dev/mem", O_RDWR | O_SYNC);
+
+            if (memFd < 0)
+            {
+                std::string error = strerror(errno);
+                throw std::runtime_error("Failed to open /dev/mem: \"" + error + "\"");
             }
 
-            return -1;
+            // Create mmap for GPIO peripherals
+            _gpioMmap = mmap( nullptr,                     // Any address will do
+                              4*1024,                      // Map size
+                              PROT_READ | PROT_WRITE,      // Enable RW access to mapped memory
+                              MAP_SHARED,                  // Shared with other processes
+                              memFd,                       // File descriptor to map (/dev/mem)
+                              bcm2835_periph::GPIO_BASE ); // Offset to GPIO peripheral
+
+            close(memFd);
+
+            if (_gpioMmap == MAP_FAILED)
+            {
+                std::string error = strerror(errno);
+                throw std::runtime_error("Failed to create mmap for GPIO peripherals: \"" + error + "\"");
+            }
+
+            _gpio = (volatile uint32_t*)_gpioMmap;
         }
 
-        void GPIO::setMode(int mode)
+        template <int nbBits>
+        inline void GPIO::SetRegister(uint32_t val, const uint32_t offsets[])
         {
-            gpioSetMode(_id, mode);
+            static const int nbRegistersPerBank = 32 / nbBits;
+
+            // Calculate address & bitshift
+            uint32_t offset = offsets[_id / nbRegistersPerBank];
+            volatile uint32_t * addr = _gpioAddr + offset;
+
+            uint32_t shift = (_id % nbRegistersPerBank) * nbBits;
+
+            // Clear and/or set register value
+            if (!val || nbBits > 1)
+            {
+                static const uint32_t clearVal = (0x1 << nbBits) - 1;
+
+                *addr &= ~(clearVal << shift);
+            }
+
+            if (val)
+            {
+                *addr |= (val << shift);
+            }
         }
 
 
         //================================================================
-        void GPIO::setDirection(Direction direction)
+        void GPIO::setFunction(Fn function)
         {
-            unsigned mode;
-
-            if (direction == In)
-            {
-                mode = PI_INPUT;
-            }
-            else
-            {
-                mode = PI_OUTPUT;
-            }
-
-            gpioSetMode(_id, mode);
-
-            _direction = direction;
+            // Set new function
+            SetRegister<3>((uint32_t)function, bcm2835_periph::GPIO_FSEL);
         }
 
-        GPIO::Direction GPIO::getDirection()
+        GPIO::Fn GPIO::getFunction()
         {
-            return _direction;
+            return _function;
+        }
+
+
+        //================================================================
+        void GPIO::setResistorMode(Resistor mode)
+        {
+            // Calculate addresses and bitshifts
+            uint32_t pudOffset = bcm2835_periph::GPIO_PUD;
+            volatile uint32_t * pud = _gpioAddr + pudOffset;
+
+            // 1. Write to GPPUD
+            *pud = (uint32_t)mode;
+
+            // 2. Wait ~150 cycles @ 700-1.2 GHz
+            std::this_thread::sleep_for(std::chrono::nanoseconds(200));
+
+            // 3. Write to GPPUDCLK
+            SetRegister<1>(1, bcm2835_periph::GPIO_PUDCLK);
+
+            // 4. Wait another ~150 cycles
+            std::this_thread::sleep_for(std::chrono::nanoseconds(200));
+
+            // 5. Clear GPPUD/GPPUDCLK signals
+            SetRegister<1>(0, bcm2835_periph::GPIO_PUDCLK);
+            *pud = 0;
         }
 
 
         //================================================================
         void GPIO::write(LogicalState state)
         {
-            switch (state)
+            dbgAssert(_function != Fn::Input);
+
+            if (state == LogicalState::Invalid)
             {
-            case LogicalState::HI:
-                gpioWrite(_id, PI_ON);
-                break;
+                throw std::invalid_argument("Received invalid write value");
+            }
 
-            case LogicalState::LO:
-                gpioWrite(_id, PI_OFF);
-                break;
-
-            default:
-
-                break;
+            // Write to SET (HI) and CLR (LO) registers
+            if (state == LogicalState::HI)
+            {
+                SetRegister<1>(0, bcm2835_periph::GPIO_CLR);
+                SetRegister<1>(1, bcm2835_periph::GPIO_SET);
+            }
+            else
+            {
+                SetRegister<1>(0, bcm2835_periph::GPIO_SET);
+                SetRegister<1>(1, bcm2835_periph::GPIO_CLR);
             }
         }
 
         LogicalState GPIO::read()
         {
-            switch (gpioRead(_id))
+            dbgAssert(_function != Fn::Output);
+
+            // Calculate address & bitshift
+            uint32_t offset = bcm2835_periph::GPIO_LEV[_id / 32];
+            volatile uint32_t * lev = _gpioAddr + offset;
+
+            uint32_t shift = _id % 32;
+
+            // Read register
+            if ( *lev & (0x1 << shift) )
             {
-            case PI_ON:
                 return LogicalState::HI;
-                break;
-
-            case PI_OFF:
+            }
+            else
+            {
                 return LogicalState::LO;
-                break;
-
-            default:
-                return LogicalState::INVALID;
-                break;
             }
         }
 
 
         //================================================================
-        void GPIO::enableEdgeDetection()
+        void GPIO::setEdgeDetection(Edge::Type edgeTypes)
         {
-            if (!_edgeDetectionActive)
+            if (_activeEdgeDetection == edgeTypes)
             {
-                gpioSetISRFuncEx(_id, EITHER_EDGE, -1, &GPIO::signalEdgeDetection, this);
-                _edgeDetectionActive = true;
+                return;
             }
+
+            // Reset detection registers based on given type mask
+            SetRegister<1>((edgeTypes & Edge::Rising)       >> 0, bcm2835_periph::GPIO_REN);
+            SetRegister<1>((edgeTypes & Edge::Falling)      >> 1, bcm2835_periph::GPIO_FEN);
+            SetRegister<1>((edgeTypes & Edge::High)         >> 2, bcm2835_periph::GPIO_HEN);
+            SetRegister<1>((edgeTypes & Edge::Low)          >> 3, bcm2835_periph::GPIO_LEN);
+            SetRegister<1>((edgeTypes & Edge::RisingAsync)  >> 4, bcm2835_periph::GPIO_AREN);
+            SetRegister<1>((edgeTypes & Edge::FallingAsync) >> 5, bcm2835_periph::GPIO_AFEN);
+
+            _activeEdgeDetection = edgeTypes;
         }
 
-        void GPIO::disableEdgeDetection()
+        void GPIO::clearEdgeDetection()
         {
-            if (_edgeDetectionActive)
+            // Clear all detection registers
+            const uint32_t * offsets[] =
             {
-                gpioSetISRFuncEx(_id, EITHER_EDGE, -1, nullptr, nullptr);
-                _edgeDetectionActive = false;
+                bcm2835_periph::GPIO_EDS,
+                bcm2835_periph::GPIO_REN,
+                bcm2835_periph::GPIO_FEN,
+                bcm2835_periph::GPIO_HEN,
+                bcm2835_periph::GPIO_LEN,
+                bcm2835_periph::GPIO_AREN,
+                bcm2835_periph::GPIO_AFEN,
+            };
+
+            uint32_t shift = _id % 32;
+
+            for (auto offset : offsets)
+            {
+                for (int i = 0; i < 2; ++i)
+                {
+                    auto addr = _gpioAddr + offset[i];
+                    *addr &= ~(0x1 << shift);
+                }
             }
         }
 
         LogicalState GPIO::waitForStateChange()
         {
-            // Ensure edge detection is activated
-            enableEdgeDetection();
+            dbgAssert(_activeEdgeDetection > 0);
 
             // Wait for state change signal
-            std::unique_lock<std::mutex> lock(_stateChangeMutex);
-            _stateChangeVariable.wait(lock);
+            // TODO
 
             return _currentState;
         }

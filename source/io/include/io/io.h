@@ -83,7 +83,8 @@ namespace beewatch
         {
             LO = 0,
             HI = 1,
-            INVALID = -1
+
+            Invalid = -1
         };
 
     } // namespace io

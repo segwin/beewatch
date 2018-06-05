@@ -31,27 +31,19 @@ set(export_macro         "${target_id}_API")
 
 set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include/${target}")
 set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
-set(pigpio_path  "${CMAKE_CURRENT_SOURCE_DIR}/pigpio")
 
 set(headers
     "${include_path}/iolib.h"
 
-    "${pigpio_path}/pigpio.h"
-    "${pigpio_path}/command.h"
-    
+    "${include_path}/bcm2835.h"
     "${include_path}/gpio.h"
     "${include_path}/io.h"
-    "${include_path}/pigpio.h"
     "${include_path}/pwm.h"
     "${include_path}/tachometer.h"
 )
 
 set(sources
-    "${pigpio_path}/command.c"
-    "${pigpio_path}/pigpio.c"
-    
     "${source_path}/gpio.cpp"
-    "${source_path}/pigpio.cpp"
     "${source_path}/pwm.cpp"
     "${source_path}/tachometer.cpp"
 )
@@ -64,10 +56,6 @@ source_group_by_path(${include_path} "\\\\.h$|\\\\.hpp$"
     ${header_group} ${headers})
 source_group_by_path(${source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
-
-# Disable warnings for external librairies
-set_source_files_properties("${pigpio_path}/command.c" PROPERTIES COMPILE_FLAGS "-w")
-set_source_files_properties("${pigpio_path}/pigpio.c" PROPERTIES COMPILE_FLAGS "-w")
 
 
 # 
@@ -139,7 +127,6 @@ target_include_directories(${target}
     PRIVATE
     ${PROJECT_BINARY_DIR}/source/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/include
 
     PUBLIC
@@ -158,6 +145,7 @@ target_include_directories(${target}
 
 target_link_libraries(${target}
     PRIVATE
+    ${META_PROJECT_NAME}::util
 
     PUBLIC
     ${DEFAULT_LIBRARIES}
