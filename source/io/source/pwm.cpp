@@ -3,9 +3,6 @@
 //================================================================
 
 #include "io/pwm.h"
-#include "io/pigpio.h"
-
-#include "pigpio/pigpio.h"
 
 #include <string>
 
@@ -29,18 +26,19 @@ namespace beewatch
             // Given GPIO must be capable of hardware PWM
             // NB: We can cast PWM::ID to GPIO::Fn since we've defined the
             //     former to be equal in value to the latter
-            int gpioPwmMode = _gpio->findFunction((GPIO::Fn)pwmId);
+            // TODO
+            //int gpioPwmMode = _gpio->findFunction((GPIO::Fn)pwmId);
             
-            if (gpioPwmMode < 0)
-            {
-                throw std::invalid_argument("Requested GPIO is not capable of hardware PWM");
-            }
+            //if (gpioPwmMode < 0)
+            //{
+            //    throw std::invalid_argument("Requested GPIO is not capable of hardware PWM");
+            //}
 
             // Configure PWM output
-            PiGPIOLib::init();
+            //PiGPIOLib::init();
 
-            _gpio->setMode(gpioPwmMode);
-            write(0.5);
+            //_gpio->setMode(gpioPwmMode);
+            //write(0.5);
         }
 
         PWM::~PWM()
@@ -51,7 +49,7 @@ namespace beewatch
         //================================================================
         GPIO::Ptr PWM::getGPIO(ID pwmId)
         {
-            for (int gpioId = 0; gpioId < GPIO::NUM_GPIO; ++gpioId)
+            /*for (int gpioId = 0; gpioId < GPIO::NUM_GPIO; ++gpioId)
             {
                 int gpioPwmMode = GPIO::findFunction(gpioId, (GPIO::Fn)pwmId);
 
@@ -66,7 +64,7 @@ namespace beewatch
                         return gpio;
                     }
                 }
-            }
+            }*/
 
             // If we reach this point, no GPIO with the requested PWM function
             // was found or was available
@@ -77,7 +75,7 @@ namespace beewatch
         //================================================================
         double PWM::read()
         {
-            unsigned gpioId = _gpio->getId();
+            /*unsigned gpioId = _gpio->getId();
 
             int pwmValue = gpioGetPWMdutycycle(gpioId);
             int range = gpioGetPWMrange(gpioId);
@@ -90,11 +88,13 @@ namespace beewatch
             }
 
             return pwmValue / range;
+            */
+            return -1.0;
         }
 
         void PWM::write(double dutyCycle)
         {
-            unsigned gpioId = _gpio->getId();
+            /*unsigned gpioId = _gpio->getId();
 
             double range = gpioGetPWMrange(gpioId);
             unsigned pwmValue = dutyCycle * range;
@@ -112,7 +112,7 @@ namespace beewatch
                 throw std::invalid_argument("Invalid duty cycle (" +
                                             std::to_string(dutyCycle) +
                                             ")");
-            }
+            }*/
         }
         
     } // namespace io

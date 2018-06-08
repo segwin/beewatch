@@ -8,9 +8,10 @@
 
 #include <cassert>
 
-#ifdef DEBUG
-static constexpr UTIL_API void dbgAssert(int expr) { assert(expr); }
-#else
-static constexpr UTIL_API void dbgAssert(int) { }
-#endif
+namespace beewatch
+{
+
+    static constexpr UTIL_API void dbgAssert(int expr) { assert(expr); }
+
+} // namespace beewatch
 

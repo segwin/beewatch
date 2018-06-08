@@ -3,7 +3,6 @@
 //================================================================
 
 #include "io/gpio.h"
-#include "io/bcm2835.h"
 
 #include <util/assert.h>
 
@@ -16,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <wiringPi.h>
 
 namespace beewatch
 {
@@ -42,15 +43,15 @@ namespace beewatch
             _claimedGPIOList[id] = true;
 
             // Set mode to input
-            setFunction(Fn::Input);
+            setMode(Mode::Input);
         }
 
         GPIO::~GPIO()
         {
             // Reset GPIO configuration
-            setFunction(Fn::Input);
+            setMode(Mode::Input);
             setResistorMode(Resistor::Off);
-            disableEdgeDetection();
+            clearEdgeDetection();
 
             // Relinquish GPIO ownership
             _claimedGPIOList[_id] = false;
@@ -78,244 +79,84 @@ namespace beewatch
 
 
         //================================================================
-        void * GPIO::_gpioMmap = nullptr;
-        volatile uint32_t * _gpio = nullptr;
-
         void GPIO::Init()
         {
-            // Based on sample code from:
-            // https://elinux.org/RPi_GPIO_Code_Samples#Direct_register_access
-            
-            if (_gpio != nullptr)
+            static bool bIsInitialised = false;
+
+            if (bIsInitialised)
             {
                 return;
             }
-            
-            // Open /dev/mem
-            int memFd = open("/dev/mem", O_RDWR | O_SYNC);
 
-            if (memFd < 0)
+            if (wiringPiSetupPhys() < 0)
             {
-                std::string error = strerror(errno);
-                throw std::runtime_error("Failed to open /dev/mem: \"" + error + "\"");
+                throw std::runtime_error("An error occurred while initialising gpio library, do we have root privileges?");
             }
 
-            // Create mmap for GPIO peripherals
-            _gpioMmap = mmap( nullptr,                     // Any address will do
-                              4*1024,                      // Map size
-                              PROT_READ | PROT_WRITE,      // Enable RW access to mapped memory
-                              MAP_SHARED,                  // Shared with other processes
-                              memFd,                       // File descriptor to map (/dev/mem)
-                              bcm2835_periph::GPIO_BASE ); // Offset to GPIO peripheral
-
-            close(memFd);
-
-            if (_gpioMmap == MAP_FAILED)
-            {
-                std::string error = strerror(errno);
-                throw std::runtime_error("Failed to create mmap for GPIO peripherals: \"" + error + "\"");
-            }
-
-            _gpio = (volatile uint32_t*)_gpioMmap;
-        }
-
-        template <int nbBits>
-        inline void GPIO::SetRegister(uint32_t val, const uint32_t offsets[])
-        {
-            static const int nbRegistersPerBank = 32 / nbBits;
-
-            // Calculate address & bitshift
-            uint32_t offset = offsets[_id / nbRegistersPerBank];
-            volatile uint32_t * addr = _gpioAddr + offset;
-
-            uint32_t shift = (_id % nbRegistersPerBank) * nbBits;
-
-            // Clear and/or set register value
-            if (!val || nbBits > 1)
-            {
-                static const uint32_t clearVal = (0x1 << nbBits) - 1;
-
-                *addr &= ~(clearVal << shift);
-            }
-
-            if (val)
-            {
-                *addr |= (val << shift);
-            }
+            bIsInitialised = true;
         }
 
 
         //================================================================
-        void GPIO::setFunction(Fn function)
+        void GPIO::setMode(Mode mode)
         {
-            // Set new function
-            SetRegister<3>((uint32_t)function, bcm2835_periph::GPIO_FSEL);
+            pinMode(_id, static_cast<int>(mode));
+            _mode = mode;
         }
 
-        GPIO::Fn GPIO::getFunction()
+        GPIO::Mode GPIO::getMode() const
         {
-            return _function;
+            return _mode;
         }
 
 
         //================================================================
-        void GPIO::setResistorMode(Resistor mode)
+        void GPIO::setResistorMode(Resistor cfg)
         {
-            // Calculate addresses and bitshifts
-            uint32_t pudOffset = bcm2835_periph::GPIO_PUD;
-            volatile uint32_t * pud = _gpioAddr + pudOffset;
-
-            // 1. Write to GPPUD
-            *pud = (uint32_t)mode;
-
-            // 2. Wait ~150 cycles @ 700-1.2 GHz
-            std::this_thread::sleep_for(std::chrono::nanoseconds(200));
-
-            // 3. Write to GPPUDCLK
-            SetRegister<1>(1, bcm2835_periph::GPIO_PUDCLK);
-
-            // 4. Wait another ~150 cycles
-            std::this_thread::sleep_for(std::chrono::nanoseconds(200));
-
-            // 5. Clear GPPUD/GPPUDCLK signals
-            SetRegister<1>(0, bcm2835_periph::GPIO_PUDCLK);
-            *pud = 0;
+            pullUpDnControl(_id, static_cast<int>(cfg));
+            _resistorCfg = cfg;
         }
 
 
         //================================================================
         void GPIO::write(LogicalState state)
         {
-            dbgAssert(_function != Fn::Input);
+            dbgAssert(_mode != Mode::Input);
 
             if (state == LogicalState::Invalid)
             {
                 throw std::invalid_argument("Received invalid write value");
             }
 
-            // Write to SET (HI) and CLR (LO) registers
-            if (state == LogicalState::HI)
-            {
-                SetRegister<1>(0, bcm2835_periph::GPIO_CLR);
-                SetRegister<1>(1, bcm2835_periph::GPIO_SET);
-            }
-            else
-            {
-                SetRegister<1>(0, bcm2835_periph::GPIO_SET);
-                SetRegister<1>(1, bcm2835_periph::GPIO_CLR);
-            }
+            digitalWrite(_id, static_cast<int>(state));
         }
 
         LogicalState GPIO::read()
         {
-            dbgAssert(_function != Fn::Output);
+            dbgAssert(_mode != Mode::Output);
 
-            // Calculate address & bitshift
-            uint32_t offset = bcm2835_periph::GPIO_LEV[_id / 32];
-            volatile uint32_t * lev = _gpioAddr + offset;
-
-            uint32_t shift = _id % 32;
-
-            // Read register
-            if ( *lev & (0x1 << shift) )
-            {
-                return LogicalState::HI;
-            }
-            else
-            {
-                return LogicalState::LO;
-            }
+            return static_cast<LogicalState>(digitalRead(_id));
         }
 
 
         //================================================================
-        void GPIO::setEdgeDetection(Edge::Type edgeTypes)
+        void GPIO::setEdgeDetection(EdgeType type, void (*callback)(void))
         {
-            if (_activeEdgeDetection == edgeTypes)
+            if (type == EdgeType::None)
             {
-                return;
+                clearEdgeDetection();
             }
 
-            // Reset detection registers based on given type mask
-            SetRegister<1>((edgeTypes & Edge::Rising)       >> 0, bcm2835_periph::GPIO_REN);
-            SetRegister<1>((edgeTypes & Edge::Falling)      >> 1, bcm2835_periph::GPIO_FEN);
-            SetRegister<1>((edgeTypes & Edge::High)         >> 2, bcm2835_periph::GPIO_HEN);
-            SetRegister<1>((edgeTypes & Edge::Low)          >> 3, bcm2835_periph::GPIO_LEN);
-            SetRegister<1>((edgeTypes & Edge::RisingAsync)  >> 4, bcm2835_periph::GPIO_AREN);
-            SetRegister<1>((edgeTypes & Edge::FallingAsync) >> 5, bcm2835_periph::GPIO_AFEN);
-
-            _activeEdgeDetection = edgeTypes;
+            wiringPiISR(_id, static_cast<int>(type), callback);
+            _edgeDetection = type;
         }
+
+        static void nop() {}
 
         void GPIO::clearEdgeDetection()
         {
-            // Clear all detection registers
-            const uint32_t * offsets[] =
-            {
-                bcm2835_periph::GPIO_EDS,
-                bcm2835_periph::GPIO_REN,
-                bcm2835_periph::GPIO_FEN,
-                bcm2835_periph::GPIO_HEN,
-                bcm2835_periph::GPIO_LEN,
-                bcm2835_periph::GPIO_AREN,
-                bcm2835_periph::GPIO_AFEN,
-            };
-
-            uint32_t shift = _id % 32;
-
-            for (auto offset : offsets)
-            {
-                for (int i = 0; i < 2; ++i)
-                {
-                    auto addr = _gpioAddr + offset[i];
-                    *addr &= ~(0x1 << shift);
-                }
-            }
-        }
-
-        LogicalState GPIO::waitForStateChange()
-        {
-            dbgAssert(_activeEdgeDetection > 0);
-
-            // Wait for state change signal
-            // TODO
-
-            return _currentState;
-        }
-
-        void GPIO::waitForState(LogicalState state)
-        {
-            if (read() == state)
-            {
-                return;
-            }
-            else
-            {
-                while (waitForStateChange() != state)
-                {
-                    // wait
-                }
-            }
-        }
-
-        void GPIO::signalEdgeDetection(int, int level, uint32_t, void * gpioPtr)
-        {
-            // De-obfuscate GPIO pointer
-            GPIO * gpio = (GPIO*)gpioPtr;
-
-            // Signal state change
-            std::lock_guard<std::mutex> lock(gpio->_stateChangeMutex);
-            gpio->_stateChangeVariable.notify_all();
-
-            // Write post-transition GPIO state
-            if (level > PI_OFF)
-            {
-                gpio->_currentState = LogicalState::HI;
-            }
-            else
-            {
-                gpio->_currentState = LogicalState::LO;
-            }
+            wiringPiISR(_id, INT_EDGE_RISING, &nop);
+            _edgeDetection = EdgeType::None;;
         }
 
     } // namespace io

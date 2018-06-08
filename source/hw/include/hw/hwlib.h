@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "bcm2835.h"
 #include "dhtxx.h"
 #include "fan.h"
 #include "hx711.h"

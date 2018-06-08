@@ -31,8 +31,8 @@ namespace beewatch
              */
             enum class ID
             {
-                PWM0 = GPIO::Fn::PWM0,
-                PWM1 = GPIO::Fn::PWM1
+                /*PWM0 = GPIO::Fn::PWM0,
+                PWM1 = GPIO::Fn::PWM1*/
             };
 
             //================================================================

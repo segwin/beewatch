@@ -31,10 +31,8 @@ namespace beewatch
             _pdSck = std::move(pdSckPin);
 
             // Configure GPIO
-            io::PiGPIOLib::init();
-
-            _dout->setDirection(io::GPIO::In);
-            _pdSck->setDirection(io::GPIO::Out);
+            _dout->setMode(io::GPIO::Mode::Input);
+            _pdSck->setMode(io::GPIO::Mode::Output);
 
             // Initialise HX711 and run calibration procedure
             enable();

@@ -5,7 +5,9 @@
 #pragma once
 
 #include <hw/hw_api.h>
-#include <io/iolib.h>
+
+#include <io/io.h>
+#include <io/gpio.h>
 
 #include <memory>
 

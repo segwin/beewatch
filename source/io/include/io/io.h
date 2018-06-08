@@ -72,20 +72,5 @@ namespace beewatch
             using Ptr = std::shared_ptr<InputOutput<T>>;
         };
 
-
-        //================================================================
-        /**
-         * @enum LogicalState
-         *
-         * Models the logical state on a given IO port (HI/LO)
-         */
-        enum class IO_API LogicalState
-        {
-            LO = 0,
-            HI = 1,
-
-            Invalid = -1
-        };
-
     } // namespace io
 } // namespace beewatch

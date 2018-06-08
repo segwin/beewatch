@@ -35,7 +35,6 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(headers
     "${include_path}/iolib.h"
 
-    "${include_path}/bcm2835.h"
     "${include_path}/gpio.h"
     "${include_path}/io.h"
     "${include_path}/pwm.h"

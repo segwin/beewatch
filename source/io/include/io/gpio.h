@@ -12,11 +12,26 @@
 #include <bitset>
 #include <mutex>
 
+#include <wiringPi.h>
+
 namespace beewatch
 {
     namespace io
     {
 
+        //================================================================
+        /**
+         * @enum LogicalState
+         *
+         * Models the logical state on a given IO port (HI/LO)
+         */
+        enum class IO_API LogicalState
+        {
+            LO = LOW,
+            HI = HIGH,
+
+            Invalid
+        };
 
         //================================================================
         /**
@@ -90,34 +105,29 @@ namespace beewatch
             /**
              * @enum
              *
-             * Lists the 8 possible GPIO modes (input, output and up to 6
-             * alternate functions)
+             * Lists the 4 supported GPIO modes
              */
-            enum class Fn : uint32_t
+            enum class Mode : int
             {
-                Input  = 0x0,
-                Output = 0x1,
-                AltFn0 = 0x4,
-                AltFn1 = 0x5,
-                AltFn2 = 0x6,
-                AltFn3 = 0x7,
-                AltFn4 = 0x3,
-                AltFn5 = 0x2,
+                Input  = INPUT,
+                Output = OUTPUT,
+                PWM = PWM_OUTPUT,
+                CLK = GPIO_CLOCK,
             };
 
             /**
-             * @brief Set GPIO function
+             * @brief Set GPIO mode
              *
-             * @param [in] function Function to use on GPIO
+             * @param [in] mode Mode to use on GPIO
              */
-            void setFunction(Fn function);
+            void setMode(Mode mode);
 
             /**
              * @brief Get GPIO mode
              *
              * @returns Current GPIO mode
              */
-            Fn getFunction();
+            Mode getMode() const;
 
 
             //================================================================
@@ -127,11 +137,11 @@ namespace beewatch
              * Lists the different GPIO resistor configurations (pull-up, pull-
              * down and no resistor)
              */
-            enum class Resistor : uint32_t
+            enum class Resistor : int
             {
-                Off      = 0x0,
-                PullUp   = 0x1,
-                PullDown = 0x2,
+                Off      = PUD_OFF,
+                PullUp   = PUD_UP,
+                PullDown = PUD_DOWN,
             };
 
             /**
@@ -143,41 +153,26 @@ namespace beewatch
 
 
             //================================================================
-            struct Edge
+            enum class EdgeType : int
             {
-                enum Type
-                {
-                    None         = 0,
-                    Rising       = 1 << 0,
-                    Falling      = 1 << 1,
-                    High         = 1 << 2,
-                    Low          = 1 << 3,
-                    RisingAsync  = 1 << 4,
-                    FallingAsync = 1 << 5,
-                };
+                None = INT_EDGE_SETUP,
+                Rising = INT_EDGE_RISING,
+                Falling = INT_EDGE_FALLING,
+                Both = INT_EDGE_BOTH,
             };
 
             /**
              * @brief Configures GPIO to detect states
              *
-             * @param [in] edgeTypes    Types of states to detect
+             * @param [in] type     Type of state change to detect
+             * @param [in] callback Callback function to execute in ISR
              */
-            void setEdgeDetection(Edge::Type edgeTypes);
+            void setEdgeDetection(EdgeType type, void (*callback)(void));
 
             /**
             * @brief Disables state detection
             */
             void clearEdgeDetection();
-
-            /**
-             * @brief Wait for GPIO state to change and return new value
-             *
-             * NB: This operation blocks the calling thread until the GPIO
-             * changes state.
-             *
-             * @returns New GPIO state
-             */
-            LogicalState waitForStateChange();
 
 
             //================================================================
@@ -212,31 +207,19 @@ namespace beewatch
              * first initialisation.
              */
             static void Init();
-
-            /**
-             * @brief Set a register bit
-             *
-             * @param [in] 
-             */
-            template <int nbBits>
-            inline void SetRegister(uint32_t val, const uint32_t offsets[]);
-
-            static void * _gpioMmap;
-            static volatile uint32_t * _gpioAddr;
+            
 
             //================================================================
             static bool _claimedGPIOList[NUM_GPIO];
             static std::mutex _claimMutex[NUM_GPIO];
 
-            Edge::Type _activeEdgeDetection;
-            LogicalState _currentState;
-
 
             //================================================================
-            unsigned _id;
+            int _id;
 
-            Fn _function;
+            Mode _mode;
             Resistor _resistorCfg;
+            EdgeType _edgeDetection;
         };
 
     } // namespace io

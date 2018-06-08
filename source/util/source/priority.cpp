@@ -2,87 +2,80 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //================================================================
 
-#include "util/logging.h"
 #include "util/priority.h"
 
-#ifdef __linux__
+#include "util/logging.h"
+
 #include <errno.h>
 #include <pthread.h>
 #include <sys/resource.h>
-#elif WIN32
-#include <windows.h>
-#endif
 
+#include <algorithm>
 #include <cstring>
-#include <iostream>
-#include <sstream>
+#include <map>
 
 namespace beewatch
 {
-    namespace util
+
+    //================================================================
+    PriorityGuard::PriorityGuard(Priority lvl)
     {
+        _prevLvl = getPriority();
+        setPriority(lvl);
+    }
 
-        //================================================================
-        UTIL_API void setPriority(Priority priority)
+    PriorityGuard::~PriorityGuard()
+    {
+        setPriority(_prevLvl);
+    }
+
+    
+    //================================================================
+    const std::map<Priority, int> lvlToNice =
+    {
+        std::make_pair(Priority::Normal, 0),
+        std::make_pair(Priority::RealTime, -20),
+        std::make_pair(Priority::Background, 19)
+    };
+
+    const std::map<Priority, int> lvlToSchedPolicy =
+    {
+        std::make_pair(Priority::Normal, SCHED_OTHER),
+        std::make_pair(Priority::RealTime, SCHED_FIFO),
+        std::make_pair(Priority::Background, SCHED_OTHER)
+    };
+
+    const std::map<Priority, int> lvlToSchedPriority =
+    {
+        std::make_pair(Priority::Normal, 0),
+        std::make_pair(Priority::RealTime, sched_get_priority_max(SCHED_FIFO)),
+        std::make_pair(Priority::Background, sched_get_priority_min(SCHED_OTHER)),
+    };
+
+    void PriorityGuard::setPriority(Priority lvl)
+    {
+        int nice = lvlToNice.at(lvl);
+        int schedPolicy = lvlToSchedPolicy.at(lvl);
+
+        struct sched_param schedParams;
+        schedParams.sched_priority = lvlToSchedPolicy.at(lvl);
+
+        if (!setpriority(PRIO_PROCESS, 0, nice) ||
+            !pthread_setschedparam(pthread_self(), schedPolicy, &schedParams))
         {
-#ifdef __linux__
-            int procPriority;
-            int schedPolicy;
-            struct sched_param schedParams;
-
-            switch (priority)
-            {
-            case Priority::REALTIME:
-                procPriority = -20;
-                schedPolicy = SCHED_FIFO;
-                schedParams.sched_priority = sched_get_priority_max(SCHED_FIFO);
-                break;
-
-            default:
-            //case Priority::NORMAL:
-                procPriority = 0;
-                schedPolicy = SCHED_OTHER;
-                schedParams.sched_priority = 0;
-                break;
-            }
-
-            if (!setpriority(PRIO_PROCESS, 0, procPriority) ||
-                !pthread_setschedparam(pthread_self(), schedPolicy, &schedParams))
-            {
-                logger.dualPrint(Logger::Error,
-                                 std::string("Unable to set requested priority: ") + strerror(errno));
-            }
-#elif WIN32
-            DWORD priorityClass;
-            int threadPriority;
-
-            switch (priority)
-            {
-            case Priority::REALTIME:
-                priorityClass = REALTIME_PRIORITY_CLASS;
-                threadPriority = THREAD_PRIORITY_TIME_CRITICAL;
-                break;
-
-            default:
-            //case Priority::NORMAL:
-                priorityClass = NORMAL_PRIORITY_CLASS;
-                threadPriority = THREAD_PRIORITY_NORMAL;
-                break;
-            }
-
-            if (!SetPriorityClass(GetCurrentProcess(), priorityClass) ||
-                !SetThreadPriority(GetCurrentThread(), threadPriority))
-            {
-                std::ostringstream oss;
-
-                oss << "Unable to set requested priority ("
-                    << std::hex << GetLastError()
-                    << ")" << std::endl;
-                
-                logger.dualPrint(Logger::Error, oss.str());
-            }
-#endif
+            logger.dualPrint(Logger::Error,
+                             std::string("Unable to set requested priority: ") + strerror(errno));
         }
+    }
 
-    } // namespace util
+    Priority PriorityGuard::getPriority()
+    {
+        int nice = ::getpriority(PRIO_PROCESS, 0);
+
+        auto itProcPriority = std::find_if( lvlToNice.begin(), lvlToNice.end(),
+                                            [nice](std::pair<Priority, int> p) { return p.second == nice; } );
+
+        return itProcPriority->first;
+    }
+
 } // namespace beewatch

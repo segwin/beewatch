@@ -3,7 +3,6 @@
 //================================================================
 
 #include "io/tachometer.h"
-#include "io/pigpio.h"
 
 #include <chrono>
 
@@ -25,9 +24,7 @@ namespace beewatch
             _gpio = std::move(gpio);
 
             // Configure GPIO
-            PiGPIOLib::init();
-
-            _gpio->setDirection(GPIO::In);
+            _gpio->setMode(GPIO::Mode::Input);
         }
 
         Tachometer::~Tachometer()

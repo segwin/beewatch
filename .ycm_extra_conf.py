@@ -60,6 +60,7 @@ flags = [
     '-I/home/segwin/scm/beewatch/source/tests/googletest/googletest',
     '-I/home/segwin/scm/beewatch/source/tests/googletest/googletest/include',
     '-I/home/segwin/scm/beewatch/source/util/include',
+    '-I/home/segwin/scm/beewatch/source/include',
     '-I/tmp/tmpnq2ShR/source/climate/include',
     '-I/tmp/tmpnq2ShR/source/ctrl/include',
     '-I/tmp/tmpnq2ShR/source/health/include',
