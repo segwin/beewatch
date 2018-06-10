@@ -77,6 +77,7 @@ target_link_libraries(${target}
     ${META_PROJECT_NAME}::mass
     ${META_PROJECT_NAME}::reporting
     ${META_PROJECT_NAME}::util
+    wiringPi
 )
 
 

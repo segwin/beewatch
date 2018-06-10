@@ -66,7 +66,7 @@ namespace beewatch
             /**
              * Number of GPIO pins on the common RPi boards (excluding compute)
              */
-            static constexpr size_t NUM_GPIO = 40;
+            static constexpr int NUM_GPIO = 40;
 
             /**
              * @brief Attempts to create a GPIO object for the given ID
@@ -79,7 +79,7 @@ namespace beewatch
              *
              * @returns Shared pointer to GPIO object if successful, nullptr otherwise
              */
-            static GPIO::Ptr claim(unsigned gpioId);
+            static GPIO::Ptr claim(int gpioId);
 
 
             //================================================================

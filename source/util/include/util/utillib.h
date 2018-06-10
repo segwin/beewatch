@@ -4,6 +4,5 @@
 
 #pragma once
 
-#include "assert.h"
 #include "logging.h"
 #include "priority.h"

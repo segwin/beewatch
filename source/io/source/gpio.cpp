@@ -4,9 +4,8 @@
 
 #include "io/gpio.h"
 
-#include <util/assert.h>
-
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <thread>
 
@@ -59,7 +58,7 @@ namespace beewatch
 
 
         //================================================================
-        GPIO::Ptr GPIO::claim(unsigned gpioId)
+        GPIO::Ptr GPIO::claim(int gpioId)
         {
             std::lock_guard<std::mutex> lock(_claimMutex[gpioId]);
 
@@ -121,19 +120,15 @@ namespace beewatch
         //================================================================
         void GPIO::write(LogicalState state)
         {
-            dbgAssert(_mode != Mode::Input);
-
-            if (state == LogicalState::Invalid)
-            {
-                throw std::invalid_argument("Received invalid write value");
-            }
+            assert(_mode != Mode::Input);
+            assert(state != LogicalState::Invalid);
 
             digitalWrite(_id, static_cast<int>(state));
         }
 
         LogicalState GPIO::read()
         {
-            dbgAssert(_mode != Mode::Output);
+            assert(_mode != Mode::Output);
 
             return static_cast<LogicalState>(digitalRead(_id));
         }

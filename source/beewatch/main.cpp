@@ -4,9 +4,12 @@
 #include <io/iolib.h>
 #include <mass/masslib.h>
 #include <reporting/reportinglib.h>
+#include <util/utillib.h>
 
+#include <chrono>
 #include <iostream>
 #include <vector>
+#include <thread>
 
 
 //================================================================
@@ -25,14 +28,30 @@ namespace beewatch
                 gpioMap[i] = io::GPIO::claim(i);
             }
 
+            // Initialise DHT11
+            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT11, std::move(gpioMap[36])) );
+
             // Initialise HX711
-            hx711.reset( new hw::HX711(std::move(gpioMap[23]),
-                                       std::move(gpioMap[24])) );
+            //hx711.reset( new hw::HX711(std::move(gpioMap[23]),
+            //                           std::move(gpioMap[24])) );
+        }
+
+        void ctrlLoop()
+        {
+            while (1)
+            {
+                auto data = dht11->read();
+                logger.print(Logger::Info, "Humidity: " + std::to_string((int)data.humidity) + "%");
+                logger.print(Logger::Info, "Temperature: " + std::to_string((int)data.temperature) + "deg Celsius");
+
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+            }
         }
 
     private:
         std::map<int, io::GPIO::Ptr> gpioMap;
 
+        hw::DHTxx::Ptr dht11;
         hw::HX711::Ptr hx711;
     };
 
@@ -44,11 +63,7 @@ namespace beewatch
 int main(int argc, char* argv[])
 {
     beewatch::Manager mgr;
-
-    while (true)
-    {
-        // TODO: run control loop
-    }
+    mgr.ctrlLoop();
 
     return 0;
 }

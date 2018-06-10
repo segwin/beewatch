@@ -4,11 +4,12 @@
 
 #include "hw/dhtxx.h"
 
-#include <util/assert.h>
 #include <util/logging.h>
 #include <util/priority.h>
 
+#include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <thread>
 #include <vector>
 
@@ -23,7 +24,8 @@ namespace beewatch
         using io::LogicalState;
 
         //================================================================
-        DHTxx::DHTxx(GPIO::Ptr&& gpio)
+        DHTxx::DHTxx(Type dhtType, GPIO::Ptr&& gpio)
+            : _type(dhtType)
         {
             if (!gpio)
             {
@@ -43,17 +45,11 @@ namespace beewatch
 
 
         //================================================================
-        std::vector<struct timespec> g_readTimestamps;
-
-        static void readISRCallback()
-        {
-            g_readTimestamps.emplace_back();
-            clock_gettime(CLOCK_MONOTONIC, &g_readTimestamps.back());
-        }
+        static constexpr std::array<uint8_t, 5> readError{ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF} };
 
         ClimateData DHTxx::read()
         {
-            ClimateData result = { BAD_READ, BAD_READ };
+            ClimateData result;
 
             // Only one read is allowed at a time
             std::lock_guard<std::mutex> lock(_readMutex);
@@ -61,93 +57,180 @@ namespace beewatch
             // Require real-time thread and process priority
             PriorityGuard realtime(Priority::RealTime);
 
-            // 0.0. Configure GPIO ISR routine to update timestamps in local array
-            dbgAssert(g_readTimestamps.empty());
+            int i = 0;
+            while (i++ < 10)
+            {
+                auto data = readData();
 
-            _gpio->setEdgeDetection(GPIO::EdgeType::Both, readISRCallback);
+                if ( std::equal(data.begin(), data.end(), readError.begin()) )
+                {
+                    logger.print(Logger::Warning, "DHT read failed: timeout reached");
 
-            // 1. Output LO for 25ms (>18ms given in spec sheet)
-            //    This causes 2 edge transitions.
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    continue;
+                }
+
+                if (!validateData(data))
+                {
+                    logger.print(Logger::Warning, "DHT read failed: bad checksum");
+
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    continue;
+                }
+                
+                // Calculate floating-point values for measurements
+                switch (_type)
+                {
+                case Type::DHT11:
+                    {
+                        result.humidity = data[0];
+                        result.temperature = data[2];
+                    }
+                    break;
+
+                case Type::DHT22:
+                default:
+                    {
+                        result.humidity = 0.1 * (double)buildU16(data[0], data[1]);
+                        result.temperature = 0.1 * (double)buildU16(data[2] & 0x7F, data[3]);
+
+                        if (data[2] & 0x80)
+                        {
+                            // Negative temperature
+                            result.temperature *= -1;
+                        }
+                    }
+                    break;
+                }
+
+                return result;
+            }
+
+            logger.print(Logger::Error, "Failed to read data from DHT sensor: number of attempts exceeded");
+            return result;
+        }
+
+        std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readData()
+        {
+            /**
+             * 0. Allocate memory for data and timestamps
+             */
+            std::array<uint8_t, READ_BYTES> bytes;
+            std::fill(bytes.begin(), bytes.end(), 0);
+
+            uint16_t byte = 0;
+            uint16_t mask = 0b1000'0000;
+
+            unsigned start;
+            unsigned now;
+            uint64_t diff;
+
+
+            /**
+             * 1. Output LO for 20ms (>18ms given in spec sheet)
+             */
             _gpio->setMode(GPIO::Mode::Output);
-            _gpio->write(LogicalState::LO);
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+            _gpio->write(LogicalState::LO);
+            delay(20);
 
             _gpio->write(LogicalState::HI);
+            delayMicroseconds(40);
+
             _gpio->setMode(GPIO::Mode::Input);
 
-            // 2. Wait for 160us: 2 edge transitions (LO ~80us, HI ~80us)
-            std::this_thread::sleep_for(std::chrono::microseconds(160));
 
-            // 3. Wait for 5ms (max Tx time): 40 bits with 2 edge transitions each (HI->LO->...)
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            /**
+             * 2. DHT should signal LO (80us), then HI (80us)
+             */
+            // LO
+            start = micros();
 
-            // 4. Calculate bit values from timestamps
-            dbgAssert(g_readTimestamps.size() == (2 + 2 + 80));
-
-            uint8_t bytes[NUM_BYTES_PER_READ];
-
-            for (int i = 0; i < NUM_BITS_PER_READ; ++i)
+            do
             {
-                using std::chrono::seconds;
-                using std::chrono::microseconds;
-                using std::chrono::nanoseconds;
+                now = micros();
+                diff = now - start;
 
-                static int idxFirstHiStart = 4 + 1;
-
-                int idxHiStart = idxFirstHiStart + 2*i;
-                int idxHiEnd = idxHiStart + 1;
-
-                auto hiTime = seconds(g_readTimestamps[idxHiEnd].tv_sec - g_readTimestamps[idxHiStart].tv_sec) +
-                              nanoseconds(g_readTimestamps[idxHiEnd].tv_nsec - g_readTimestamps[idxHiStart].tv_nsec);
-
-                // Mid-point between bit value times is 48.5
-                int byte = i / 8;
-                int offset = i % 8;
-
-                if (hiTime > microseconds(48))
+                if (diff > READ_TIMEOUT_US)
                 {
-                    bytes[byte] |= 1 << offset;
+                    return readError;
                 }
-                else
+            } while (_gpio->read() == LogicalState::LO);
+
+            // LO
+            start = micros();
+
+            do
+            {
+                now = micros();
+                diff = now - start;
+
+                if (diff > READ_TIMEOUT_US)
                 {
-                    bytes[byte] &= ~(1 << offset);
+                    return readError;
+                }
+            } while (_gpio->read() == LogicalState::HI);
+
+            /**
+             * 3. DHT will send 40 bits via LO (50us), then HI (26-28us for 0, 70us for 1)
+             */
+            for (int i = 0; i < READ_BITS; ++i)
+            { 
+                // LO
+                start = micros();
+
+                do
+                {
+                    now = micros();
+                    diff = now - start;
+
+                    if (diff > READ_TIMEOUT_US)
+                    {
+                        return readError;
+                    }
+                } while (_gpio->read() == LogicalState::LO);
+
+                // HI
+                start = micros();
+
+                do
+                {
+                    now = micros();
+                    diff = now - start;
+
+                    if (diff > READ_TIMEOUT_US)
+                    {
+                        return readError;
+                    }
+                } while (_gpio->read() == LogicalState::HI);
+                
+                // Mid-point between bit value times is 48.5
+                if (diff > 48.5)
+                {
+                    bytes[byte] |= mask;
+                }
+
+                mask /= 2;
+                if (mask == 0)
+                {
+                    mask = 0b1000'0000;
+                    byte++;
                 }
             }
 
-            // 5. Calculate and verify checksum
+            return bytes;
+        }
+
+        bool DHTxx::validateData(const std::array<uint8_t, READ_BYTES>& data)
+        {
             uint8_t checksum = 0;
 
-            for (int i = 0; i < (NUM_BYTES_PER_READ - 1); ++i)
+            for (size_t i = 0; i < data.size() - 1; ++i)
             {
-                checksum += bytes[i];
+                checksum += data[i];
             }
 
-            if (checksum == bytes[NUM_BYTES_PER_READ - 1])
-            {
-                // 6. Calculate floating-point values for measurements
-                uint16_t humidityH = ((uint16_t)bytes[0]) << 8;
-                uint16_t humidityL = bytes[1];
-
-                result.humidity = (humidityH + humidityL) * 0.1;
-
-                uint16_t temperatureH = ((uint16_t)bytes[2] & 0x7f) << 8;
-                uint16_t temperatureL = bytes[3];
-
-                result.temperature = (temperatureH + temperatureL) * 0.1;
-
-                if (bytes[2] & 0x80)
-                {
-                    // Negative temperature
-                    result.temperature *= -1;
-                }
-            }
-            else
-            {
-                logger.dualPrint(Logger::Error, "DHT read failed (bad checksum)");
-            }
-
-            return result;
+            return checksum == data[data.size() - 1];
         }
 
     } // namespace hw

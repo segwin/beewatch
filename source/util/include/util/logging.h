@@ -69,6 +69,22 @@ namespace beewatch
 
 
         //==============================================================================
+
+        /**
+        * @brief Print message to console/UI and to log file
+        *
+        * All messages get printed to the console. Logged messages are filtered by
+        * severity depending on current verbosity setting (see Logger::print()).
+        *
+        * @param [in] logLevel  Severity of message to print
+        * @param [in] msg       Message to print
+        * @param [in] addLevel  If true, prepend message with severity level
+        */
+        void print(Level logLevel, const std::string& msg, bool addLevel = true);
+
+
+    private:
+        //==============================================================================
         /**
         * @brief Print message to log file
         *
@@ -78,21 +94,9 @@ namespace beewatch
         * @param [in] logLevel Severity of message to print
         * @param [in] msg      Message to print
         */
-        void print(Level logLevel, const std::string& msg);
-
-        /**
-        * @brief Print message to console/UI and to log file
-        *
-        * All messages get printed to the console. Logged messages are filtered by
-        * severity depending on current verbosity setting (see Logger::print()).
-        *
-        * @param [in] logLevel Severity of message to print
-        * @param [in] msg      Message to print
-        */
-        void dualPrint(Level logLevel, const std::string& msg);
+        void log(Level logLevel, const std::string& msg);
 
 
-    private:
         //==============================================================================
         /**
         * @brief Construct a logger object

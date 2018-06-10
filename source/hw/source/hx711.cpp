@@ -4,9 +4,8 @@
 
 #include "hw/hx711.h"
 
-#include <util/assert.h>
-
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -64,7 +63,7 @@ namespace beewatch
 
         int32_t HX711::readRaw()
         {
-            dbgAssert(isValid());
+            assert(isValid());
 
             std::lock_guard<std::mutex> lock(_readMutex);
             
@@ -120,7 +119,7 @@ namespace beewatch
 
             int32_t avgVal = (int32_t)((double)samplesSum / (double)numSamples);
 
-            dbgAssert(avgVal > (int32_t)0xFF800000 && avgVal < (int32_t)0x007FFFFF);
+            assert(avgVal > (int32_t)0xFF800000 && avgVal < (int32_t)0x007FFFFF);
 
             return avgVal;
         }
@@ -219,7 +218,7 @@ namespace beewatch
             using std::chrono::high_resolution_clock;
             using std::chrono::microseconds;
 
-            dbgAssert(isReady());
+            assert(isReady());
 
             // Shift in 1 byte
             uint8_t result = 0;
