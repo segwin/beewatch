@@ -4,6 +4,9 @@
 
 #include "io/pwm.h"
 
+#include <algorithm>
+#include <array>
+#include <cassert>
 #include <string>
 
 namespace beewatch
@@ -12,107 +15,50 @@ namespace beewatch
     {
 
         //================================================================
-        PWM::PWM(GPIO::Ptr&& gpio, ID pwmId, unsigned pwmFreqHz)
-            : _pwmFreqHz(pwmFreqHz), _dutyCycle(0.0)
+        static constexpr std::array<int, 7> pwmCapablePins{ { 12, 13, 18, 19, 40, 41, 45 } };
+
+
+        //================================================================
+        PWM::PWM(GPIO::Ptr&& gpio)
+            : _dutyCycle(0.0)
         {
             if (!gpio)
             {
                 throw std::invalid_argument("Received undefined GPIO");
             }
+            
+            // Given GPIO must be capable of hardware PWM
+            bool isPwmCapable = std::any_of( pwmCapablePins.begin(), pwmCapablePins.end(),
+                                             [&](int i) { return i == gpio->getId(); } );
+
+            if (!isPwmCapable)
+            {
+                throw std::invalid_argument("Given GPIO is not capable of hardware PWM, expected pin 12");
+            }
 
             // Take ownership of GPIO
             _gpio = std::move(gpio);
-
-            // Given GPIO must be capable of hardware PWM
-            // NB: We can cast PWM::ID to GPIO::Fn since we've defined the
-            //     former to be equal in value to the latter
-            // TODO
-            //int gpioPwmMode = _gpio->findFunction((GPIO::Fn)pwmId);
             
-            //if (gpioPwmMode < 0)
-            //{
-            //    throw std::invalid_argument("Requested GPIO is not capable of hardware PWM");
-            //}
-
             // Configure PWM output
-            //PiGPIOLib::init();
+            _gpio->setMode(GPIO::Mode::PWM);
+            
+            pwmSetMode(PWM_MODE_MS);
+            pwmSetRange(PWM_RANGE);
+            pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
 
-            //_gpio->setMode(gpioPwmMode);
-            //write(0.5);
+            write(_dutyCycle);
         }
 
-        PWM::~PWM()
-        {
-        }
+        PWM::~PWM() = default;
 
 
         //================================================================
-        GPIO::Ptr PWM::getGPIO(ID pwmId)
-        {
-            /*for (int gpioId = 0; gpioId < GPIO::NUM_GPIO; ++gpioId)
-            {
-                int gpioPwmMode = GPIO::findFunction(gpioId, (GPIO::Fn)pwmId);
-
-                if (gpioPwmMode >= 0)
-                {
-                    auto gpio = GPIO::claim(gpioId);
-
-                    // Continue loop if this GPIO is already taken (the same
-                    // function is available across many GPIOs)
-                    if (gpio != nullptr)
-                    {
-                        return gpio;
-                    }
-                }
-            }*/
-
-            // If we reach this point, no GPIO with the requested PWM function
-            // was found or was available
-            return nullptr;
-        }
-
-
-        //================================================================
-        double PWM::read()
-        {
-            /*unsigned gpioId = _gpio->getId();
-
-            int pwmValue = gpioGetPWMdutycycle(gpioId);
-            int range = gpioGetPWMrange(gpioId);
-
-            if (pwmValue < 0 || range < 0)
-            {
-                throw std::invalid_argument("Invalid GPIO (" +
-                                            std::to_string(gpioId) +
-                                            ")");
-            }
-
-            return pwmValue / range;
-            */
-            return -1.0;
-        }
-
         void PWM::write(double dutyCycle)
         {
-            /*unsigned gpioId = _gpio->getId();
+            assert(dutyCycle >= 0.0);
+            assert(dutyCycle <= 1.0);
 
-            double range = gpioGetPWMrange(gpioId);
-            unsigned pwmValue = dutyCycle * range;
-
-            int rc = gpioHardwarePWM(gpioId, _pwmFreqHz, pwmValue);
-
-            if (rc == PI_BAD_USER_GPIO)
-            {
-                throw std::invalid_argument("Invalid GPIO (" +
-                                            std::to_string(gpioId) +
-                                            ")");
-            }
-            else if (rc == PI_BAD_DUTYCYCLE)
-            {
-                throw std::invalid_argument("Invalid duty cycle (" +
-                                            std::to_string(dutyCycle) +
-                                            ")");
-            }*/
+            pwmWrite(_gpio->getId(), static_cast<int>(dutyCycle * PWM_RANGE));
         }
         
     } // namespace io

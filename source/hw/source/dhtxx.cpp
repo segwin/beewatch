@@ -39,9 +39,7 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::Input);
         }
 
-        DHTxx::~DHTxx()
-        {
-        }
+        DHTxx::~DHTxx() = default;
 
 
         //================================================================

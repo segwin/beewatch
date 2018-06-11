@@ -111,7 +111,7 @@ namespace beewatch
             {
                 Input  = INPUT,
                 Output = OUTPUT,
-                PWM = PWM_OUTPUT,
+                PWM = PWM_TONE_OUTPUT,
                 CLK = GPIO_CLOCK,
             };
 
@@ -181,7 +181,7 @@ namespace beewatch
              *
              * @returns GPIO number
              */
-            unsigned getId() { return _id; }
+            int getId() { return _id; }
 
 
         protected:
