@@ -6,6 +6,11 @@
 
 #include <hw/hw_api.h>
 
+#include <io/gpio.h>
+#include <io/io.h>
+#include <io/pwm.h>
+#include <io/tachometer.h>
+
 #include <memory>
 
 namespace beewatch
@@ -19,7 +24,7 @@ namespace beewatch
          *
          * Models a 4-pin PWM fan
          */
-        class HW_API Fan
+        class HW_API Fan : public io::InputOutput<double>
         {
         public:
             //================================================================
@@ -31,14 +36,40 @@ namespace beewatch
             //================================================================
             /**
              * @brief Construct Fan object
+             *
+             * @param [in] fanGpio          GPIO connected to fan's PWM input
+             * @param [in] tachometerGpio   GPIO connected to fan's tachometer output
+             * @param [in] maxSpeedRpm      Fan's max speed in RPM
              */
-            Fan();
+            Fan(io::GPIO::Ptr&& fanGpio, io::GPIO::Ptr&& tachometerGpio, double maxSpeedRpm);
 
-            //================================================================
             /**
              * @brief Destroy Fan object
              */
             virtual ~Fan();
+
+            //================================================================
+            /**
+             * @brief Read current fan speed
+             *
+             * @returns Current fan speed in RPM
+             */
+            double read() override;
+
+            /**
+             * @brief Write new fan speed
+             *
+             * @param [in] speedRpm New fan speed in RPM
+             */
+            void write(double speedRpm) override;
+
+
+        protected:
+            //================================================================
+            io::PWM _pwm;
+            io::Tachometer _tachometer;
+
+            double _maxSpeedRpm;
         };
 
     } // namespace hw
