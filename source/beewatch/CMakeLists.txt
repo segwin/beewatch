@@ -69,7 +69,6 @@ target_include_directories(${target}
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    ${META_PROJECT_NAME}::climate
     ${META_PROJECT_NAME}::ctrl
     ${META_PROJECT_NAME}::health
     ${META_PROJECT_NAME}::hw

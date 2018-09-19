@@ -33,6 +33,7 @@ namespace beewatch
              */
             using Ptr = std::unique_ptr<Fan>;
 
+
             //================================================================
             /**
              * @brief Construct Fan object
@@ -48,6 +49,7 @@ namespace beewatch
              */
             virtual ~Fan();
 
+
             //================================================================
             /**
              * @brief Read current fan speed
@@ -62,6 +64,10 @@ namespace beewatch
              * @param [in] speedRpm New fan speed in RPM
              */
             void write(double speedRpm) override;
+
+
+            //================================================================
+            double getMaxSpeedRpm() { return _maxSpeedRpm; }
 
 
         protected:

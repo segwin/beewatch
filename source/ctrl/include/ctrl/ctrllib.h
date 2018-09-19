@@ -5,3 +5,5 @@
 #pragma once
 
 #include "ctrl.h"
+
+#include "climate_ctrl.h"

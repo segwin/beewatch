@@ -7,7 +7,6 @@
 
 # List of modules
 set(MODULE_NAMES
-    climate
     ctrl
     health
     hw

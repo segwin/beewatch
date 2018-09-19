@@ -9,6 +9,8 @@
 #include <io/io.h>
 #include <io/gpio.h>
 
+#include <util/data_types.h>
+
 #include <bitset>
 #include <memory>
 
@@ -18,20 +20,13 @@ namespace beewatch
     {
 
         //================================================================
-        struct ClimateData
-        {
-            double humidity;
-            double temperature;
-        };
-
-        //================================================================
         /**
          * @class DHT
          *
          * Models a DHT sensor, which reports temperature & humidity
          * over a serial interface.
          */
-        class HW_API DHTxx : public io::Input<ClimateData>
+        class HW_API DHTxx : public io::Input<ClimateData<double>>
         {
         public:
             enum class Type
@@ -40,13 +35,15 @@ namespace beewatch
                 DHT22 = 22
             };
 
+            using Data = ClimateData<double>;
+
             //================================================================
             /**
              * @brief Sets up a DHT communication on a given GPIO
              *
              * NB: Consumes the given GPIO. It will be released on object destruction.
              *
-             * @param [in] dthType  Type of DHT sensor
+             * @param [in] dhtType  Type of DHT sensor
              * @param [in] gpio     GPIO to use to interface with DHT sensor
              */
             DHTxx(Type dhtType, io::GPIO::Ptr&& gpio);
@@ -73,7 +70,7 @@ namespace beewatch
              *
              * @returns Relative humidity and temperature
              */
-            virtual ClimateData read() override;
+            virtual Data read() override;
 
         private:
             //================================================================

@@ -4,5 +4,7 @@
 
 #pragma once
 
+#include "algorithms.h"
+#include "data_types.h"
 #include "logging.h"
 #include "priority.h"

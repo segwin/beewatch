@@ -45,9 +45,9 @@ namespace beewatch
         //================================================================
         static constexpr std::array<uint8_t, 5> readError{ {0xFF, 0xFF, 0xFF, 0xFF, 0xFF} };
 
-        ClimateData DHTxx::read()
+        DHTxx::Data DHTxx::read()
         {
-            ClimateData result;
+            Data result;
 
             // Only one read is allowed at a time
             std::lock_guard<std::mutex> lock(_readMutex);

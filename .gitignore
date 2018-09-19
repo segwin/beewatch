@@ -42,6 +42,7 @@ CMakeLists.txt.user.*
 # IDE project files
 *.sublime-project
 *.sublime-workspace
+compile_commands.json
 
 # Local config windows
 _configure.bat

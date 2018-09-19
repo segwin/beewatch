@@ -35,6 +35,8 @@ set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 set(headers
     "${include_path}/utillib.h"
     
+    "${include_path}/algorithms.h"
+    "${include_path}/data_types.h"
     "${include_path}/logging.h"
     "${include_path}/priority.h"
 )

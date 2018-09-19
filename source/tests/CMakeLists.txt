@@ -66,6 +66,7 @@ target_include_directories(gmock-dev
 target_link_libraries(gmock-dev
     INTERFACE
     gmock
+    wiringPi
 )
 
 
@@ -81,7 +82,6 @@ set_target_properties(test PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD 1)
 # Tests
 # 
 
-add_test_without_ctest(testclimate)
 add_test_without_ctest(testhealth)
 add_test_without_ctest(testhw)
 add_test_without_ctest(testio)

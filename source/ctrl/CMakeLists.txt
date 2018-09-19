@@ -33,11 +33,14 @@ set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include/${target}")
 set(source_path  "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 set(headers
-    "${include_path}/ctrl.h"
     "${include_path}/ctrllib.h"
+
+    "${include_path}/climate_ctrl.h"
+    "${include_path}/ctrl.h"
 )
 
 set(sources
+    "${source_path}/climate_ctrl.cpp"
     "${source_path}/ctrl.cpp"
 )
 
@@ -137,9 +140,9 @@ target_include_directories(${target}
 
 target_link_libraries(${target}
     PRIVATE
-    ${META_PROJECT_NAME}::climate
-    ${META_PROJECT_NAME}::hw
     ${META_PROJECT_NAME}::io
+    ${META_PROJECT_NAME}::hw
+    ${META_PROJECT_NAME}::util
 
     PUBLIC
     ${DEFAULT_LIBRARIES}

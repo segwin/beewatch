@@ -1,4 +1,3 @@
-#include <climate/climatelib.h>
 #include <health/healthlib.h>
 #include <hw/hwlib.h>
 #include <io/iolib.h>
@@ -7,6 +6,7 @@
 #include <util/utillib.h>
 
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -29,11 +29,22 @@ namespace beewatch
             }
 
             // Initialise DHT11
-            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT11, std::move(gpioMap[36])) );
+            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT22, std::move(gpioMap[36])) );
 
             // Initialise HX711
             //hx711.reset( new hw::HX711(std::move(gpioMap[23]),
             //                           std::move(gpioMap[24])) );
+        }
+
+        template <typename T>
+        static std::string numToStr(T num, int decimalPlaces = 2)
+        {
+            int wholePart = static_cast<int>(num);
+
+            double decimalMultiplier = std::pow(10, decimalPlaces);
+            int decimalPart = static_cast<int>(decimalMultiplier * (num - wholePart));
+
+            return std::to_string(wholePart) + "." + std::to_string(decimalPart);
         }
 
         void ctrlLoop()
@@ -41,8 +52,9 @@ namespace beewatch
             while (1)
             {
                 auto data = dht11->read();
-                logger.print(Logger::Info, "Humidity: " + std::to_string((int)data.humidity) + "%");
-                logger.print(Logger::Info, "Temperature: " + std::to_string((int)data.temperature) + "deg Celsius");
+
+                logger.print(Logger::Info, "Humidity: " + numToStr(data.humidity) + " %");
+                logger.print(Logger::Info, "Temperature: " + numToStr(data.temperature) + " deg Celsius");
 
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
