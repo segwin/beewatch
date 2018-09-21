@@ -1,40 +1,15 @@
-
-# 
-# CMake options
-# 
-
-# CMake version
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-
+﻿# CMakeList.txt : CMake project for beewatch, include source and define
+# project specific logic here.
 #
-# Configure CMake environment
-#
+cmake_minimum_required (VERSION 3.8.2)
 
-# Register general cmake commands
-include(cmake/Custom.cmake)
+#project()
 
-# Set policies
-set_policy(CMP0028 NEW) # ENABLE CMP0028: Double colon in target name means ALIAS or IMPORTED target.
-set_policy(CMP0054 NEW) # ENABLE CMP0054: Only interpret if() arguments as variables or keywords when unquoted.
-set_policy(CMP0042 NEW) # ENABLE CMP0042: MACOSX_RPATH is enabled by default.
-set_policy(CMP0063 NEW) # ENABLE CMP0063: Honor visibility properties for all target types.
-
-# Include cmake modules
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-include(GenerateExportHeader)
-
-set(WriterCompilerDetectionHeaderFound NOTFOUND)
-# This module is only available with CMake >=3.1, so check whether it could be found
-# BUT in CMake 3.1 this module doesn't recognize AppleClang as compiler, so just use it as of CMake 3.2
-if (${CMAKE_VERSION} VERSION_GREATER "3.2")
-    include(WriteCompilerDetectionHeader OPTIONAL RESULT_VARIABLE WriterCompilerDetectionHeaderFound)
-endif()
 
 # Include custom cmake modules
+include(cmake/Custom.cmake)
+include(cmake/GetDirContents.cmake)
 include(cmake/GetGitRevisionDescription.cmake)
-include(cmake/HealthCheck.cmake)
-include(cmake/GenerateTemplateExportHeader.cmake)
 
 
 # 
@@ -65,18 +40,8 @@ set(META_CMAKE_INIT_SHA      "${GIT_REV}")
 string(MAKE_C_IDENTIFIER ${META_PROJECT_NAME} META_PROJECT_ID)
 string(TOUPPER ${META_PROJECT_ID} META_PROJECT_ID)
 
-
-# 
-# Project configuration options
-# 
-
-# Project options
-option(BUILD_SHARED_LIBS     "Build shared instead of static libraries."              ON)
-option(OPTION_SELF_CONTAINED "Create a self-contained install with all dependencies." OFF)
-option(OPTION_BUILD_TESTS    "Build tests."                                           ON)
-option(OPTION_BUILD_EXE      "Build executable."                                      ON)
-option(OPTION_BUILD_DOCS     "Build documentation."                                   OFF)
-option(OPTION_BUILD_EXAMPLES "Build examples."                                        OFF)
+set(PROJECT_EXE "${META_PROJECT_NAME}")
+set(PROJECT_LIB "lib${META_PROJECT_NAME}")
 
 
 # 
@@ -104,18 +69,6 @@ file(WRITE "${PROJECT_BINARY_DIR}/VERSION" "${META_NAME_VERSION}")
 # 
 
 include(cmake/CompileOptions.cmake)
-
-
-#
-# Project Health Check Setup
-#
-
-# Add cmake-init template check cmake targets
-add_check_template_target(${META_CMAKE_INIT_SHA})
-
-# Configure health check tools
-enable_cppcheck(On)
-enable_clang_tidy(On)
 
 
 # 
@@ -178,12 +131,102 @@ endif()
 
 
 # 
-# Project modules
+# Sources
+# 
+set(global_include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
+
+# Generate version-header
+configure_file("${global_include_path}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/version.h")
+
+# Populate headers variable
+set(headers "")
+
+get_dir_files(header_files ${global_include_path})
+foreach(header_file ${header_files})
+    list(APPEND headers "${global_include_path}/${header_file}")
+endforeach()
+
+get_dir_subdirs(include_dirs ${global_include_path})
+foreach(include_dir ${include_dirs})
+    set(include_path "${global_include_path}/${include_dir}")
+    get_dir_files(header_files "${include_path}")
+
+    foreach(header_file ${header_files})
+        list(APPEND headers "${include_path}/${header_file}")
+    endforeach()
+endforeach()
+
+# Populate sources variable
+set(sources "")
+
+get_dir_files(source_files ${global_source_path})
+foreach(source_file ${source_files})
+    list(APPEND sources "${global_source_path}/${source_file}")
+endforeach()
+
+get_dir_subdirs(source_dirs ${global_source_path})
+foreach(source_dir ${source_dirs})
+    set(source_path "${global_source_path}/${source_dir}")
+    get_dir_files(source_files "${source_path}")
+
+    foreach(source_file ${source_files})
+        list(APPEND sources "${source_path}/${source_file}")
+    endforeach()
+endforeach()
+
+# Group source files
+set(header_group "Header Files (API)")
+set(source_group "Source Files")
+
+source_group_by_path(${include_path} "\\\\.h$|\\\\.hpp$" 
+    ${header_group} ${headers})
+source_group_by_path(${source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
+    ${source_group} ${sources})
+
+#
+# Library
+#
+
+add_library(${PROJECT_LIB}
+    ${sources}
+    ${headers}
+)
+
+#
+# Executable
+#
+
+# Add source to this project's executable.
+add_executable (${PROJECT_EXE} "${sources}" "${headers}")
+
+# TODO: Add tests and install targets if needed.
+
+
+# 
+# Include directories
 # 
 
-add_subdirectory(source)
-add_subdirectory(docs)
-add_subdirectory(deploy)
+target_include_directories(${PROJECT_LIB}
+    PRIVATE
+    ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+target_include_directories(${PROJECT_EXE}
+    PRIVATE
+    ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+
+#
+# Tests
+#
+
+add_subdirectory(tests)
 
 
 # 
@@ -192,9 +235,6 @@ add_subdirectory(deploy)
 
 # Install version file
 install(FILES "${PROJECT_BINARY_DIR}/VERSION" DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
-
-# Install cmake find script for the project
-install(FILES ${META_PROJECT_NAME}-config.cmake DESTINATION ${INSTALL_ROOT} COMPONENT dev)
 
 # Install the project meta files
 install(FILES AUTHORS   DESTINATION ${INSTALL_ROOT} COMPONENT runtime)

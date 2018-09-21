@@ -1,0 +1,4 @@
+root = true
+
+[*.{h,cpp}]
+end_of_line = lf
