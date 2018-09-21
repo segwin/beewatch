@@ -4,23 +4,37 @@
 
 #include "io/pwm.h"
 
-#include <gmock/gmock.h>
+#include "catch.hpp"
 
-//================================================================
-class TestPWM : public testing::Test
+/**
+ * How to write tests with Catch:
+ * https://github.com/catchorg/Catch2/blob/master/docs/tutorial.md#bdd-style
+ */
+
+//==============================================================================
+/**
+SCENARIO( "Scenario description (e.g. 'vectors can be sized and resized')", "[Category (e.g. 'vector')]" )
 {
-protected:
-    //================================================================
-    virtual void SetUp() override
+    GIVEN( "Configuration description (e.g. 'A vector with some items')" )
     {
-    }
+        // Prepare test
 
-    virtual void TearDown() override
-    {
-    }
-};
+        REQUIRE( SomeCondition );
 
-//================================================================
-TEST_F(TestPWM, TestVariousDutyCycles)
-{
+        WHEN( "Action 1 description (e.g. 'the size is increased')" )
+        {
+            // Do action
+
+            THEN( "Expected result description (e.g. 'the size and capacity change')" )
+            {
+                REQUIRE( TheCondition );
+            }
+        }
+        WHEN( "Action 2 description (e.g. 'the size is reduced')" )
+        {
+            // ...
+        }
+    }
+    // ...
 }
+**/

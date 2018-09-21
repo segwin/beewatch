@@ -19,13 +19,19 @@ message(STATUS "Test ${META_PROJECT_NAME}")
 set(include_dir "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(source_dir "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
-set(headers
-)
+set(headers "")
 
-set(sources
-    ${source_dir}/main.cpp
-    ${source_dir}/test_pwm.cpp
-)
+get_dir_files(include_files ${include_dir})
+foreach(include_file ${include_files})
+    list(APPEND headers "${include_dir}/${include_file}")
+endforeach()
+
+set(sources "")
+
+get_dir_files(source_files ${source_dir})
+foreach(source_file ${source_files})
+    list(APPEND sources "${source_dir}/${source_file}")
+endforeach()
 
 
 # 
@@ -50,35 +56,6 @@ set_target_properties(${target}
 )
 
 
-# Build gmock
-set(gmock_build_tests           OFF CACHE BOOL "")
-set(gtest_build_samples         OFF CACHE BOOL "")
-set(gtest_build_tests           OFF CACHE BOOL "")
-set(gtest_disable_pthreads      OFF CACHE BOOL "")
-set(gtest_force_shared_crt      ON  CACHE BOOL "")
-set(gtest_hide_internal_symbols OFF CACHE BOOL "")
-
-add_subdirectory(googletest/googlemock)
-
-# Create interface library to link against gmock
-add_library(gmock-dev INTERFACE)
-
-target_include_directories(gmock-dev
-    SYSTEM INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/googletest/googletest/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/googletest/googlemock/include
-)
-
-if (UNIX)
-    set(WIRING_PI_LIB wiringPi)
-endif()
-
-target_link_libraries(gmock-dev
-    INTERFACE
-    gmock
-)
-
-
 # 
 # Include directories
 # 
@@ -86,6 +63,7 @@ target_link_libraries(gmock-dev
 target_include_directories(${target}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${PROJECT_BINARY_DIR}/include
 )
@@ -95,11 +73,15 @@ target_include_directories(${target}
 # Libraries
 # 
 
+if (UNIX)
+    set(WIRING_PI_LIB "wiringPi")
+endif()
+
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
     ${PROJECT_LIB}
-    gmock-dev
+    ${WIRING_PI_LIB}
 )
 
 

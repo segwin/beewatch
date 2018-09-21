@@ -43,6 +43,11 @@ string(TOUPPER ${META_PROJECT_ID} META_PROJECT_ID)
 set(PROJECT_EXE "${META_PROJECT_NAME}")
 set(PROJECT_LIB "lib${META_PROJECT_NAME}")
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+    set(PROJECT_EXE "${PROJECT_EXE}d")
+    set(PROJECT_LIB "${PROJECT_LIB}d")
+endif()
+
 
 # 
 # Declare project
