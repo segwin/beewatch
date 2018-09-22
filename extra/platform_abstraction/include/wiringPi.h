@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <chrono>
+#include <thread>
+
 #ifndef __linux__
 #define INPUT            0
 #define OUTPUT           1
@@ -31,23 +34,23 @@
 #define INT_EDGE_RISING     2
 #define INT_EDGE_BOTH       3
 
-int wiringPiSetupPhys(void);
+static inline int wiringPiSetupPhys(void) { return 0; }
 
-void pinMode(int, int);
-void pullUpDnControl(int, int);
-int digitalRead(int);
-void digitalWrite(int, int);
+static inline void pinMode(int, int) {}
+static inline void pullUpDnControl(int, int) {}
+static inline int digitalRead(int) { return 0; }
+static inline void digitalWrite(int, int) {}
 
-int wiringPiISR(int, int, void(*)(void));
+static inline int wiringPiISR(int, int, void(*)(void)) { return 0; }
 
-void pwmWrite(int, int);
+static inline void pwmWrite(int, int) {}
 
-void pwmSetMode(int);
-void pwmSetRange(unsigned int);
-void pwmSetClock(int);
+static inline void pwmSetMode(int) {}
+static inline void pwmSetRange(unsigned int) {}
+static inline void pwmSetClock(int) {}
 
-void delay(int s);
-void delayMicroseconds(int ms);
+static inline void delay(int s) { std::this_thread::sleep_for(std::chrono::seconds(s)); }
+static inline void delayMicroseconds(int ms) { std::this_thread::sleep_for(std::chrono::microseconds(ms)); }
 
-unsigned int micros(void);
+static inline unsigned int micros(void) { return 1; }
 #endif

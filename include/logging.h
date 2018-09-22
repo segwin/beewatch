@@ -6,11 +6,7 @@
 
 #include <string>
 
-#ifdef __linux__
 #include <syslog.h>
-#else
-#include "windows_compat/syslog.h"
-#endif
 
 namespace beewatch
 {

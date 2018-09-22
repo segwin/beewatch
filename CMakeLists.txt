@@ -3,8 +3,6 @@
 #
 cmake_minimum_required (VERSION 3.8.2)
 
-#project()
-
 
 # Include custom cmake modules
 include(cmake/Custom.cmake)
@@ -144,50 +142,26 @@ set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
 # Generate version-header
 configure_file("${global_include_path}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/version.h")
 
-# Populate headers variable
-set(headers "")
+# Find source files
+get_files_recursive(headers "${global_include_path}" ".*\\\\.h$|\\\\.hpp$")
+get_files_recursive(sources "${global_source_path}"  ".*\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|")
 
-get_dir_files(header_files ${global_include_path})
-foreach(header_file ${header_files})
-    list(APPEND headers "${global_include_path}/${header_file}")
-endforeach()
-
-get_dir_subdirs(include_dirs ${global_include_path})
-foreach(include_dir ${include_dirs})
-    set(include_path "${global_include_path}/${include_dir}")
-    get_dir_files(header_files "${include_path}")
-
-    foreach(header_file ${header_files})
-        list(APPEND headers "${include_path}/${header_file}")
-    endforeach()
-endforeach()
-
-# Populate sources variable
-set(sources "")
-
-get_dir_files(source_files ${global_source_path})
-foreach(source_file ${source_files})
-    list(APPEND sources "${global_source_path}/${source_file}")
-endforeach()
-
-get_dir_subdirs(source_dirs ${global_source_path})
-foreach(source_dir ${source_dirs})
-    set(source_path "${global_source_path}/${source_dir}")
-    get_dir_files(source_files "${source_path}")
-
-    foreach(source_file ${source_files})
-        list(APPEND sources "${source_path}/${source_file}")
-    endforeach()
-endforeach()
+# Include main.cpp separately from the rest
+list(REMOVE_ITEM sources "${global_source_path}/main.cpp")
 
 # Group source files
 set(header_group "Header Files (API)")
 set(source_group "Source Files")
 
-source_group_by_path(${include_path} "\\\\.h$|\\\\.hpp$" 
+source_group_by_path(${global_include_path} "\\\\.h$|\\\\.hpp$" 
     ${header_group} ${headers})
-source_group_by_path(${source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
+source_group_by_path(${global_source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
+
+# Set platform abstraction path include path if necessary
+if (NOT UNIX)
+    set(PLATFORM_ABSTRACTION_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extra/platform_abstraction/include)
+endif()
 
 #
 # Library
@@ -198,32 +172,34 @@ add_library(${PROJECT_LIB}
     ${headers}
 )
 
-#
-# Executable
-#
-
-# Add source to this project's executable.
-add_executable (${PROJECT_EXE} "${sources}" "${headers}")
-
-# TODO: Add tests and install targets if needed.
-
-
-# 
-# Include directories
-# 
-
+# Add include directories
 target_include_directories(${PROJECT_LIB}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
+    ${PLATFORM_ABSTRACTION_INCLUDE}
 )
 
+#
+# Executable
+#
+
+add_executable (${PROJECT_EXE} ${sources} ${global_source_path}/main.cpp ${headers})
+
+# Add include directories
 target_include_directories(${PROJECT_EXE}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
+    ${PLATFORM_ABSTRACTION_INCLUDE}
+)
+
+# Link external libraries
+target_link_libraries(${PROJECT_EXE}
+    PRIVATE
+    ${DEFAULT_LIBRARIES}
 )
 
 

@@ -22,9 +22,9 @@
 #define	LOG_CONS	0x02	/* log on the console if errors in sending */
 #define	LOG_NDELAY	0x08	/* don't delay open */
 
-void openlog(const char *, int, int);
-void syslog(int, const char *, ...);
-void closelog(void);
+static inline void openlog(const char *, int, int) {}
+static inline void syslog(int, const char *, ...) {}
+static inline void closelog(void) {}
 
-int setlogmask(int);
+static inline int setlogmask(int) { return 0; }
 #endif

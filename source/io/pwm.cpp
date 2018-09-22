@@ -29,7 +29,7 @@ namespace beewatch
             
             // Given GPIO must be capable of hardware PWM
             bool isPwmCapable = std::any_of( pwmCapablePins.begin(), pwmCapablePins.end(),
-                                             [&](int i) { return i == gpio->getId(); } );
+                                             [&](int i) { return i == gpio->getID(); } );
 
             if (!isPwmCapable)
             {
@@ -58,7 +58,7 @@ namespace beewatch
             assert(dutyCycle >= 0.0);
             assert(dutyCycle <= 1.0);
 
-            pwmWrite(_gpio->getId(), static_cast<int>(dutyCycle * PWM_RANGE));
+            pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
         }
         
     } // namespace io

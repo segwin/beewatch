@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <vector>
 #include <thread>
 
 namespace beewatch
@@ -21,7 +22,7 @@ namespace beewatch
         std::mutex GPIO::_claimMutex[NUM_GPIO];
 
         //================================================================
-        GPIO::GPIO(const unsigned id)
+        GPIO::GPIO(int id)
         {
             // Ensure GPIOs are initialised
             GPIO::Init();
@@ -52,16 +53,34 @@ namespace beewatch
 
 
         //================================================================
+        std::vector<int> GPIO::getAvailableIDs()
+        {
+            std::vector<int> availableIDs;
+            
+            for (int i = 0; i < NUM_GPIO; ++i)
+            {
+                std::lock_guard<std::mutex> guard(_claimMutex[i]);
+
+                if (!_claimedGPIOList[i])
+                {
+                    availableIDs.push_back(i);
+                }
+            }
+
+            return availableIDs;
+        }
+
         GPIO::Ptr GPIO::claim(int gpioId)
         {
-            std::lock_guard<std::mutex> lock(_claimMutex[gpioId]);
-
             // Check that requested GPIO is valid and available
-            if (gpioId < 0 || gpioId > NUM_GPIO)
+            if (gpioId < 0 || gpioId >= NUM_GPIO)
             {
                 throw std::range_error("Requested GPIO is out of bounds");
             }
-            else if (_claimedGPIOList[gpioId] == true)
+
+            std::lock_guard<std::mutex> guard(_claimMutex[gpioId]);
+
+            if (_claimedGPIOList[gpioId] == true)
             {
                 return nullptr;
             }

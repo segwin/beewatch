@@ -7,14 +7,12 @@
 #include "io.h"
 
 #include <array>
+#include <atomic>
 #include <bitset>
 #include <mutex>
+#include <vector>
 
-#ifdef __linux__
 #include <wiringPi.h>
-#else
-#include "windows_compat/wiringPi.h"
-#endif
 
 
 namespace beewatch
@@ -70,6 +68,13 @@ namespace beewatch
              * Number of GPIO pins on the common RPi boards (excluding compute)
              */
             static constexpr int NUM_GPIO = 40;
+
+            /**
+             * @brief Get list of unclaimed GPIOs
+             *
+             * @returns Vector containing IDs of all unclaimed GPIOs
+             */
+            static std::vector<int> getAvailableIDs();
 
             /**
              * @brief Attempts to create a GPIO object for the given ID
@@ -184,7 +189,7 @@ namespace beewatch
              *
              * @returns GPIO number
              */
-            int getId() { return _id; }
+            int getID() { return _id; }
 
 
         protected:
@@ -198,7 +203,7 @@ namespace beewatch
              *
              * @param [in] id   ID of GPIO pin to model
              */
-            GPIO(const unsigned id);
+            GPIO(int id);
 
 
         private:
