@@ -158,9 +158,15 @@ source_group_by_path(${global_include_path} "\\\\.h$|\\\\.hpp$"
 source_group_by_path(${global_source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
 
-# Set platform abstraction path include path if necessary
+# Use platform abstraction if working on non-target platform
 if (NOT UNIX)
-    set(PLATFORM_ABSTRACTION_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extra/platform_abstraction/include)
+    set(PLATFORM_SPECIFIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extra/platform_abstraction/include)
+    get_files_recursive(platform_specific_headers "${PLATFORM_SPECIFIC_INCLUDE}" ".*\\\\.h$|\\\\.hpp$")
+    
+    set(platform_specific_header_group "Header Files (Platform Abstraction)")
+
+    source_group_by_path(${PLATFORM_SPECIFIC_INCLUDE} "\\\\.h$|\\\\.hpp$" 
+        ${platform_specific_header_group} ${platform_specific_headers})
 endif()
 
 #
@@ -170,6 +176,7 @@ endif()
 add_library(${PROJECT_LIB}
     ${sources}
     ${headers}
+    ${platform_specific_headers}
 )
 
 # Add include directories
@@ -178,7 +185,7 @@ target_include_directories(${PROJECT_LIB}
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
-    ${PLATFORM_ABSTRACTION_INCLUDE}
+    ${PLATFORM_SPECIFIC_INCLUDE}
 )
 
 #
@@ -193,7 +200,7 @@ if (UNIX)
         ${DEFAULT_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-        ${PLATFORM_ABSTRACTION_INCLUDE}
+        ${PLATFORM_SPECIFIC_INCLUDE}
     )
 
     # Link external libraries
