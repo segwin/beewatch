@@ -20,7 +20,9 @@ set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 # Find source files
+set(headers "")
 get_files_recursive(headers "${include_path}" ".*\\\\.h$|\\\\.hpp$")
+set(sources "")
 get_files_recursive(sources "${source_path}"  ".*\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$")
 
 
@@ -32,17 +34,6 @@ get_files_recursive(sources "${source_path}"  ".*\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.
 add_executable(${target}
     ${sources}
     ${headers}
-)
-
-
-# 
-# Project options
-# 
-
-set_target_properties(${target}
-    PROPERTIES
-    ${DEFAULT_PROJECT_OPTIONS}
-    FOLDER "${IDE_FOLDER}"
 )
 
 
@@ -75,32 +66,3 @@ target_link_libraries(${target}
     ${PROJECT_LIB}
 )
 
-
-# 
-# Compile definitions
-# 
-
-target_compile_definitions(${target}
-    PRIVATE
-    ${DEFAULT_COMPILE_DEFINITIONS}
-)
-
-
-# 
-# Compile options
-# 
-
-target_compile_options(${target}
-    PRIVATE
-    ${DEFAULT_COMPILE_OPTIONS}
-)
-
-
-# 
-# Linker options
-# 
-
-target_link_libraries(${target}
-    PRIVATE
-    ${DEFAULT_LINKER_OPTIONS}
-)

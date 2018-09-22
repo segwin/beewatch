@@ -182,26 +182,27 @@ target_include_directories(${PROJECT_LIB}
 )
 
 #
-# Executable
+# Executable (only build on target platform)
 #
+if (UNIX)
+    add_executable (${PROJECT_EXE} ${global_source_path}/main.cpp)
 
-add_executable (${PROJECT_EXE} ${sources} ${global_source_path}/main.cpp ${headers})
+    # Add include directories
+    target_include_directories(${PROJECT_EXE}
+        PRIVATE
+        ${DEFAULT_INCLUDE_DIRECTORIES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+        ${PLATFORM_ABSTRACTION_INCLUDE}
+    )
 
-# Add include directories
-target_include_directories(${PROJECT_EXE}
-    PRIVATE
-    ${DEFAULT_INCLUDE_DIRECTORIES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
-    ${PLATFORM_ABSTRACTION_INCLUDE}
-)
-
-# Link external libraries
-target_link_libraries(${PROJECT_EXE}
-    PRIVATE
-    ${DEFAULT_LIBRARIES}
-)
-
+    # Link external libraries
+    target_link_libraries(${PROJECT_EXE}
+        PRIVATE
+        ${DEFAULT_LIBRARIES}
+        ${PROJECT_LIB}
+    )
+endif()
 
 #
 # Tests
