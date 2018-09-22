@@ -12,8 +12,6 @@
 #include <mutex>
 #include <vector>
 
-#include <wiringPi.h>
-
 
 namespace beewatch
 {
@@ -28,8 +26,8 @@ namespace beewatch
          */
         enum class LogicalState
         {
-            LO = LOW,
-            HI = HIGH,
+            LO,
+            HI,
 
             Invalid
         };
@@ -117,10 +115,10 @@ namespace beewatch
              */
             enum class Mode : int
             {
-                Input  = INPUT,
-                Output = OUTPUT,
-                PWM = PWM_TONE_OUTPUT,
-                CLK = GPIO_CLOCK,
+                Input,
+                Output,
+                PWM,
+                CLK,
             };
 
             /**
@@ -147,9 +145,9 @@ namespace beewatch
              */
             enum class Resistor : int
             {
-                Off      = PUD_OFF,
-                PullUp   = PUD_UP,
-                PullDown = PUD_DOWN,
+                Off,
+                PullUp,
+                PullDown,
             };
 
             /**
@@ -159,14 +157,21 @@ namespace beewatch
              */
             void setResistorMode(Resistor mode);
 
+            /**
+             * @brief Get resistor configuration
+             *
+             * @returns Current resistor configuration
+             */
+            Resistor getResistorMode() const;
+
 
             //================================================================
             enum class EdgeType : int
             {
-                None = INT_EDGE_SETUP,
-                Rising = INT_EDGE_RISING,
-                Falling = INT_EDGE_FALLING,
-                Both = INT_EDGE_BOTH,
+                None,
+                Rising,
+                Falling,
+                Both,
             };
 
             /**
@@ -176,6 +181,14 @@ namespace beewatch
              * @param [in] callback Callback function to execute in ISR
              */
             void setEdgeDetection(EdgeType type, void (*callback)(void));
+
+            /**
+             * @brief Get GPIO edge detection mode
+             *
+             * @returns Current GPIO edge detection mode
+             */
+            EdgeType getEdgeDetection() const;
+
 
             /**
             * @brief Disables state detection

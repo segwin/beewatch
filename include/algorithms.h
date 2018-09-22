@@ -20,7 +20,7 @@ namespace beewatch
      * @returns True if val is found, false otherwise
      */
     template <typename InputIterator, typename Value>
-    constexpr bool contains(InputIterator first, InputIterator last, const Value& val)
+    inline constexpr bool contains(InputIterator first, InputIterator last, const Value& val)
     {
         return std::find(first, last, val) != last;
     }

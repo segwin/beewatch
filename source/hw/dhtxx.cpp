@@ -7,6 +7,8 @@
 #include "logging.h"
 #include "priority.h"
 
+#include <wiringPi.h>
+
 namespace beewatch
 {
     namespace hw

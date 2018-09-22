@@ -4,6 +4,10 @@
 
 #include "io/gpio.h"
 
+#include "containers.h"
+
+#include <wiringPi.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -14,6 +18,34 @@ namespace beewatch
 {
     namespace io
     {
+
+        //================================================================
+        const BidirectionalMap<LogicalState, int> mapLogicalStateToWiringPi = {
+            { LogicalState::LO, LOW },
+            { LogicalState::HI, HIGH },
+
+            { LogicalState::Invalid, -1 }
+        };
+
+        const BidirectionalMap<GPIO::Mode, int> mapModeToWiringPi = {
+            { GPIO::Mode::Input, INPUT },
+            { GPIO::Mode::Output, OUTPUT },
+            { GPIO::Mode::PWM, PWM_TONE_OUTPUT },
+            { GPIO::Mode::CLK, GPIO_CLOCK },
+        };
+
+        const BidirectionalMap<GPIO::Resistor, int> mapResistorToWiringPi = {
+            { GPIO::Resistor::Off, PUD_OFF },
+            { GPIO::Resistor::PullUp, PUD_UP },
+            { GPIO::Resistor::PullDown, PUD_DOWN },
+        };
+
+        const BidirectionalMap<GPIO::EdgeType, int> mapEdgeTypeToWiringPi = {
+            { GPIO::EdgeType::None, INT_EDGE_SETUP },
+            { GPIO::EdgeType::Rising, INT_EDGE_RISING },
+            { GPIO::EdgeType::Falling, INT_EDGE_FALLING },
+            { GPIO::EdgeType::Both, INT_EDGE_BOTH },
+        };
 
         //================================================================
         constexpr int GPIO::NUM_GPIO;
@@ -112,7 +144,7 @@ namespace beewatch
         //================================================================
         void GPIO::setMode(Mode mode)
         {
-            pinMode(_id, static_cast<int>(mode));
+            pinMode(_id, mapModeToWiringPi.at1(mode));
             _mode = mode;
         }
 
@@ -125,8 +157,13 @@ namespace beewatch
         //================================================================
         void GPIO::setResistorMode(Resistor cfg)
         {
-            pullUpDnControl(_id, static_cast<int>(cfg));
+            pullUpDnControl(_id, mapResistorToWiringPi.at1(cfg));
             _resistorCfg = cfg;
+        }
+
+        GPIO::Resistor GPIO::getResistorMode() const
+        {
+            return _resistorCfg;
         }
 
 
@@ -136,14 +173,14 @@ namespace beewatch
             assert(_mode != Mode::Input);
             assert(state != LogicalState::Invalid);
 
-            digitalWrite(_id, static_cast<int>(state));
+            digitalWrite(_id, mapLogicalStateToWiringPi.at1(state));
         }
 
         LogicalState GPIO::read()
         {
             assert(_mode != Mode::Output);
 
-            return static_cast<LogicalState>(digitalRead(_id));
+            return mapLogicalStateToWiringPi.at2(digitalRead(_id));
         }
 
 
@@ -155,8 +192,13 @@ namespace beewatch
                 clearEdgeDetection();
             }
 
-            wiringPiISR(_id, static_cast<int>(type), callback);
+            wiringPiISR(_id, mapEdgeTypeToWiringPi.at1(type), callback);
             _edgeDetection = type;
+        }
+
+        GPIO::EdgeType GPIO::getEdgeDetection() const
+        {
+            return _edgeDetection;
         }
 
         static void nop() {}
