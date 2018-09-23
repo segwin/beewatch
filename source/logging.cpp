@@ -92,6 +92,11 @@ namespace beewatch
     //==============================================================================
     void Logger::print(Level logLevel, const std::string& msg, bool addLevel)
     {
+        if (logLevel > _verbosity)
+        {
+            return;
+        }
+
         // Format message with timestamp and severity
         std::string msgFormatted;
 

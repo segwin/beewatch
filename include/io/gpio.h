@@ -5,10 +5,12 @@
 #pragma once
 
 #include "io.h"
+#include "external/wiringPi.h"
 
 #include <array>
 #include <atomic>
 #include <bitset>
+#include <map>
 #include <mutex>
 #include <vector>
 
@@ -82,10 +84,11 @@ namespace beewatch
              * no object is constructed and the method returns nullptr.
              *
              * @param [in] gpioId   Desired GPIO ID
+             * @param [in] wiringPi wiringPi library interface (used to inject mocked class in tests)
              *
              * @returns Shared pointer to GPIO object if successful, nullptr otherwise
              */
-            static GPIO::Ptr claim(int gpioId);
+            static GPIO::Ptr claim(int gpioId, std::shared_ptr<external::IWiringPi> wiringPi = external::WiringPi::getInstance());
 
 
             //================================================================
@@ -195,6 +198,11 @@ namespace beewatch
             */
             void clearEdgeDetection();
 
+            /**
+             * @brief Empty function used to clear egde detection ISR
+             */
+            static void nop() {}
+
 
             //================================================================
             /**
@@ -205,7 +213,16 @@ namespace beewatch
             int getID() { return _id; }
 
 
-        protected:
+            //================================================================
+            std::shared_ptr<external::IWiringPi> getWiringPi() { return _wiringPi; }
+
+        private:
+            //================================================================
+            std::map<LogicalState, int>   _mapLogicalStateToWiringPi;
+            std::map<GPIO::Mode, int>     _mapModeToWiringPi;
+            std::map<GPIO::Resistor, int> _mapResistorToWiringPi;
+            std::map<GPIO::EdgeType, int> _mapEdgeTypeToWiringPi;
+
             //================================================================
             /**
              * @brief Construct and claim GPIO#, where # = id
@@ -214,26 +231,18 @@ namespace beewatch
              * Other classes should use the claim() factory method to try
              * and obtain a GPIO.
              *
-             * @param [in] id   ID of GPIO pin to model
+             * @param [in] id       ID of GPIO pin to model
+             * @param [in] wiringPi wiringPi library interface (used to inject mocked class in tests)
              */
-            GPIO(int id);
+            GPIO(int id, std::shared_ptr<external::IWiringPi> wiringPi);
 
 
-        private:
             //================================================================
-            /**
-             * @brief Initialise GPIO memory access
-             *
-             * Maps GPIO peripherals to memory. Does nothing when called after
-             * first initialisation.
-             */
-            static void Init();
-            
+            std::shared_ptr<external::IWiringPi> _wiringPi;
 
             //================================================================
             static bool _claimedGPIOList[NUM_GPIO];
             static std::mutex _claimMutex[NUM_GPIO];
-
 
             //================================================================
             int _id;

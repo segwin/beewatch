@@ -7,8 +7,6 @@
 #include "logging.h"
 #include "priority.h"
 
-#include <external/wiringPi.h>
-
 namespace beewatch
 {
     namespace hw
@@ -124,10 +122,10 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::Output);
 
             _gpio->write(LogicalState::LO);
-            wiringPi.delay(20);
+            _gpio->getWiringPi()->delay(20);
 
             _gpio->write(LogicalState::HI);
-            wiringPi.delayMicroseconds(40);
+            _gpio->getWiringPi()->delayMicroseconds(40);
 
             _gpio->setMode(GPIO::Mode::Input);
 
@@ -136,11 +134,11 @@ namespace beewatch
              * 2. DHT should signal LO (80us), then HI (80us)
              */
             // LO
-            start = wiringPi.micros();
+            start = _gpio->getWiringPi()->micros();
 
             do
             {
-                now = wiringPi.micros();
+                now = _gpio->getWiringPi()->micros();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -150,11 +148,11 @@ namespace beewatch
             } while (_gpio->read() == LogicalState::LO);
 
             // LO
-            start = wiringPi.micros();
+            start = _gpio->getWiringPi()->micros();
 
             do
             {
-                now = wiringPi.micros();
+                now = _gpio->getWiringPi()->micros();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -169,11 +167,11 @@ namespace beewatch
             for (int i = 0; i < READ_BITS; ++i)
             { 
                 // LO
-                start = wiringPi.micros();
+                start = _gpio->getWiringPi()->micros();
 
                 do
                 {
-                    now = wiringPi.micros();
+                    now = _gpio->getWiringPi()->micros();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)
@@ -183,11 +181,11 @@ namespace beewatch
                 } while (_gpio->read() == LogicalState::LO);
 
                 // HI
-                start = wiringPi.micros();
+                start = _gpio->getWiringPi()->micros();
 
                 do
                 {
-                    now = wiringPi.micros();
+                    now = _gpio->getWiringPi()->micros();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)

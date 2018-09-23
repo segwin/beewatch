@@ -2,11 +2,13 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //================================================================
 
-#ifdef HAS_WIRINGPI
-#include <wiringPi.h>
-#else
+#pragma once
+
+#ifndef HAS_WIRINGPI
 #include <chrono>
 #endif
+
+#include <memory>
 
 namespace beewatch
 {
@@ -32,29 +34,29 @@ namespace beewatch
         public:
             //================================================================
             // Logical states
-            const int c_low = 0;
-            const int c_high = 1;
+            int c_low = 0;
+            int c_high = 1;
 
             // Pin modes
-            const int c_input = 0;
-            const int c_output = 1;
-            const int c_pwmToneOutput = 2;
-            const int c_gpioClock = 3;
+            int c_input = 0;
+            int c_output = 1;
+            int c_pwmToneOutput = 2;
+            int c_gpioClock = 3;
 
             // PWM modes
-            const int c_pwmModeMs = 0;
-            const int c_pwmModeBal = 1;
+            int c_pwmModeMs = 0;
+            int c_pwmModeBal = 1;
 
             // Resistor modes
-            const int c_pudOff = 0;
-            const int c_pudUp = 1;
-            const int c_pudDown = 2;
+            int c_pudOff = 0;
+            int c_pudUp = 1;
+            int c_pudDown = 2;
 
             // Edge detection modes
-            const int c_intEdgeSetup = 0;
-            const int c_intEdgeRising = 1;
-            const int c_intEdgeFalling = 2;
-            const int c_intEdgeBoth = 3;
+            int c_intEdgeSetup = 0;
+            int c_intEdgeRising = 1;
+            int c_intEdgeFalling = 2;
+            int c_intEdgeBoth = 3;
 
             //================================================================
             IWiringPi() = default;
@@ -102,7 +104,7 @@ namespace beewatch
 
         public:
             //================================================================
-            static WiringPi& getInstance();
+            static std::shared_ptr<IWiringPi> getInstance();
 
             virtual ~WiringPi() = default;
 
@@ -129,8 +131,6 @@ namespace beewatch
 
             virtual unsigned int micros(void) override;
         };
-
-        #define wiringPi WiringPi::getInstance()
     }
 
     using external::WiringPi;

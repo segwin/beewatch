@@ -44,9 +44,9 @@ namespace beewatch
             // Configure PWM output
             _gpio->setMode(GPIO::Mode::PWM);
             
-            wiringPi.pwmSetMode(wiringPi.c_pwmModeMs);
-            wiringPi.pwmSetRange(PWM_RANGE);
-            wiringPi.pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
+            _gpio->getWiringPi()->pwmSetMode(_gpio->getWiringPi()->c_pwmModeMs);
+            _gpio->getWiringPi()->pwmSetRange(PWM_RANGE);
+            _gpio->getWiringPi()->pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
 
             write(_dutyCycle);
         }
@@ -60,7 +60,7 @@ namespace beewatch
             assert(dutyCycle >= 0.0);
             assert(dutyCycle <= 1.0);
 
-            wiringPi.pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
+            _gpio->getWiringPi()->pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
         }
         
     } // namespace io

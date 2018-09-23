@@ -5,7 +5,6 @@
 #ifdef HAS_WIRINGPI
 #include <wiringPi.h>
 #else
-#include <chrono>
 #include <thread>
 
 // Mock wiringPi definitions: not intended to accurately reflect actual library values
@@ -67,10 +66,14 @@ namespace beewatch
         }
 
         //================================================================
-        WiringPi& WiringPi::getInstance()
+        std::shared_ptr<IWiringPi> WiringPi::getInstance()
         {
-            static WiringPi singleton;
-            return singleton;
+            // Expose private default constructor to std::make_shared through a
+            // derived class with public default constructor
+            struct make_shared_enabler : public WiringPi {};
+            static std::shared_ptr<IWiringPi> instance = std::make_shared<make_shared_enabler>();
+
+            return instance;
         }
 
         //================================================================
