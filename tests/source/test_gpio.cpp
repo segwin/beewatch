@@ -24,6 +24,7 @@ using io::GPIO;
 //==============================================================================
 SCENARIO("GPIOs can be claimed and released", "[gpio]")
 {
+    // Disable non-fatal logs
     logger.setVerbosity(Logger::Fatal);
 
     GIVEN("all GPIOs are initially free")
@@ -212,7 +213,6 @@ void mockCallback() { static int counter = 0; ++counter; }
 
 SCENARIO("GPIOs can configure, read & write pins", "[gpio]")
 {
-    
 
     GIVEN("a GPIO with a mocked wiringPi implementation")
     {
