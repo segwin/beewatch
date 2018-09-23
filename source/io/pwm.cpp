@@ -4,7 +4,7 @@
 
 #include "io/pwm.h"
 
-#include <wiringPi.h>
+#include <external/wiringPi.h>
 
 #include <algorithm>
 #include <array>
@@ -44,9 +44,9 @@ namespace beewatch
             // Configure PWM output
             _gpio->setMode(GPIO::Mode::PWM);
             
-            pwmSetMode(PWM_MODE_MS);
-            pwmSetRange(PWM_RANGE);
-            pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
+            wiringPi.pwmSetMode(wiringPi.c_pwmModeMs);
+            wiringPi.pwmSetRange(PWM_RANGE);
+            wiringPi.pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
 
             write(_dutyCycle);
         }
@@ -60,7 +60,7 @@ namespace beewatch
             assert(dutyCycle >= 0.0);
             assert(dutyCycle <= 1.0);
 
-            pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
+            wiringPi.pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
         }
         
     } // namespace io

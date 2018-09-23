@@ -7,29 +7,64 @@
 #include "version.h"
 
 #include <iostream>
+#include <map>
 #include <string>
+
+#ifdef __linux__
+#include <syslog.h>
+#else
+// Mock syslog definitions: not intended to accurately reflect actual values
+#define LOG_EMERG   0
+#define LOG_ERR     1
+#define LOG_WARNING 2
+#define LOG_NOTICE  3
+#define LOG_INFO    4
+#define LOG_DEBUG   5
+
+#define LOG_CONS    0
+#define LOG_NDELAY  1
+#define LOG_USER    2
+
+#define LOG_UPTO(x) x
+
+void openlog(const char *, int, int) {}
+void syslog(int, const char *, ...) {}
+void closelog(void) {}
+
+int setlogmask(int) { return 0; }
+#endif
 
 namespace beewatch
 {
+
+    //================================================================
+    const std::map<Logger::Level, int> mapLevelToSyslog = {
+        { Logger::Fatal,    LOG_EMERG },
+        { Logger::Error,    LOG_ERR },
+        { Logger::Warning,  LOG_WARNING },
+        { Logger::Notice,   LOG_NOTICE },
+        { Logger::Info,     LOG_INFO },
+        { Logger::Debug,    LOG_DEBUG },
+    };
 
     //==============================================================================
     Logger::Logger()
     {
         // Open log file
         openlog(PROJECT_NAME, LOG_CONS | LOG_NDELAY, LOG_USER);
-        setVerbosity(Debug);
+        setVerbosity(Info);
 
         // Write header
         std::string divider = "============================================================";
         std::string announcement = "Beginning log: " NAME_VERSION;
 
-        print(Debug, "", false);
-        print(Debug, divider, false);
-        print(Debug, announcement, false);
-        print(Debug, divider, false);
-        print(Debug, "", false);
+        print(Info, "", false);
+        print(Info, divider, false);
+        print(Info, announcement, false);
+        print(Info, divider, false);
+        print(Info, "", false);
 
-        setlogmask(Warning);
+        setlogmask(mapLevelToSyslog.at(Warning));
     }
 
     Logger::~Logger()
@@ -50,7 +85,7 @@ namespace beewatch
     void Logger::setVerbosity(Level logLevel)
     {
         _verbosity = logLevel;
-        setlogmask(LOG_UPTO((int)logLevel));
+        setlogmask( LOG_UPTO(mapLevelToSyslog.at(logLevel)) );
     }
 
 
@@ -93,7 +128,7 @@ namespace beewatch
 
         msgFormatted += msg;
 
-        // TODO: Print important messages to somewhere in UI as well so user knows about them
+        // TODO: Print important messages to somewhere in UI so user knows about them
         std::cout << msgFormatted << std::endl;
         log(logLevel, msgFormatted);
     }
@@ -106,14 +141,7 @@ namespace beewatch
         }
 
         // Print formatted message to log file (thread-safe)
-        syslog((int)logLevel, "%s", msg.c_str());
+        syslog(mapLevelToSyslog.at(logLevel), "%s", msg.c_str());
     }
-
-
-    //==============================================================================
-    /**
-    * Global logger object
-    */
-    Logger& logger = Logger::getInstance();
 
 } // namespace beewatch

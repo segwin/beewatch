@@ -7,7 +7,7 @@
 #include "logging.h"
 #include "priority.h"
 
-#include <wiringPi.h>
+#include <external/wiringPi.h>
 
 namespace beewatch
 {
@@ -124,10 +124,10 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::Output);
 
             _gpio->write(LogicalState::LO);
-            delay(20);
+            wiringPi.delay(20);
 
             _gpio->write(LogicalState::HI);
-            delayMicroseconds(40);
+            wiringPi.delayMicroseconds(40);
 
             _gpio->setMode(GPIO::Mode::Input);
 
@@ -136,11 +136,11 @@ namespace beewatch
              * 2. DHT should signal LO (80us), then HI (80us)
              */
             // LO
-            start = micros();
+            start = wiringPi.micros();
 
             do
             {
-                now = micros();
+                now = wiringPi.micros();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -150,11 +150,11 @@ namespace beewatch
             } while (_gpio->read() == LogicalState::LO);
 
             // LO
-            start = micros();
+            start = wiringPi.micros();
 
             do
             {
-                now = micros();
+                now = wiringPi.micros();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -169,11 +169,11 @@ namespace beewatch
             for (int i = 0; i < READ_BITS; ++i)
             { 
                 // LO
-                start = micros();
+                start = wiringPi.micros();
 
                 do
                 {
-                    now = micros();
+                    now = wiringPi.micros();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)
@@ -183,11 +183,11 @@ namespace beewatch
                 } while (_gpio->read() == LogicalState::LO);
 
                 // HI
-                start = micros();
+                start = wiringPi.micros();
 
                 do
                 {
-                    now = micros();
+                    now = wiringPi.micros();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)

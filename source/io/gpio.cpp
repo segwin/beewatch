@@ -6,11 +6,12 @@
 
 #include "containers.h"
 
-#include <wiringPi.h>
+#include <external/wiringPi.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <map>
 #include <vector>
 #include <thread>
 
@@ -21,30 +22,30 @@ namespace beewatch
 
         //================================================================
         const BidirectionalMap<LogicalState, int> mapLogicalStateToWiringPi = {
-            { LogicalState::LO, LOW },
-            { LogicalState::HI, HIGH },
+            { LogicalState::LO, wiringPi.c_low },
+            { LogicalState::HI, wiringPi.c_high },
 
             { LogicalState::Invalid, -1 }
         };
 
-        const BidirectionalMap<GPIO::Mode, int> mapModeToWiringPi = {
-            { GPIO::Mode::Input, INPUT },
-            { GPIO::Mode::Output, OUTPUT },
-            { GPIO::Mode::PWM, PWM_TONE_OUTPUT },
-            { GPIO::Mode::CLK, GPIO_CLOCK },
+        const std::map<GPIO::Mode, int> mapModeToWiringPi = {
+            { GPIO::Mode::Input, wiringPi.c_input },
+            { GPIO::Mode::Output, wiringPi.c_output },
+            { GPIO::Mode::PWM, wiringPi.c_pwmToneOutput },
+            { GPIO::Mode::CLK, wiringPi.c_gpioClock },
         };
 
-        const BidirectionalMap<GPIO::Resistor, int> mapResistorToWiringPi = {
-            { GPIO::Resistor::Off, PUD_OFF },
-            { GPIO::Resistor::PullUp, PUD_UP },
-            { GPIO::Resistor::PullDown, PUD_DOWN },
+        const std::map<GPIO::Resistor, int> mapResistorToWiringPi = {
+            { GPIO::Resistor::Off, wiringPi.c_pudOff },
+            { GPIO::Resistor::PullUp, wiringPi.c_pudUp },
+            { GPIO::Resistor::PullDown, wiringPi.c_pudDown },
         };
 
-        const BidirectionalMap<GPIO::EdgeType, int> mapEdgeTypeToWiringPi = {
-            { GPIO::EdgeType::None, INT_EDGE_SETUP },
-            { GPIO::EdgeType::Rising, INT_EDGE_RISING },
-            { GPIO::EdgeType::Falling, INT_EDGE_FALLING },
-            { GPIO::EdgeType::Both, INT_EDGE_BOTH },
+        const std::map<GPIO::EdgeType, int> mapEdgeTypeToWiringPi = {
+            { GPIO::EdgeType::None, wiringPi.c_intEdgeSetup },
+            { GPIO::EdgeType::Rising, wiringPi.c_intEdgeRising },
+            { GPIO::EdgeType::Falling, wiringPi.c_intEdgeFalling },
+            { GPIO::EdgeType::Both, wiringPi.c_intEdgeBoth },
         };
 
         //================================================================
@@ -132,11 +133,6 @@ namespace beewatch
                 return;
             }
 
-            if (wiringPiSetupPhys() < 0)
-            {
-                throw std::runtime_error("An error occurred while initialising gpio library, do we have root privileges?");
-            }
-
             bIsInitialised = true;
         }
 
@@ -144,7 +140,7 @@ namespace beewatch
         //================================================================
         void GPIO::setMode(Mode mode)
         {
-            pinMode(_id, mapModeToWiringPi.at1(mode));
+            wiringPi.pinMode(_id, mapModeToWiringPi.at(mode));
             _mode = mode;
         }
 
@@ -157,7 +153,7 @@ namespace beewatch
         //================================================================
         void GPIO::setResistorMode(Resistor cfg)
         {
-            pullUpDnControl(_id, mapResistorToWiringPi.at1(cfg));
+            wiringPi.pullUpDnControl(_id, mapResistorToWiringPi.at(cfg));
             _resistorCfg = cfg;
         }
 
@@ -173,14 +169,14 @@ namespace beewatch
             assert(_mode != Mode::Input);
             assert(state != LogicalState::Invalid);
 
-            digitalWrite(_id, mapLogicalStateToWiringPi.at1(state));
+            wiringPi.digitalWrite(_id, mapLogicalStateToWiringPi.at1(state));
         }
 
         LogicalState GPIO::read()
         {
             assert(_mode != Mode::Output);
 
-            return mapLogicalStateToWiringPi.at2(digitalRead(_id));
+            return mapLogicalStateToWiringPi.at2(wiringPi.digitalRead(_id));
         }
 
 
@@ -192,7 +188,7 @@ namespace beewatch
                 clearEdgeDetection();
             }
 
-            wiringPiISR(_id, mapEdgeTypeToWiringPi.at1(type), callback);
+            wiringPi.setISR(_id, mapEdgeTypeToWiringPi.at(type), callback);
             _edgeDetection = type;
         }
 
@@ -205,7 +201,7 @@ namespace beewatch
 
         void GPIO::clearEdgeDetection()
         {
-            wiringPiISR(_id, INT_EDGE_RISING, &nop);
+            wiringPi.setISR(_id, wiringPi.c_intEdgeRising, &nop);
             _edgeDetection = EdgeType::None;;
         }
 

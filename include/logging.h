@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include <syslog.h>
-
 namespace beewatch
 {
 
@@ -40,12 +38,12 @@ namespace beewatch
         //==============================================================================
         enum Level
         {
-            Fatal = LOG_EMERG,
-            Error = LOG_ERR,
-            Warning = LOG_WARNING,
-            Notice = LOG_NOTICE,
-            Info = LOG_INFO,
-            Debug = LOG_DEBUG
+            Fatal,
+            Error,
+            Warning,
+            Notice,
+            Info,
+            Debug,
         };
 
         /**
@@ -105,6 +103,6 @@ namespace beewatch
         Level _verbosity;
     };
 
-    extern Logger& logger;
+    #define logger Logger::getInstance()
 
 } // namespace beewatch

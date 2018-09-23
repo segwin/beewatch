@@ -132,6 +132,13 @@ if(NOT SYSTEM_DIR_INSTALL)
     endif()
 endif()
 
+# Check for external libraries
+find_library(WIRINGPI_LIB wiringPi)
+
+if (${WIRINGPI_LIB})
+    add_definitions(-DHAS_WIRINGPI)
+endif()
+
 
 # 
 # Sources
@@ -158,16 +165,6 @@ source_group_by_path(${global_include_path} "\\\\.h$|\\\\.hpp$"
 source_group_by_path(${global_source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
 
-# Use platform abstraction if working on non-target platform
-if (NOT UNIX)
-    set(PLATFORM_SPECIFIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/extra/platform_abstraction/include)
-    get_files_recursive(platform_specific_headers "${PLATFORM_SPECIFIC_INCLUDE}" ".*\\\\.h$|\\\\.hpp$")
-    
-    set(platform_specific_header_group "Header Files (Platform Abstraction)")
-
-    source_group_by_path(${PLATFORM_SPECIFIC_INCLUDE} "\\\\.h$|\\\\.hpp$" 
-        ${platform_specific_header_group} ${platform_specific_headers})
-endif()
 
 #
 # Library
@@ -176,7 +173,6 @@ endif()
 add_library(${PROJECT_LIB}
     ${sources}
     ${headers}
-    ${platform_specific_headers}
 )
 
 # Add include directories
@@ -185,13 +181,13 @@ target_include_directories(${PROJECT_LIB}
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
-    ${PLATFORM_SPECIFIC_INCLUDE}
 )
+
 
 #
 # Executable (only build on target platform)
 #
-if (UNIX)
+if (UNIX AND WIRINGPI_LIB)
     add_executable (${PROJECT_EXE} ${global_source_path}/main.cpp)
 
     # Add include directories
@@ -200,7 +196,6 @@ if (UNIX)
         ${DEFAULT_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-        ${PLATFORM_SPECIFIC_INCLUDE}
     )
 
     # Link external libraries
@@ -208,8 +203,12 @@ if (UNIX)
         PRIVATE
         ${DEFAULT_LIBRARIES}
         ${PROJECT_LIB}
+        ${WIRINGPI_LIB}
     )
+else()
+    message(WARNING "Skipping executable: should only build on Linux with wiringPi library installed")
 endif()
+
 
 #
 # Tests
