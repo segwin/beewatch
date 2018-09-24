@@ -144,6 +144,7 @@ endif()
 # Sources
 # 
 set(global_include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(output_include_path "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 # Generate version-header
@@ -151,6 +152,7 @@ configure_file("${global_include_path}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR
 
 # Find source files
 get_files_recursive(headers "${global_include_path}" ".*\\\\.h$|\\\\.hpp$")
+get_files_recursive(output_headers "${output_include_path}" ".*\\\\.h$|\\\\.hpp$")
 get_files_recursive(sources "${global_source_path}"  ".*\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|")
 
 # Include main.cpp separately from the rest
@@ -158,10 +160,13 @@ list(REMOVE_ITEM sources "${global_source_path}/main.cpp")
 
 # Group source files
 set(header_group "Header Files (API)")
+set(header_group_2 "Header Files (Generated)")
 set(source_group "Source Files")
 
 source_group_by_path(${global_include_path} "\\\\.h$|\\\\.hpp$" 
     ${header_group} ${headers})
+source_group_by_path(${output_include_path} "\\\\.h$|\\\\.hpp$" 
+    ${header_group} ${output_headers})
 source_group_by_path(${global_source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
 
@@ -172,7 +177,7 @@ source_group_by_path(${global_source_path}  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$
 
 add_library(${PROJECT_LIB}
     ${sources}
-    ${headers}
+    ${headers} ${output_headers}
 )
 
 # Add include directories
