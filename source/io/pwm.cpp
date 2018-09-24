@@ -1,6 +1,6 @@
-//================================================================
+//==============================================================================
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
-//================================================================
+//==============================================================================
 
 #include "io/pwm.h"
 
@@ -16,11 +16,11 @@ namespace beewatch
     namespace io
     {
 
-        //================================================================
+        //==============================================================================
         static constexpr std::array<int, 7> pwmCapablePins{ { 12, 13, 18, 19, 40, 41, 45 } };
 
 
-        //================================================================
+        //==============================================================================
         PWM::PWM(GPIO::Ptr&& gpio)
             : _dutyCycle(0.0)
         {
@@ -45,8 +45,8 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::PWM);
             
             _gpio->getWiringPi()->pwmSetMode(_gpio->getWiringPi()->c_pwmModeMs);
-            _gpio->getWiringPi()->pwmSetRange(PWM_RANGE);
-            _gpio->getWiringPi()->pwmSetClock(PWM_CLOCK_MAX_HZ / PWM_CLOCK_HZ);
+            _gpio->getWiringPi()->pwmSetRange(c_range);
+            _gpio->getWiringPi()->pwmSetClock(c_clockMaxHz / c_clockHz);
 
             write(_dutyCycle);
         }
@@ -54,13 +54,14 @@ namespace beewatch
         PWM::~PWM() = default;
 
 
-        //================================================================
+        //==============================================================================
         void PWM::write(double dutyCycle)
         {
             assert(dutyCycle >= 0.0);
             assert(dutyCycle <= 1.0);
 
-            _gpio->getWiringPi()->pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * PWM_RANGE));
+            _gpio->getWiringPi()->pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * c_range));
+            _dutyCycle = dutyCycle;
         }
         
     } // namespace io

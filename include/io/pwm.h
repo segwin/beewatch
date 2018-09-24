@@ -60,17 +60,18 @@ namespace beewatch
              */
             double getDutyCycle() const { return _dutyCycle; }
 
+            //==============================================================================
+            static constexpr int c_range = 1024;
+
+            static constexpr int c_clockMaxHz = 19'200'000;
+            static constexpr int c_clockHz = 20'000;
+
 
         private:
             //==============================================================================
             GPIO::Ptr _gpio;
 
-            //================================================================
-            static constexpr int PWM_RANGE = 1024;
-            
-            static constexpr int PWM_CLOCK_MAX_HZ = 19'200'000;
-            static constexpr int PWM_CLOCK_HZ= 20'000;
-
+            //==============================================================================
             double _dutyCycle;
         };
 
