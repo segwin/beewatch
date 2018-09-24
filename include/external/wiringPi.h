@@ -1,6 +1,6 @@
-//================================================================
+//==============================================================================
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
-//================================================================
+//==============================================================================
 
 #pragma once
 
@@ -15,7 +15,7 @@ namespace beewatch
     namespace external
     {
 
-        //================================================================
+        //==============================================================================
         /**
          * @interface IWiringPi
          */
@@ -32,7 +32,7 @@ namespace beewatch
                       int intEdgeSetup, int intEdgeRising, int intEdgeFalling, int intEdgeBoth);
 
         public:
-            //================================================================
+            //==============================================================================
             // Logical states
             int c_low = 0;
             int c_high = 1;
@@ -58,17 +58,17 @@ namespace beewatch
             int c_intEdgeFalling = 2;
             int c_intEdgeBoth = 3;
 
-            //================================================================
+            //==============================================================================
             IWiringPi() = default;
             virtual ~IWiringPi() = default;
 
-            //================================================================
+            //==============================================================================
             virtual int digitalRead(int pin) = 0;
             virtual void digitalWrite(int pin, int value) = 0;
 
             virtual void pwmWrite(int pin, int value) = 0;
 
-            //================================================================
+            //==============================================================================
             virtual void pinMode(int pin, int mode) = 0;
             virtual void pullUpDnControl(int pin, int pud) = 0;
 
@@ -76,17 +76,17 @@ namespace beewatch
             virtual void pwmSetRange(unsigned int range) = 0;
             virtual void pwmSetClock(int divisor) = 0;
 
-            //================================================================
+            //==============================================================================
             virtual int setISR(int pin, int edgeType, void(*function)(void)) = 0;
 
-            //================================================================
+            //==============================================================================
             virtual void delay(int s) = 0;
             virtual void delayMicroseconds(int us) = 0;
 
             virtual unsigned int micros(void) = 0;
         };
 
-        //================================================================
+        //==============================================================================
         /**
          * @class WiringPi
          *
@@ -94,27 +94,27 @@ namespace beewatch
          */
         class WiringPi : public IWiringPi
         {
-            //================================================================
+            //==============================================================================
             WiringPi();
 
 #ifndef HAS_WIRINGPI
-            //================================================================
+            //==============================================================================
             std::chrono::steady_clock::time_point _startTime;
 #endif
 
         public:
-            //================================================================
+            //==============================================================================
             static std::shared_ptr<IWiringPi> getInstance();
 
             virtual ~WiringPi() = default;
 
-            //================================================================
+            //==============================================================================
             virtual int digitalRead(int pin) override;
             virtual void digitalWrite(int pin, int value) override;
 
             virtual void pwmWrite(int pin, int value) override;
 
-            //================================================================
+            //==============================================================================
             virtual void pinMode(int pin, int mode) override;
             virtual void pullUpDnControl(int pin, int pud) override;
 
@@ -122,10 +122,10 @@ namespace beewatch
             virtual void pwmSetRange(unsigned int range) override;
             virtual void pwmSetClock(int divisor) override;
 
-            //================================================================
+            //==============================================================================
             virtual int setISR(int pin, int edgeType, void(*function)(void)) override;
 
-            //================================================================
+            //==============================================================================
             virtual void delay(int s) override;
             virtual void delayMicroseconds(int us) override;
 

@@ -33,7 +33,7 @@ namespace beewatch
 {
     namespace external
     {
-        //================================================================
+        //==============================================================================
         IWiringPi::IWiringPi(int low, int high,
                              int input, int output, int pwmToneOutput, int gpioClock,
                              int pwmModeMs, int pwmModeBal,
@@ -47,7 +47,7 @@ namespace beewatch
         {
         }
 
-        //================================================================
+        //==============================================================================
         WiringPi::WiringPi()
             : IWiringPi(LOW, HIGH,
                         INPUT, OUTPUT, PWM_TONE_OUTPUT, GPIO_CLOCK,
@@ -65,7 +65,7 @@ namespace beewatch
 #endif
         }
 
-        //================================================================
+        //==============================================================================
         std::shared_ptr<IWiringPi> WiringPi::getInstance()
         {
             // Expose private default constructor to std::make_shared through a
@@ -76,7 +76,7 @@ namespace beewatch
             return instance;
         }
 
-        //================================================================
+        //==============================================================================
         int WiringPi::digitalRead(int pin)
         {
 #ifdef HAS_WIRINGPI
@@ -100,7 +100,7 @@ namespace beewatch
 #endif
         }
 
-        //================================================================
+        //==============================================================================
         void WiringPi::pinMode(int pin, int mode)
         {
 #ifdef HAS_WIRINGPI
@@ -136,7 +136,7 @@ namespace beewatch
 #endif
         }
 
-        //================================================================
+        //==============================================================================
         int WiringPi::setISR(int pin, int edgeType, void(*function)(void))
         {
 #ifdef HAS_WIRINGPI
@@ -146,7 +146,7 @@ namespace beewatch
 #endif
         }
 
-        //================================================================
+        //==============================================================================
         void WiringPi::delay(int s)
         {
 #ifdef HAS_WIRINGPI

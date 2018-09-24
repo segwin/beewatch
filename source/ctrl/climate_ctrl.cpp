@@ -1,6 +1,6 @@
-//================================================================
+//==============================================================================
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
-//================================================================
+//==============================================================================
 
 #include "ctrl/climate_ctrl.h"
 
@@ -17,13 +17,13 @@ namespace beewatch
         using hw::DHTxx;
         using hw::Fan;
         
-        //================================================================
+        //==============================================================================
         constexpr Range<double> ClimateCtrl::temperatureRange;
         constexpr double ClimateCtrl::temperatureTarget;
         constexpr Range<double> ClimateCtrl::humidityRange;
         constexpr double ClimateCtrl::humidityTarget;
         
-        //================================================================
+        //==============================================================================
         ClimateCtrl::ClimateCtrl(std::vector<DHTxx::Ptr> sensors, Fan::Ptr fan)
             : _sensors(sensors)
         {
@@ -53,7 +53,7 @@ namespace beewatch
         }
 
 
-        //================================================================
+        //==============================================================================
         void ClimateCtrl::start()
         {
             std::lock_guard<std::mutex> lock(_ctrlMutex);
@@ -75,7 +75,7 @@ namespace beewatch
         }
 
 
-        //================================================================
+        //==============================================================================
         void ClimateCtrl::getClimateData()
         {
             DHTxx::Data avgData;
@@ -144,7 +144,7 @@ namespace beewatch
             _fan->write(fanSpeedRpm);
         }
 
-        //================================================================
+        //==============================================================================
         void ClimateCtrl::ctrlLoop()
         {
             std::unique_lock<std::mutex> lock(_ctrlMutex);
