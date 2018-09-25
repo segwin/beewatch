@@ -23,7 +23,7 @@ using io::PWM;
 using io::GPIO;
 
 //==============================================================================
-SCENARIO("PWMs can be used ", "[io]")
+SCENARIO("PWMs can be used on a given GPIO", "[io]")
 {
     static const int c_expectedPwmRange = 1024;
 
