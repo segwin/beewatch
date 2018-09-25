@@ -2,15 +2,11 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "io/pwm.h"
-#include "algorithms.h"
+#include "hw/hx711.h"
 #include "logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"
-
-#include <cstdlib>
-#include <ctime>
 
 /**
  * How to write tests with Catch:
@@ -19,12 +15,12 @@
 
 using namespace beewatch;
 
-using io::PWM;
 using io::GPIO;
+using hw::HX711;
 
 //==============================================================================
 SCENARIO("Application can communicate with a mocked HX711 sensor", "[hw]")
 {
-    // Disable non-fatal logs
-    logger.setVerbosity(Logger::Fatal);
+    // Disable logger
+    logger.setVerbosity(Logger::Unattainable);
 }

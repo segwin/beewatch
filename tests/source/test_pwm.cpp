@@ -3,7 +3,6 @@
 //==============================================================================
 
 #include "io/pwm.h"
-#include "algorithms.h"
 #include "logging.h"
 
 #include "catch.hpp"
@@ -25,14 +24,14 @@ using io::GPIO;
 //==============================================================================
 SCENARIO("PWMs can be used on a given GPIO", "[io]")
 {
+    // Disable logger
+    logger.setVerbosity(Logger::Unattainable);
+
     static const int c_expectedPwmRange = 1024;
 
     static const int c_rpiBasePwmClock = 19'200'000;
     static const int c_expectedPwmClock = 20'000;
     static const int c_expectedPwmClockDiv = c_rpiBasePwmClock / c_expectedPwmClock;
-
-    // Disable non-fatal logs
-    logger.setVerbosity(Logger::Fatal);
 
     GIVEN("a GPIO incapable of hardware PWM (pin 4) with a mocked wiringPi implementation")
     {

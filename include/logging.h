@@ -38,12 +38,13 @@ namespace beewatch
         //==============================================================================
         enum Level
         {
-            Fatal,
-            Error,
-            Warning,
-            Notice,
-            Info,
-            Debug,
+            Unattainable = -1,
+            Fatal = 0,
+            Error = 1,
+            Warning = 2,
+            Notice = 3,
+            Info = 4,
+            Debug = 5,
         };
 
         /**

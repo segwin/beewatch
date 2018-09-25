@@ -39,12 +39,13 @@ namespace beewatch
 
     //==============================================================================
     const std::map<Logger::Level, int> mapLevelToSyslog = {
-        { Logger::Fatal,    LOG_EMERG },
-        { Logger::Error,    LOG_ERR },
-        { Logger::Warning,  LOG_WARNING },
-        { Logger::Notice,   LOG_NOTICE },
-        { Logger::Info,     LOG_INFO },
-        { Logger::Debug,    LOG_DEBUG },
+        { Logger::Unattainable, LOG_EMERG },
+        { Logger::Fatal,        LOG_EMERG },
+        { Logger::Error,        LOG_ERR },
+        { Logger::Warning,      LOG_WARNING },
+        { Logger::Notice,       LOG_NOTICE },
+        { Logger::Info,         LOG_INFO },
+        { Logger::Debug,        LOG_DEBUG },
     };
 
     //==============================================================================
@@ -58,11 +59,11 @@ namespace beewatch
         std::string divider = "============================================================";
         std::string announcement = "Beginning log: " NAME_VERSION;
 
-        print(Info, "", false);
-        print(Info, divider, false);
-        print(Info, announcement, false);
-        print(Info, divider, false);
-        print(Info, "", false);
+        log(Info, "");
+        log(Info, divider);
+        log(Info, announcement);
+        log(Info, divider);
+        log(Info, "");
 
         setlogmask(mapLevelToSyslog.at(Warning));
     }
