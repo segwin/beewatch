@@ -41,20 +41,9 @@ SCENARIO("PWMs can be used ", "[io]")
 
         WHEN("a PWM object is constructed for that GPIO")
         {
-            bool caughtInvalidArg = false;
-
-            try
-            {
-                PWM::Ptr pwm = std::make_shared<PWM>(std::move(gpio));
-            }
-            catch (std::invalid_argument)
-            {
-                caughtInvalidArg = true;
-            }
-
             THEN("an invalid_argument exception is thrown")
             {
-                REQUIRE(caughtInvalidArg);
+                REQUIRE_THROWS_AS(std::make_shared<PWM>(std::move(gpio)), std::invalid_argument);
             }
         }
     }

@@ -78,39 +78,17 @@ SCENARIO("GPIOs can be claimed and released", "[io]")
 
         WHEN("we try to claim a GPIO with a negative ID")
         {
-            bool caughtRangeErr = false;
-
-            try
-            {
-                GPIO::Ptr gpio = GPIO::claim(-1);
-            }
-            catch (std::range_error)
-            {
-                caughtRangeErr = true;
-            }
-
             THEN("a range error is thrown")
             {
-                REQUIRE(caughtRangeErr);
+                REQUIRE_THROWS_AS(GPIO::claim(-1), std::range_error);
             }
         }
 
         WHEN("we try to claim a GPIO with non-existent ID")
         {
-            bool caughtRangeErr = false;
-
-            try
-            {
-                GPIO::Ptr gpio = GPIO::claim(GPIO::NUM_GPIO);
-            }
-            catch (std::range_error)
-            {
-                caughtRangeErr = true;
-            }
-
             THEN("a range error is thrown")
             {
-                REQUIRE(caughtRangeErr);
+                REQUIRE_THROWS_AS(GPIO::claim(GPIO::NUM_GPIO), std::range_error);
             }
         }
     }
@@ -365,20 +343,9 @@ SCENARIO("GPIOs can configure, read & write pins", "[io]")
 
             WHEN("we attempt to write to the input GPIO")
             {
-                bool caughtInvalidArgument = false;
-
-                try
-                {
-                    gpio->write(LogicalState::HI);
-                }
-                catch (std::invalid_argument)
-                {
-                    caughtInvalidArgument = true;
-                }
-
                 THEN("an invalid_argument exception should be thrown")
                 {
-                    REQUIRE(caughtInvalidArgument);
+                    REQUIRE_THROWS_AS(gpio->write(LogicalState::HI), std::invalid_argument);
                 }
             }
         }
@@ -413,39 +380,17 @@ SCENARIO("GPIOs can configure, read & write pins", "[io]")
 
             WHEN("we write LogicalState::Invalid on the GPIO")
             {
-                bool caughtInvalidArgument = false;
-
-                try
-                {
-                    gpio->write(LogicalState::Invalid);
-                }
-                catch (std::invalid_argument)
-                {
-                    caughtInvalidArgument = true;
-                }
-
                 THEN("an invalid_argument exception should be thrown")
                 {
-                    REQUIRE(caughtInvalidArgument);
+                    REQUIRE_THROWS_AS(gpio->write(LogicalState::Invalid), std::invalid_argument);
                 }
             }
 
             WHEN("we attempt to read from the output GPIO")
             {
-                bool caughtInvalidArgument = false;
-
-                try
-                {
-                    gpio->read();
-                }
-                catch (std::invalid_argument)
-                {
-                    caughtInvalidArgument = true;
-                }
-
                 THEN("an invalid_argument exception should be thrown")
                 {
-                    REQUIRE(caughtInvalidArgument);
+                    REQUIRE_THROWS_AS(gpio->read(), std::invalid_argument);
                 }
             }
         }
