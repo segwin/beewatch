@@ -65,6 +65,10 @@ target_compile_options(${target}
 # Libraries
 # 
 
+if (NOT WIRINGPI_LIB)
+    set(WIRINGPI_LIB "")
+endif()
+
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
