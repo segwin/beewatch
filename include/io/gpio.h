@@ -66,8 +66,10 @@ namespace beewatch
             //==============================================================================
             /**
              * Number of GPIO pins on the common RPi boards (excluding compute)
+             *
+             * NB: This count excludes reserved GPIO pins (e.g. 5V, 3v3, GND, ...)
              */
-            static constexpr int NUM_GPIO = 40;
+            static constexpr int NUM_GPIO = 26;
 
             /**
              * @brief Get list of unclaimed GPIOs

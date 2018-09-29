@@ -56,9 +56,10 @@ namespace beewatch
                         INT_EDGE_SETUP, INT_EDGE_RISING, INT_EDGE_FALLING, INT_EDGE_BOTH)
         {
 #ifdef HAS_WIRINGPI
-            if (::wiringPiSetupPhys() < 0)
+            if (::wiringPiSetupGpio() < 0)
             {
                 logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?");
+                exit(-1);
             }
 #else
             _startTime = std::chrono::steady_clock::now();

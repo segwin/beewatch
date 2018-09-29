@@ -22,17 +22,17 @@ namespace beewatch
         Manager()
         {
             // Populate GPIO list
-            for (int i = 0; i < 40; ++i)
+            for (int i = 0; i < io::GPIO::NUM_GPIO; ++i)
             {
                 gpioMap[i] = io::GPIO::claim(i);
             }
 
             // Initialise DHT11
-            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT22, std::move(gpioMap[36])) );
+            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT22, std::move(gpioMap[16])) );
 
             // Initialise HX711
-            //hx711.reset( new hw::HX711(std::move(gpioMap[23]),
-            //                           std::move(gpioMap[24])) );
+            //hx711.reset( new hw::HX711(std::move(gpioMap[11]),
+            //                           std::move(gpioMap[8])) );
         }
 
         template <typename T>
