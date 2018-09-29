@@ -1,9 +1,0 @@
-# Build C++
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core?view=vsts
-
-pool:
-  vmImage: 'Hosted VS2017'
-  
-variables:
-  buildConfiguration: 'Debug'
-

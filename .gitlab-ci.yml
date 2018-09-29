@@ -3,31 +3,24 @@ image: resin/rpi-raspbian:stretch
 build:
   stage: build
   before_script:
-    - apt update
-    - apt -y install build-essential cmake
-    - apt -y install wiringpi
+    - apt update && apt -y install build-essential cmake wiringpi
     - gcc --version
     - cmake --version
   script:
-    - mkdir -p build
-    - cd build
-    - cmake ..
+    - cmake . -G "Unix Makefiles"
     - make
   artifacts:
     paths:
-      - build/bin
-      - build/lib
+      - bin
+      - lib
 
 test:
   stage: test
   script:
     # Generate results file in junit format
-    - mkdir -p build/log
-    - build/bin/testbeewatch -r junit > build/log/testbeewatch-results.xml
-    - ls -lha build
-    - ls -lha build/log
+    - bin/testbeewatch -r junit > testbeewatch-results.xml
     # Produce console output to fail CI on errors
-    - build/bin/testbeewatch
+    - bin/testbeewatch
   artifacts:
     paths:
-      - build/log/*-results.xml
+      - test*-results.xml
