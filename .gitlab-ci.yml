@@ -17,10 +17,4 @@ build:
 test:
   stage: test
   script:
-    # Generate results file in junit format
-    - bin/testbeewatch -r junit > testbeewatch-results.xml
-    # Produce console output to fail CI on errors
     - bin/testbeewatch
-  artifacts:
-    paths:
-      - test*-results.xml
