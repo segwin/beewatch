@@ -3,7 +3,7 @@ image: resin/rpi-raspbian:stretch
 build:
   stage: build
   before_script:
-    - apt update && apt -y install build-essential cmake wiringpi
+    - apt update && apt -y install build-essential cmake
     - gcc --version
     - cmake --version
   script:
@@ -16,7 +16,5 @@ build:
 
 test:
   stage: test
-  before_script:
-    - apt update && apt -y install wiringpi
   script:
     - bin/testbeewatch
