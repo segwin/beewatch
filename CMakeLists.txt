@@ -135,7 +135,7 @@ endif()
 # Check for external libraries
 find_library(WIRINGPI_LIB wiringPi)
 
-if (${WIRINGPI_LIB})
+if (WIRINGPI_LIB)
     add_definitions(-DHAS_WIRINGPI)
 endif()
 

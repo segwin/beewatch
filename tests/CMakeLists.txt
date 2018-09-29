@@ -69,5 +69,6 @@ target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}
     ${PROJECT_LIB}
+    ${WIRINGPI_LIB}
 )
 

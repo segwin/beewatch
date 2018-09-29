@@ -58,7 +58,7 @@ namespace beewatch
 #ifdef HAS_WIRINGPI
             if (::wiringPiSetupPhys() < 0)
             {
-                logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?")
+                logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?");
             }
 #else
             _startTime = std::chrono::steady_clock::now();
