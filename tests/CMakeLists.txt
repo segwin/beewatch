@@ -41,18 +41,17 @@ add_executable(${target}
 # Include directories
 # 
 
-# Set platform abstraction path include path if necessary
-if (NOT UNIX)
-    set(PLATFORM_ABSTRACTION_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/../extra/platform_abstraction/include)
-endif()
-
 target_include_directories(${target}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${PROJECT_BINARY_DIR}/include
-    ${PLATFORM_ABSTRACTION_INCLUDE}
+)
+
+target_include_directories(${target}
+    SYSTEM PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib
 )
 
 # Set compile options
