@@ -188,6 +188,12 @@ target_include_directories(${PROJECT_LIB}
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+# Set compile options
+target_compile_options(${PROJECT_LIB}
+    PRIVATE
+    ${DEFAULT_COMPILE_OPTIONS}
+)
+
 
 #
 # Executable (only build on target platform)
@@ -210,6 +216,12 @@ if (UNIX AND WIRINGPI_LIB)
         ${PROJECT_LIB}
         ${WIRINGPI_LIB}
     )
+
+	# Set compile options
+	target_compile_options(${PROJECT_EXE}
+		PRIVATE
+		${DEFAULT_COMPILE_OPTIONS}
+	)
 else()
     message(WARNING "Skipping executable: should only build on Linux with wiringPi library installed")
 endif()

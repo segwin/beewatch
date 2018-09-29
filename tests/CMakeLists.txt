@@ -55,6 +55,12 @@ target_include_directories(${target}
     ${PLATFORM_ABSTRACTION_INCLUDE}
 )
 
+# Set compile options
+target_compile_options(${target}
+    PRIVATE
+    ${DEFAULT_COMPILE_OPTIONS}
+)
+
 
 # 
 # Libraries

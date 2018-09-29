@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <thread>
 
 namespace beewatch
 {

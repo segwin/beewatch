@@ -7,6 +7,8 @@
 #include "logging.h"
 #include "priority.h"
 
+#include <thread>
+
 namespace beewatch
 {
     namespace hw
