@@ -47,12 +47,6 @@ public:
     void(*currentISR)(void);
 
     virtual int setISR(int pin, int edgeType, void(*function)(void)) override { lastPin = pin; currentEdgeType = edgeType; currentISR = function; return 0; }
-
-    //==============================================================================
-    virtual void delay(int s) override { std::this_thread::sleep_for(std::chrono::seconds(s)); }
-    virtual void delayMicroseconds(int us) override { std::this_thread::sleep_for(std::chrono::microseconds(us)); }
-
-    virtual unsigned int micros(void) override { using namespace std::chrono; return (unsigned)duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count(); }
 };
 
 static void mockCallback() { static int counter = 0; ++counter; }

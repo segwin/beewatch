@@ -150,4 +150,7 @@ namespace beewatch
         syslog(mapLevelToSyslog.at(logLevel), "%s", msg.c_str());
     }
 
+    //==============================================================================
+    Logger& g_logger = Logger::getInstance();
+
 } // namespace beewatch

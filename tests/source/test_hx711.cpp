@@ -22,5 +22,5 @@ using hw::HX711;
 SCENARIO("Application can communicate with a mocked HX711 sensor", "[hw]")
 {
     // Disable logger
-    logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Unattainable);
 }

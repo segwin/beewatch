@@ -3,10 +3,10 @@
 //==============================================================================
 
 #include "hw/hx711.h"
+#include "timing.h"
 
 #include <cassert>
 #include <iostream>
-#include <thread>
 
 namespace beewatch
 {
@@ -70,7 +70,7 @@ namespace beewatch
             // Wait for ready state
             while (!isReady())
             {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                g_time.wait(10e-3);
             }
 
             // Read data (24 bit integer)
@@ -212,9 +212,6 @@ namespace beewatch
         //==============================================================================
         inline uint8_t HX711::shiftIn()
         {
-            using std::chrono::high_resolution_clock;
-            using std::chrono::microseconds;
-
             assert(isReady());
 
             // Shift in 1 byte
@@ -222,9 +219,9 @@ namespace beewatch
 
             for (int i = 0; i < 8; ++i)
             {
-                std::this_thread::sleep_until(high_resolution_clock::now() + microseconds(1));
+                g_time.wait(1e-3);
                 _pdSck->write(io::LogicalState::HI);
-                std::this_thread::sleep_until(high_resolution_clock::now() + microseconds(1));
+                g_time.wait(1e-3);
 
                 result |= (uint8_t)_dout->read() << (7 - i);
                 

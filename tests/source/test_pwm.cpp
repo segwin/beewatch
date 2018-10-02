@@ -25,7 +25,7 @@ using io::GPIO;
 SCENARIO("PWMs can be used on a given GPIO", "[io]")
 {
     // Disable logger
-    logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Unattainable);
 
     static const int c_expectedPwmRange = 1024;
 

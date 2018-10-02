@@ -6,6 +6,7 @@
 
 #include "logging.h"
 #include "priority.h"
+#include "timing.h"
 
 #include <thread>
 
@@ -56,7 +57,7 @@ namespace beewatch
 
                 if ( std::equal(data.begin(), data.end(), readError.begin()) )
                 {
-                    logger.print(Logger::Warning, "DHT read failed: timeout reached");
+                    g_logger.print(Logger::Warning, "DHT read failed: timeout reached");
 
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                     continue;
@@ -64,7 +65,7 @@ namespace beewatch
 
                 if (!validateData(data))
                 {
-                    logger.print(Logger::Warning, "DHT read failed: bad checksum");
+                    g_logger.print(Logger::Warning, "DHT read failed: bad checksum");
 
                     std::this_thread::sleep_for(std::chrono::seconds(1));
                     continue;
@@ -98,7 +99,7 @@ namespace beewatch
                 return result;
             }
 
-            logger.print(Logger::Error, "Failed to read data from DHT sensor: number of attempts exceeded");
+            g_logger.print(Logger::Error, "Failed to read data from DHT sensor: number of attempts exceeded");
             return result;
         }
 
@@ -113,9 +114,9 @@ namespace beewatch
             uint16_t byte = 0;
             uint16_t mask = 0b1000'0000;
 
-            unsigned start;
-            unsigned now;
-            uint64_t diff;
+            double start;
+            double now;
+            double diff;
 
 
             /**
@@ -124,10 +125,10 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::Output);
 
             _gpio->write(LogicalState::LO);
-            _gpio->getWiringPi()->delay(20);
+            g_time.wait(20.0);
 
             _gpio->write(LogicalState::HI);
-            _gpio->getWiringPi()->delayMicroseconds(40);
+            g_time.wait(40e-3);
 
             _gpio->setMode(GPIO::Mode::Input);
 
@@ -136,11 +137,11 @@ namespace beewatch
              * 2. DHT should signal LO (80us), then HI (80us)
              */
             // LO
-            start = _gpio->getWiringPi()->micros();
+            start = g_time.now();
 
             do
             {
-                now = _gpio->getWiringPi()->micros();
+                now = g_time.now();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -150,11 +151,11 @@ namespace beewatch
             } while (_gpio->read() == LogicalState::LO);
 
             // LO
-            start = _gpio->getWiringPi()->micros();
+            start = g_time.now();
 
             do
             {
-                now = _gpio->getWiringPi()->micros();
+                now = g_time.now();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -169,11 +170,11 @@ namespace beewatch
             for (int i = 0; i < READ_BITS; ++i)
             { 
                 // LO
-                start = _gpio->getWiringPi()->micros();
+                start = g_time.now();
 
                 do
                 {
-                    now = _gpio->getWiringPi()->micros();
+                    now = g_time.now();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)
@@ -183,11 +184,11 @@ namespace beewatch
                 } while (_gpio->read() == LogicalState::LO);
 
                 // HI
-                start = _gpio->getWiringPi()->micros();
+                start = g_time.now();
 
                 do
                 {
-                    now = _gpio->getWiringPi()->micros();
+                    now = g_time.now();
                     diff = now - start;
 
                     if (diff > READ_TIMEOUT_US)

@@ -78,12 +78,6 @@ namespace beewatch
 
             //==============================================================================
             virtual int setISR(int pin, int edgeType, void(*function)(void)) = 0;
-
-            //==============================================================================
-            virtual void delay(int s) = 0;
-            virtual void delayMicroseconds(int us) = 0;
-
-            virtual unsigned int micros(void) = 0;
         };
 
         //==============================================================================
@@ -124,12 +118,6 @@ namespace beewatch
 
             //==============================================================================
             virtual int setISR(int pin, int edgeType, void(*function)(void)) override;
-
-            //==============================================================================
-            virtual void delay(int s) override;
-            virtual void delayMicroseconds(int us) override;
-
-            virtual unsigned int micros(void) override;
         };
     }
 

@@ -25,5 +25,5 @@ class DHT11Mocked : public WiringPiMocked
 SCENARIO("Application can communicate with a mocked DHT11 sensor", "[hw]")
 {
     // Disable logger
-    logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Unattainable);
 }

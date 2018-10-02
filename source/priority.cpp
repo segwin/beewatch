@@ -72,7 +72,7 @@ namespace beewatch
         if ( setpriority(PRIO_PROCESS, 0, nice) < 0 ||
              pthread_setschedparam(pthread_self(), schedPolicy, &schedParams) < 0 )
         {
-            logger.print(Logger::Error,
+            g_logger.print(Logger::Error,
                          std::string("Unable to set requested priority: ") + strerror(errno));
         }
 #endif

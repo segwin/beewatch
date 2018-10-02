@@ -180,7 +180,7 @@ namespace beewatch
             }
             else
             {
-                logger.print(Logger::Error, "GPIO read returned an invalid value: " + std::to_string(val));
+                g_logger.print(Logger::Error, "GPIO read returned an invalid value: " + std::to_string(val));
                 return LogicalState::Invalid;
             }
         }

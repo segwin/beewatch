@@ -1,3 +1,7 @@
+//==============================================================================
+// Copyright (c) 2018 Eric Seguin, all rights reserved.
+//==============================================================================
+
 #include "external/wiringPi.h"
 
 #include "logging.h"
@@ -58,7 +62,7 @@ namespace beewatch
 #ifdef HAS_WIRINGPI
             if (::wiringPiSetupGpio() < 0)
             {
-                logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?");
+                g_logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?");
                 exit(-1);
             }
 #else
@@ -144,37 +148,6 @@ namespace beewatch
             return ::wiringPiISR(pin, edgeType, function);
 #else
             return 0;
-#endif
-        }
-
-        //==============================================================================
-        void WiringPi::delay(int s)
-        {
-#ifdef HAS_WIRINGPI
-            ::delay(s);
-#else
-            std::this_thread::sleep_for(std::chrono::seconds(s));
-#endif
-        }
-
-        void WiringPi::delayMicroseconds(int us)
-        {
-#ifdef HAS_WIRINGPI
-            ::delayMicroseconds(us);
-#else
-            std::this_thread::sleep_for(std::chrono::microseconds(us));
-#endif
-        }
-
-        unsigned int WiringPi::micros(void)
-        {
-#ifdef HAS_WIRINGPI
-            return ::micros();
-#else
-            using namespace std::chrono;
-            auto diff = duration_cast<microseconds>(steady_clock::now() - _startTime);
-
-            return static_cast<unsigned>(diff.count());
 #endif
         }
 

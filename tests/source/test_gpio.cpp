@@ -26,7 +26,7 @@ using io::GPIO;
 SCENARIO("GPIOs can be claimed and released", "[io]")
 {
     // Disable logger
-    logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Unattainable);
 
     GIVEN("all GPIOs are initially free")
     {
@@ -146,7 +146,7 @@ SCENARIO("GPIOs can be claimed and released", "[io]")
 SCENARIO("GPIOs can configure, read & write pins", "[io]")
 {
     // Disable logger
-    logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Unattainable);
 
     GIVEN("a GPIO with a mocked wiringPi implementation")
     {

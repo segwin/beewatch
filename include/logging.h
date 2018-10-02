@@ -89,7 +89,7 @@ namespace beewatch
 
         //==============================================================================
         /**
-        * @brief Construct a logger object
+        * @brief Construct a Logger object
         *
         * Opens log file in the system-appropriate log directory, limiting its size if
         * necessary. 
@@ -104,6 +104,6 @@ namespace beewatch
         Level _verbosity;
     };
 
-    #define logger Logger::getInstance()
+    extern Logger& g_logger;
 
 } // namespace beewatch
