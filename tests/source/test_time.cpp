@@ -142,12 +142,12 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             g_time.wait(50e-3);
             auto end = high_resolution_clock::now();
 
-            THEN("we should wait for 50us +/- 2.5us")
+            THEN("we should wait for 50us +/- 5us")
             {
                 double diffUs = (double)duration_cast<microseconds>(end - start).count();
 
-                REQUIRE(diffUs > 50.0 - 2.5);
-                REQUIRE(diffUs < 50.0 + 2.5);
+                REQUIRE(diffUs > 50.0 - 5);
+                REQUIRE(diffUs < 50.0 + 5);
             }
         }
 
@@ -157,12 +157,12 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             g_time.wait(10e-3);
             auto end = high_resolution_clock::now();
 
-            THEN("we should wait for 10us +/- 1us")
+            THEN("we should wait for 10us +/- 2.5us")
             {
                 double diffUs = (double)duration_cast<microseconds>(end - start).count();
 
-                REQUIRE(diffUs > 10.0 - 1.0);
-                REQUIRE(diffUs < 10.0 + 1.0);
+                REQUIRE(diffUs > 10.0 - 2.5);
+                REQUIRE(diffUs < 10.0 + 2.5);
             }
         }
 
@@ -172,12 +172,12 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             g_time.wait(1e-3);
             auto end = high_resolution_clock::now();
 
-            THEN("we should wait for 1us +/- 500ns")
+            THEN("we should wait for 1us +3us/-1us")
             {
                 double diffUs = (double)duration_cast<microseconds>(end - start).count();
 
-                REQUIRE(diffUs > 1.0 - 0.5);
-                REQUIRE(diffUs < 1.0 + 0.5);
+                REQUIRE(diffUs > 1.0 - 1.0);
+                REQUIRE(diffUs < 1.0 + 3.0);
             }
         }
     }
