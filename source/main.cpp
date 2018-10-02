@@ -52,8 +52,8 @@ namespace beewatch
             {
                 auto data = dht11->read();
 
-                logger.print(Logger::Info, "Humidity: " + numToStr(data.humidity) + " %");
-                logger.print(Logger::Info, "Temperature: " + numToStr(data.temperature) + " deg Celsius");
+                g_logger.print(Logger::Info, "Humidity: " + numToStr(data.humidity) + " %");
+                g_logger.print(Logger::Info, "Temperature: " + numToStr(data.temperature) + " deg Celsius");
 
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
