@@ -57,6 +57,8 @@ namespace beewatch
         //==============================================================================
         void PWM::write(double dutyCycle)
         {
+            std::lock_guard<std::mutex> guard(_writeMutex);
+
             assert(dutyCycle >= 0.0);
             assert(dutyCycle <= 1.0);
 

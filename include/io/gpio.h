@@ -131,14 +131,14 @@ namespace beewatch
              *
              * @param [in] mode Mode to use on GPIO
              */
-            void setMode(Mode mode);
+            virtual void setMode(Mode mode);
 
             /**
              * @brief Get GPIO mode
              *
              * @returns Current GPIO mode
              */
-            Mode getMode() const;
+            virtual Mode getMode() const;
 
 
             //==============================================================================
@@ -160,14 +160,14 @@ namespace beewatch
              *
              * @param [in] cfg  Resistor configuration
              */
-            void setResistorMode(Resistor mode);
+            virtual void setResistorMode(Resistor mode);
 
             /**
              * @brief Get resistor configuration
              *
              * @returns Current resistor configuration
              */
-            Resistor getResistorMode() const;
+            virtual Resistor getResistorMode() const;
 
 
             //==============================================================================
@@ -185,20 +185,20 @@ namespace beewatch
              * @param [in] type     Type of state change to detect
              * @param [in] callback Callback function to execute in ISR
              */
-            void setEdgeDetection(EdgeType type, void (*callback)(void));
+            virtual void setEdgeDetection(EdgeType type, void (*callback)(void));
 
             /**
              * @brief Get GPIO edge detection mode
              *
              * @returns Current GPIO edge detection mode
              */
-            EdgeType getEdgeDetection() const;
+            virtual EdgeType getEdgeDetection() const;
 
 
             /**
             * @brief Disables state detection
             */
-            void clearEdgeDetection();
+            virtual void clearEdgeDetection();
 
             /**
              * @brief Empty function used to clear egde detection ISR
@@ -212,19 +212,14 @@ namespace beewatch
              *
              * @returns GPIO number
              */
-            int getID() { return _id; }
+            virtual int getID() { return _id; }
 
 
             //==============================================================================
-            std::shared_ptr<external::IWiringPi> getWiringPi() { return _wiringPi; }
+            virtual std::shared_ptr<external::IWiringPi> getWiringPi() { return _wiringPi; }
 
-        private:
-            //==============================================================================
-            std::map<LogicalState, int>   _mapLogicalStateToWiringPi;
-            std::map<GPIO::Mode, int>     _mapModeToWiringPi;
-            std::map<GPIO::Resistor, int> _mapResistorToWiringPi;
-            std::map<GPIO::EdgeType, int> _mapEdgeTypeToWiringPi;
 
+        protected:
             //==============================================================================
             /**
              * @brief Construct and claim GPIO#, where # = id
@@ -238,6 +233,13 @@ namespace beewatch
              */
             GPIO(int id, std::shared_ptr<external::IWiringPi> wiringPi);
 
+
+        private:
+            //==============================================================================
+            std::map<LogicalState, int>   _mapLogicalStateToWiringPi;
+            std::map<GPIO::Mode, int>     _mapModeToWiringPi;
+            std::map<GPIO::Resistor, int> _mapResistorToWiringPi;
+            std::map<GPIO::EdgeType, int> _mapEdgeTypeToWiringPi;
 
             //==============================================================================
             std::shared_ptr<external::IWiringPi> _wiringPi;

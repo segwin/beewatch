@@ -3,6 +3,7 @@
 //==============================================================================
 
 #include "io/tachometer.h"
+#include "timing.h"
 
 #include <chrono>
 
@@ -27,19 +28,30 @@ namespace beewatch
             _gpio->setMode(GPIO::Mode::Input);
         }
 
-        Tachometer::~Tachometer()
-        {
-        }
+        Tachometer::~Tachometer() = default;
 
 
         //==============================================================================
+        static int edgeCount;
+
+        static void incrementPulseCount() { edgeCount++; }
+
         double Tachometer::read()
         {
-            double val = -1.0;
+            std::lock_guard<std::mutex> guard(_readMutex);
 
-            // TODO
+            edgeCount = 0;
+            _gpio->setEdgeDetection(GPIO::EdgeType::Both, &incrementPulseCount);
 
-            return val;
+            // Wait for 500 ms to detect down to 2 pulse/s (1 Hz if nb. pulses per revolution = 2)
+            g_time.wait(c_readTimeMs);
+
+            _gpio->clearEdgeDetection();
+
+            double nbRevolutions = (edgeCount / 2.0) / _pulsesPerRevolution;
+            _speedRpm = 60 * nbRevolutions / (c_readTimeMs / 1e3);
+
+            return _speedRpm;
         }
 
     } // namespace io

@@ -22,6 +22,8 @@ using namespace beewatch;
 using io::LogicalState;
 using io::GPIO;
 
+static void mockCallback() {}
+
 //==============================================================================
 SCENARIO("GPIOs can be claimed and released", "[io]")
 {

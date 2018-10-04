@@ -10,7 +10,7 @@
 #include <thread>
 
 //==============================================================================
-class WiringPiMocked : public beewatch::external::IWiringPi
+class WiringPiMocked final : public beewatch::external::IWiringPi
 {
 public:
     //==============================================================================
@@ -48,5 +48,3 @@ public:
 
     virtual int setISR(int pin, int edgeType, void(*function)(void)) override { lastPin = pin; currentEdgeType = edgeType; currentISR = function; return 0; }
 };
-
-static void mockCallback() { static int counter = 0; ++counter; }

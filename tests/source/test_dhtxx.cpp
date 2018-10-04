@@ -18,10 +18,6 @@ using namespace beewatch;
 using hw::DHTxx;
 
 //==============================================================================
-class DHT11Mocked : public WiringPiMocked
-{
-};
-
 SCENARIO("Application can communicate with a mocked DHT11 sensor", "[hw]")
 {
     // Disable logger

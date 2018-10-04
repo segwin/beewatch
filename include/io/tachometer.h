@@ -33,7 +33,7 @@ namespace beewatch
              * @param [in] gpio                 GPIO to use for PWM
              * @param [in] pulsesPerRevolution  Number of pulses counted per revolution
              */
-            Tachometer(GPIO::Ptr&& gpio, int pulsesPerRevolution);
+            Tachometer(GPIO::Ptr&& gpio, int pulsesPerRevolution = 2);
             
             /**
              * @brief Destroy Tachometer object, releasing owned GPIO
@@ -47,6 +47,8 @@ namespace beewatch
             using Ptr = std::shared_ptr<Tachometer>;
 
             //==============================================================================
+            static constexpr double c_readTimeMs = 500.0;
+
             virtual double read() override;
 
         protected:
