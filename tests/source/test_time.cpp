@@ -103,7 +103,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
             THEN("we should wait for 10us +/- 2.5us")
             {
                 double diffUs = (double)duration_cast<microseconds>(end - start).count();
-                REQUIRE(diffUs == Approx(10.0).margin(2.5));
+                REQUIRE(diffUs == Approx(10.0).margin(5.0));
             }
         }
 
@@ -113,10 +113,10 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
             g_time.wait(1e-3);
             auto end = high_resolution_clock::now();
 
-            THEN("we should wait for 1us +/- 1us")
+            THEN("we should wait for 1us +/- 3us")
             {
                 double diffUs = (double)duration_cast<microseconds>(end - start).count();
-                REQUIRE(diffUs == Approx(1.0).margin(1.0));
+                REQUIRE(diffUs == Approx(1.0).margin(3.0));
             }
         }
     }
@@ -184,10 +184,10 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
             g_time.wait(100e-3);
             double endMs = g_time.now();
 
-            THEN("the difference should be 100us +/- 2.5us")
+            THEN("the difference should be 100us +/- 5us")
             {
                 double diffMs = endMs - startMs;
-                REQUIRE(diffMs == Approx(100e-3).margin(2.5e-3));
+                REQUIRE(diffMs == Approx(100e-3).margin(5e-3));
             }
         }
 
@@ -197,10 +197,10 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
             g_time.wait(10e-3);
             double endMs = g_time.now();
 
-            THEN("the difference should be 10us +/- 1us")
+            THEN("the difference should be 10us +/- 5us")
             {
                 double diffMs = endMs - startMs;
-                REQUIRE(diffMs == Approx(10e-3).margin(1e-3));
+                REQUIRE(diffMs == Approx(10e-3).margin(5e-3));
             }
         }
     }
