@@ -3,6 +3,7 @@
 //==============================================================================
 
 #include "timing.h"
+#include "priority.h"
 
 #include "catch.hpp"
 
@@ -35,12 +36,99 @@ SCENARIO("All Time objects should refer to the same instance", "[time][util][cor
 }
 
 //==============================================================================
+SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][timingSensitive][!mayfail]")
+{
+    GIVEN("the global Time instance and a high process priority")
+    {
+        PriorityGuard priority(Priority::RealTime);
+
+        WHEN("we call time.wait() for 1s")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(1e3);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 1s +/- 5ms")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(1e6).margin(5e3));
+            }
+        }
+
+        WHEN("we call time.wait() for 10ms")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(10.0);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 10ms +/- 1ms")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(10e3).margin(1e3));
+            }
+        }
+
+        WHEN("we call time.wait() for 1ms")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(1.0);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 1ms +/- 500us")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(1e3).margin(500.0));
+            }
+        }
+
+        WHEN("we call time.wait() for 50us")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(50e-3);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 50us +/- 5us")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(50.0).margin(5.0));
+            }
+        }
+
+        WHEN("we call time.wait() for 10us")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(10e-3);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 10us +/- 2.5us")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(10.0).margin(2.5));
+            }
+        }
+
+        WHEN("we call time.wait() for 1us")
+        {
+            auto start = high_resolution_clock::now();
+            g_time.wait(1e-3);
+            auto end = high_resolution_clock::now();
+
+            THEN("we should wait for 1us +/- 1us")
+            {
+                double diffUs = (double)duration_cast<microseconds>(end - start).count();
+                REQUIRE(diffUs == Approx(1.0).margin(1.0));
+            }
+        }
+    }
+}
+
+//==============================================================================
 SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!mayfail]")
 {
-    GIVEN("the global Time instance")
+    GIVEN("the global Time instance and a high process priority")
     {
-        //==============================================================================
-        // Time::now()
+        PriorityGuard priority(Priority::RealTime);
+
         WHEN("we call time.now()")
         {
             double now = g_time.now();
@@ -54,7 +142,7 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
         WHEN("we call time.now() twice with a 1s interval")
         {
             double startMs = g_time.now();
-            std::this_thread::sleep_until(high_resolution_clock::now() + seconds(1));
+            g_time.wait(1e3);
             double endMs = g_time.now();
 
             THEN("the difference should be 1s +/- 1ms")
@@ -67,10 +155,10 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
         WHEN("we call time.now() twice with a 10ms interval")
         {
             double startMs = g_time.now();
-            std::this_thread::sleep_until(high_resolution_clock::now() + milliseconds(10));
+            g_time.wait(10.0);
             double endMs = g_time.now();
 
-            THEN("the difference should be 10ms +/- 1ms")
+            THEN("the difference should be 10ms +/- 500us")
             {
                 double diffMs = endMs - startMs;
                 REQUIRE(diffMs == Approx(10.0).margin(1.0));
@@ -80,110 +168,39 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
         WHEN("we call time.now() twice with a 1ms interval")
         {
             double startMs = g_time.now();
-            std::this_thread::sleep_until(high_resolution_clock::now() + milliseconds(1));
+            g_time.wait(1.0);
             double endMs = g_time.now();
 
-            THEN("the difference should be 1ms +/- 1ms")
+            THEN("the difference should be 1ms +/- 100us")
             {
                 double diffMs = endMs - startMs;
-                REQUIRE(diffMs == Approx(1.0).margin(1.0));
+                REQUIRE(diffMs == Approx(1.0).margin(0.5));
             }
         }
-    }
-}
 
-//==============================================================================
-SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][timingSensitive][!mayfail]")
-{
-    GIVEN("the global Time instance")
-    {
-        WHEN("we call time.wait() for 1s")
+        WHEN("we call time.now() twice with a 100us interval")
         {
-            auto start = high_resolution_clock::now();
-            g_time.wait(1e3);
-            auto end = high_resolution_clock::now();
+            double startMs = g_time.now();
+            g_time.wait(100e-3);
+            double endMs = g_time.now();
 
-            THEN("we should wait for 1s +/- 5ms")
+            THEN("the difference should be 100us +/- 2.5us")
             {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 1e6 - 5e3);
-                REQUIRE(diffUs < 1e6 + 5e3);
+                double diffMs = endMs - startMs;
+                REQUIRE(diffMs == Approx(100e-3).margin(2.5e-3));
             }
         }
 
-        WHEN("we call time.wait() for 10ms")
+        WHEN("we call time.now() twice with a 10us interval")
         {
-            auto start = high_resolution_clock::now();
-            g_time.wait(10.0);
-            auto end = high_resolution_clock::now();
-
-            THEN("we should wait for 10ms +/- 1ms")
-            {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 10e3 - 1e3);
-                REQUIRE(diffUs < 10e3 + 1e3);
-            }
-        }
-
-        WHEN("we call time.wait() for 1ms")
-        {
-            auto start = high_resolution_clock::now();
-            g_time.wait(1.0);
-            auto end = high_resolution_clock::now();
-
-            THEN("we should wait for 1ms +/- 500us")
-            {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 1e3 - 500.0);
-                REQUIRE(diffUs < 1e3 + 500.0);
-            }
-        }
-
-        WHEN("we call time.wait() for 50us")
-        {
-            auto start = high_resolution_clock::now();
-            g_time.wait(50e-3);
-            auto end = high_resolution_clock::now();
-
-            THEN("we should wait for 50us +/- 5us")
-            {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 50.0 - 5);
-                REQUIRE(diffUs < 50.0 + 5);
-            }
-        }
-
-        WHEN("we call time.wait() for 10us")
-        {
-            auto start = high_resolution_clock::now();
+            double startMs = g_time.now();
             g_time.wait(10e-3);
-            auto end = high_resolution_clock::now();
+            double endMs = g_time.now();
 
-            THEN("we should wait for 10us +/- 2.5us")
+            THEN("the difference should be 10us +/- 1us")
             {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 10.0 - 2.5);
-                REQUIRE(diffUs < 10.0 + 2.5);
-            }
-        }
-
-        WHEN("we call time.wait() for 1us")
-        {
-            auto start = high_resolution_clock::now();
-            g_time.wait(1e-3);
-            auto end = high_resolution_clock::now();
-
-            THEN("we should wait for 1us +3us/-1us")
-            {
-                double diffUs = (double)duration_cast<microseconds>(end - start).count();
-
-                REQUIRE(diffUs > 1.0 - 1.0);
-                REQUIRE(diffUs < 1.0 + 3.0);
+                double diffMs = endMs - startMs;
+                REQUIRE(diffMs == Approx(10e-3).margin(1e-3));
             }
         }
     }
