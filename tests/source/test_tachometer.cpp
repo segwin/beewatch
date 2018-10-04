@@ -22,7 +22,7 @@ using namespace beewatch;
 using io::Tachometer;
 
 //==============================================================================
-SCENARIO("Tachometer can be used on a given GPIO", "[io]")
+SCENARIO("Create a Tachometer object to read tacho input on a GPIO", "[tachometer][io][core]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);

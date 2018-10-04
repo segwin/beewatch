@@ -22,7 +22,7 @@ using io::PWM;
 using io::GPIO;
 
 //==============================================================================
-SCENARIO("PWMs can be used on a given GPIO", "[io]")
+SCENARIO("Create a PWM object to set PWM output on a GPIO", "[pwm][io]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);

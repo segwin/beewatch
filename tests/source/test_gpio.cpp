@@ -25,7 +25,7 @@ using io::GPIO;
 static void mockCallback() {}
 
 //==============================================================================
-SCENARIO("GPIOs can be claimed and released", "[io]")
+SCENARIO("Claim and release GPIOs", "[gpio][io][core]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);
@@ -145,7 +145,7 @@ SCENARIO("GPIOs can be claimed and released", "[io]")
 }
 
 //==============================================================================
-SCENARIO("GPIOs can configure, read & write pins", "[io]")
+SCENARIO("Configure, read & write pins using a GPIO object", "[gpio][io][core]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);

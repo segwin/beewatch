@@ -18,7 +18,7 @@ using namespace beewatch;
 using hw::DHTxx;
 
 //==============================================================================
-SCENARIO("Application can communicate with a mocked DHT11 sensor", "[hw]")
+SCENARIO("Application can communicate with a mocked DHT11 sensor", "[dht][hw]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);

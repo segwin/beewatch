@@ -18,7 +18,7 @@ using namespace beewatch;
 using namespace std::chrono;
 
 //==============================================================================
-SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfail]")
+SCENARIO("All Time objects should refer to the same instance", "[time][util][core]")
 {
     GIVEN("the global Time instance")
     {
@@ -31,7 +31,14 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
                 REQUIRE(&g_time == &time2);
             }
         }
+    }
+}
 
+//==============================================================================
+SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!mayfail]")
+{
+    GIVEN("the global Time instance")
+    {
         //==============================================================================
         // Time::now()
         WHEN("we call time.now()")
@@ -50,12 +57,10 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             std::this_thread::sleep_until(high_resolution_clock::now() + seconds(1));
             double endMs = g_time.now();
 
-            THEN("the difference should be 1000ms +/- 5ms")
+            THEN("the difference should be 1s +/- 1ms")
             {
                 double diffMs = endMs - startMs;
-
-                REQUIRE(diffMs > 0.995 * 1000.0);
-                REQUIRE(diffMs < 1.005 * 1000.0);
+                REQUIRE(diffMs == Approx(1e3).margin(1.0));
             }
         }
 
@@ -68,9 +73,7 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             THEN("the difference should be 10ms +/- 1ms")
             {
                 double diffMs = endMs - startMs;
-
-                REQUIRE(diffMs > 10.0 - 1.0);
-                REQUIRE(diffMs < 10.0 + 1.0);
+                REQUIRE(diffMs == Approx(10.0).margin(1.0));
             }
         }
 
@@ -83,14 +86,17 @@ SCENARIO("A Time object can be used to wait & get current time", "[util][!mayfai
             THEN("the difference should be 1ms +/- 1ms")
             {
                 double diffMs = endMs - startMs;
-
-                REQUIRE(diffMs > 1.0 - 1.0);
-                REQUIRE(diffMs < 1.0 + 1.0);
+                REQUIRE(diffMs == Approx(1.0).margin(1.0));
             }
         }
+    }
+}
 
-        //==============================================================================
-        // Time::wait()
+//==============================================================================
+SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][timingSensitive][!mayfail]")
+{
+    GIVEN("the global Time instance")
+    {
         WHEN("we call time.wait() for 1s")
         {
             auto start = high_resolution_clock::now();
