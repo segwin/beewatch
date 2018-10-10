@@ -151,9 +151,13 @@ set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
 configure_file("${global_include_path}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/version.h")
 
 # Find source files
-get_files_recursive(headers "${global_include_path}"          ".*\\\\.h$|\\\\.hpp$")
-get_files_recursive(dynamic_headers "${dynamic_include_path}" ".*\\\\.h$|\\\\.hpp$")
-get_files_recursive(sources "${global_source_path}"           ".*\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|")
+set(headers "")
+set(dynamic_headers "")
+set(sources "")
+
+get_files_recursive(headers         "${global_include_path}"  "\\\\.h$|\\\\.hpp$")
+get_files_recursive(dynamic_headers "${dynamic_include_path}" "\\\\.h$|\\\\.hpp$")
+get_files_recursive(sources         "${global_source_path}"   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$|")
 
 # Include main.cpp separately from the rest
 list(REMOVE_ITEM sources "${global_source_path}/main.cpp")
@@ -166,7 +170,7 @@ set(source_group         "Source Files")
 source_group_by_path(${global_include_path}  "\\\\.h$|\\\\.hpp$" 
     ${header_group} ${headers})
 source_group_by_path(${dynamic_include_path} "\\\\.h$|\\\\.hpp$" 
-    ${header_group} ${dynamic_headers})
+    ${header_group_dynamic} ${dynamic_headers})
 source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
     ${source_group} ${sources})
 
@@ -231,7 +235,71 @@ endif()
 # Tests
 #
 
-add_subdirectory(tests)
+# Test target
+set(tests "test${META_PROJECT_NAME}")
+message(STATUS "Test ${META_PROJECT_NAME}")
+
+# Tests directories
+set(tests_path         "${CMAKE_CURRENT_SOURCE_DIR}/tests")
+set(tests_include_path "${tests_path}/include")
+set(tests_source_path  "${tests_path}/source")
+set(tests_lib_path     "${tests_path}/lib")
+
+# Find source files
+set(tests_headers "")
+set(tests_sources "")
+set(tests_libs    "")
+
+get_files_recursive(tests_headers "${tests_include_path}" "\\\\.h$|\\\\.hpp$")
+get_files_recursive(tests_sources "${tests_source_path}"  "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$")
+get_files_recursive(tests_libs    "${tests_lib_path}"     "\\\\.h$|\\\\.hpp$")
+
+# Group source files
+set(tests_header_group "Header Files")
+set(tests_source_group "Source Files")
+
+source_group_by_path(${tests_include_path}  "\\\\.h$|\\\\.hpp$"                   ${tests_header_group} ${tests_headers})
+source_group_by_path(${tests_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" ${tests_source_group} ${tests_sources})
+
+# Build executable
+add_executable(${tests}
+    ${tests_sources}
+    ${tests_headers}
+    ${tests_libs}
+)
+
+# Set include directories
+target_include_directories(${tests}
+    PRIVATE
+    ${DEFAULT_INCLUDE_DIRECTORIES}
+    ${tests_include_path}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${PROJECT_BINARY_DIR}/include
+
+    SYSTEM PRIVATE
+    ${tests_lib_path}
+)
+
+# Set compile options
+target_compile_options(${tests}
+    PRIVATE
+    ${DEFAULT_COMPILE_OPTIONS}
+    ${DEFAULT_LINKER_OPTIONS}
+)
+
+set_target_properties(${tests} PROPERTIES LINK_FLAGS "${DEFAULT_LINKER_OPTIONS}")
+
+# Link libraries
+if (NOT WIRINGPI_LIB)
+    set(WIRINGPI_LIB "")
+endif()
+
+target_link_libraries(${tests}
+    PRIVATE
+    ${DEFAULT_LIBRARIES}
+    ${PROJECT_LIB}
+    ${WIRINGPI_LIB}
+)
 
 
 # 
