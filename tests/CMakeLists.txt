@@ -61,7 +61,7 @@ target_compile_options(${target}
     ${DEFAULT_LINKER_OPTIONS}
 )
 
-set_target_properties(${target} PROPERTIES LINK_FLAGS ${DEFAULT_LINKER_OPTIONS})
+set_target_properties(${target} PROPERTIES LINK_FLAGS "${DEFAULT_LINKER_OPTIONS}")
 
 
 
