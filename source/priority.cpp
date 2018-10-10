@@ -22,6 +22,11 @@ int sched_get_priority_min(int) { return -19; }
 #include <cstring>
 #include <map>
 
+#ifdef WIN32
+#pragma warning(push)
+#pragma warning(disable: 4100)
+#endif
+
 namespace beewatch
 {
 
@@ -93,3 +98,7 @@ namespace beewatch
     }
 
 } // namespace beewatch
+
+#ifdef WIN32
+#pragma warning(pop)
+#endif

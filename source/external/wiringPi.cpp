@@ -33,6 +33,16 @@
 #define INT_EDGE_BOTH       3
 #endif
 
+#ifndef HAS_WIRINGPI
+#ifdef __linux__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma warning(push)
+#pragma warning(disable: 4100)
+#endif
+#endif
+
 namespace beewatch
 {
     namespace external
@@ -153,3 +163,11 @@ namespace beewatch
 
     } // namespace external
 } // namespace beewatch
+
+#ifndef HAS_WIRINGPI
+#ifdef __linux__
+#pragma GCC diagnostic pop
+#else
+#pragma warning(pop)
+#endif
+#endif

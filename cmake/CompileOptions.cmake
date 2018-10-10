@@ -68,8 +68,8 @@ set(DEFAULT_COMPILE_OPTIONS)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     set(DEFAULT_COMPILE_OPTIONS ${DEFAULT_COMPILE_OPTIONS}
         /MP           # -> build with multiple processes
-        /W3           # -> warning level 3
-        # /WX         # -> treat warnings as errors
+        /W4           # -> warning level 3
+        /WX           # -> treat warnings as errors
 
         /wd4251       # -> disable warning: 'identifier': class 'type' needs to have dll-interface to be used by clients of class 'type2'
         /wd4592       # -> disable warning: 'identifier': symbol will be dynamically initialized (implementation limitation)
@@ -97,6 +97,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCH
         -Wall
         -Wextra
         -Wunused
+        -Werror
 
         -Wignored-qualifiers
         -Wmissing-braces

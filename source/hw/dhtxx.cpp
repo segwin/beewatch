@@ -109,7 +109,7 @@ namespace beewatch
              * 0. Allocate memory for data and timestamps
              */
             std::array<uint8_t, READ_BYTES> bytes;
-            std::fill(bytes.begin(), bytes.end(), 0);
+            bytes.fill(0);
 
             uint16_t byte = 0;
             uint16_t mask = 0b1000'0000;
