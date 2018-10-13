@@ -35,7 +35,12 @@ namespace beewatch::hw
 
     void Fan::write(double speedRpm)
     {
-        return _pwm->write(_maxSpeedRpm / speedRpm);
+        if (speedRpm < 0.0 || speedRpm > _maxSpeedRpm)
+        {
+            throw std::invalid_argument("Received invalid Fan speed: " + std::to_string(speedRpm) + " RPM");
+        }
+
+        return _pwm->write(speedRpm / _maxSpeedRpm);
     }
 
 } // namespace beewatch::hw

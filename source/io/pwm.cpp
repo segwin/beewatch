@@ -57,8 +57,10 @@ namespace beewatch::io
     {
         std::lock_guard<std::mutex> guard(_writeMutex);
 
-        assert(dutyCycle >= 0.0);
-        assert(dutyCycle <= 1.0);
+        if (dutyCycle < 0.0 || dutyCycle > 1.0)
+        {
+            throw std::invalid_argument("Received invalid PWM duty cycle: " + std::to_string(dutyCycle));
+        }
 
         _gpio->getWiringPi()->pwmWrite(_gpio->getID(), static_cast<int>(dutyCycle * c_range));
         _dutyCycle = dutyCycle;
