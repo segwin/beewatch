@@ -38,13 +38,25 @@ set(META_CMAKE_INIT_SHA      "${GIT_REV}")
 string(MAKE_C_IDENTIFIER ${META_PROJECT_NAME} META_PROJECT_ID)
 string(TOUPPER ${META_PROJECT_ID} META_PROJECT_ID)
 
-set(PROJECT_EXE "${META_PROJECT_NAME}")
-set(PROJECT_LIB "lib${META_PROJECT_NAME}")
+set(project_exe "${META_PROJECT_NAME}")
+set(project_lib "lib${META_PROJECT_NAME}")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-    set(PROJECT_EXE "${PROJECT_EXE}d")
-    set(PROJECT_LIB "${PROJECT_LIB}d")
+    set(project_exe "${project_exe}d")
+    set(project_lib "${PROJECT_LIB}d")
 endif()
+
+# Build options
+find_package(Doxygen)
+
+if (${DOXYGEN_FOUND} STREQUAL "YES" AND ${DOXYGEN_DOT_FOUND} STREQUAL "YES")
+    set(build_doc_default ON)
+else()
+    set(build_doc_default OFF)
+endif()
+
+option(BUILD_DOCUMENTATION "Create HTML documentation using Doxygen" ${build_doc_default})
+
 
 
 # 
@@ -133,9 +145,9 @@ if(NOT SYSTEM_DIR_INSTALL)
 endif()
 
 # Check for external libraries
-find_library(WIRINGPI_LIB wiringPi)
+find_library(wiringpi_lib wiringPi)
 
-if (WIRINGPI_LIB)
+if (wiringpi_lib)
     add_definitions(-DHAS_WIRINGPI)
 endif()
 
@@ -148,7 +160,7 @@ set(dynamic_include_path "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
 
 # Generate version-header
-configure_file("${global_include_path}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/version.h")
+configure_file("${global_include_path}/version.h.in" "${dynamic_include_path}/version.h")
 
 # Find source files
 set(headers "")
@@ -179,21 +191,21 @@ source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp
 # Library
 #
 
-add_library(${PROJECT_LIB}
+add_library(${project_lib}
     ${sources}
     ${headers} ${dynamic_headers}
 )
 
 # Add include directories
-target_include_directories(${PROJECT_LIB}
+target_include_directories(${project_lib}
     PRIVATE
     ${DEFAULT_INCLUDE_DIRECTORIES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
+    ${global_include_path}
+    ${dynamic_include_path}
 )
 
 # Set compile options
-target_compile_options(${PROJECT_LIB}
+target_compile_options(${project_lib}
     PRIVATE
     ${DEFAULT_COMPILE_OPTIONS}
 )
@@ -202,27 +214,27 @@ target_compile_options(${PROJECT_LIB}
 #
 # Executable (only build on target platform)
 #
-if (UNIX AND WIRINGPI_LIB)
-    add_executable (${PROJECT_EXE} ${global_source_path}/main.cpp)
+if (UNIX AND wiringpi_lib)
+    add_executable (${project_exe} ${global_source_path}/main.cpp)
 
     # Add include directories
-    target_include_directories(${PROJECT_EXE}
+    target_include_directories(${project_exe}
         PRIVATE
         ${DEFAULT_INCLUDE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR}/include
+        ${global_include_path}
+        ${dynamic_include_path}
     )
 
     # Link external libraries
-    target_link_libraries(${PROJECT_EXE}
+    target_link_libraries(${project_exe}
         PRIVATE
         ${DEFAULT_LIBRARIES}
-        ${PROJECT_LIB}
-        ${WIRINGPI_LIB}
+        ${project_lib}
+        ${wiringpi_lib}
     )
 
 	# Set compile options
-	target_compile_options(${PROJECT_EXE}
+	target_compile_options(${project_exe}
 		PRIVATE
 		${DEFAULT_COMPILE_OPTIONS}
 	)
@@ -290,16 +302,42 @@ target_compile_options(${tests}
 set_target_properties(${tests} PROPERTIES LINK_FLAGS "${DEFAULT_LINKER_OPTIONS}")
 
 # Link libraries
-if (NOT WIRINGPI_LIB)
-    set(WIRINGPI_LIB "")
+if (NOT wiringpi_lib)
+    set(wiringpi_lib "")
 endif()
 
 target_link_libraries(${tests}
     PRIVATE
     ${DEFAULT_LIBRARIES}
-    ${PROJECT_LIB}
-    ${WIRINGPI_LIB}
+    ${project_lib}
+    ${wiringpi_lib}
 )
+
+
+#
+# Documentation (doxygen)
+#
+
+if (BUILD_DOCUMENTATION)
+    set(doxyfile_in "${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in")
+    set(doxyfile    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
+
+    configure_file(${doxyfile_in} ${doxyfile})
+    
+    set(doc_path "${CMAKE_CURRENT_SOURCE_DIR}/doc")
+
+    add_custom_target(doc_directory
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${doc_path}")
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        WORKING_DIRECTORY ${doc_path}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+
+    add_dependencies(doc doc_directory)
+endif()
+
 
 
 # 

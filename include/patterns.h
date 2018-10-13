@@ -24,7 +24,7 @@ namespace beewatch
      *   - Prohibits move operations
      *   - Provides get() method giving access to the singleton instance
      *
-     * @tparam Class    Name of class to apply single ownership to
+     * @tparam Class    Name of class to apply pattern to
      */
     template <typename Class>
     struct singleton_t
@@ -54,7 +54,7 @@ namespace beewatch
 
     //==============================================================================
     /**
-     * @struct unqiue_ownership_t
+     * @struct unique_ownership_t
      *
      * Class paradigm restricting each instance to a single owner.
      *
@@ -64,7 +64,7 @@ namespace beewatch
      *   - Allows move operations
      *   - Sets a using-declaration mapping Ptr to std::shared_ptr<Class>
      *
-     * @tparam Class    Name of class to apply unique ownership to
+     * @tparam Class    Name of class to apply pattern to
      */
     template <typename Class>
     struct unique_ownership_t
@@ -96,7 +96,7 @@ namespace beewatch
      *   - Allows move operations
      *   - Sets a using-declaration mapping Ptr to std::shared_ptr<Class>
      *
-     * @tparam Class    Name of class to apply shared ownership to
+     * @tparam Class    Name of class to apply pattern to
      */
     template <typename Class>
     struct shared_ownership_t

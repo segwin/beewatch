@@ -18,7 +18,7 @@ namespace beewatch::hw
 
     //==============================================================================
     /**
-     * @class DHT
+     * @class DHTxx
      *
      * Models a DHT sensor, which reports temperature & humidity
      * over a serial interface.

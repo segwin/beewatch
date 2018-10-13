@@ -122,6 +122,3 @@ namespace beewatch::external
 
 }
 
-namespace beewatch {
-    using external::WiringPi;
-}
