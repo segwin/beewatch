@@ -4,8 +4,6 @@
 
 #include "io/pwm.h"
 
-#include <external/wiringPi.h>
-
 #include <algorithm>
 #include <array>
 #include <cassert>
