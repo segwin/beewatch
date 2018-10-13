@@ -21,6 +21,8 @@ test:
 
 doc:
   stage: deploy
+  before_script:
+    - apt update && apt -y install build-essential cmake doxygen graphviz
   script:
     - make doc
   artifacts:
