@@ -73,22 +73,12 @@ namespace beewatch
         closelog();
     }
 
-
-    //==============================================================================
-    Logger& Logger::getInstance()
-    {
-        static Logger loggerSingleton;
-        return loggerSingleton;
-    }
-
-
     //==============================================================================
     void Logger::setVerbosity(Level logLevel)
     {
         _verbosity = logLevel;
         setlogmask( LOG_UPTO(mapLevelToSyslog.at(logLevel)) );
     }
-
 
     //==============================================================================
     void Logger::print(Level logLevel, const std::string& msg, bool addLevel)
@@ -151,6 +141,6 @@ namespace beewatch
     }
 
     //==============================================================================
-    Logger& g_logger = Logger::getInstance();
+    Logger& g_logger = Logger::get();
 
 } // namespace beewatch

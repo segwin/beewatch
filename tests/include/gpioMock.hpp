@@ -50,7 +50,7 @@ public:
         stopEdgeDetect = false;
         edgeSimTriggerCount = 0;
 
-        edgeDetectThread.reset(new std::thread(&GPIOMocked::edgeDetectWorker, this, type, callback));
+        edgeDetectThread = std::make_unique<std::thread>(&GPIOMocked::edgeDetectWorker, this, type, callback);
     }
 
     virtual void clearEdgeDetection() override

@@ -7,52 +7,51 @@
 
 #include <chrono>
 
-namespace beewatch
+namespace beewatch::io
 {
-    namespace io
+
+    //==============================================================================
+    Tachometer::Tachometer(GPIO::Ptr&& gpio, int pulsesPerRevolution)
+        : _pulsesPerRevolution(pulsesPerRevolution)
     {
-
-        //==============================================================================
-        Tachometer::Tachometer(GPIO::Ptr&& gpio, int pulsesPerRevolution)
-            : _pulsesPerRevolution(pulsesPerRevolution)
+        if (!gpio)
         {
-            if (!gpio)
-            {
-                throw std::invalid_argument("Received undefined GPIO");
-            }
-
-            // Take ownership of GPIO
-            _gpio = std::move(gpio);
-
-            // Configure GPIO
-            _gpio->setMode(GPIO::Mode::Input);
+            throw std::invalid_argument("Received undefined GPIO");
         }
 
-        Tachometer::~Tachometer() = default;
+        // Take ownership of GPIO
+        _gpio = std::move(gpio);
 
+        // Configure GPIO
+        _gpio->setMode(GPIO::Mode::Input);
+    }
 
-        //==============================================================================
-        static int edgeCount;
+    Tachometer::~Tachometer() = default;
 
-        static void incrementPulseCount() { edgeCount++; }
+    //==============================================================================
+    static int edgeCount;
 
-        double Tachometer::read()
-        {
-            std::lock_guard<std::mutex> guard(_readMutex);
+    static void incrementPulseCount()
+    {
+        edgeCount++;
+    }
 
-            edgeCount = 0;
-            _gpio->setEdgeDetection(GPIO::EdgeType::Both, &incrementPulseCount);
+    double Tachometer::read()
+    {
+        std::lock_guard<std::mutex> guard(_readMutex);
 
-            // Wait for 500 ms to detect down to 2 pulse/s (1 Hz if nb. pulses per revolution = 2)
-            g_time.wait(c_readTimeMs);
+        edgeCount = 0;
+        _gpio->setEdgeDetection(GPIO::EdgeType::Both, &incrementPulseCount);
 
-            _gpio->clearEdgeDetection();
+        // Wait for 500 ms to detect down to 2 pulse/s (1 Hz if nb. pulses per revolution = 2)
+        g_time.wait(c_readTimeMs);
 
-            double nbRevolutions = (edgeCount / 2.0) / _pulsesPerRevolution;
-            _speedRpm = 60 * nbRevolutions / (c_readTimeMs / 1e3);
+        _gpio->clearEdgeDetection();
 
-            return _speedRpm;
-        }
+        double nbRevolutions = (edgeCount / 2.0) / _pulsesPerRevolution;
+        _speedRpm = 60 * nbRevolutions / (c_readTimeMs / 1e3);
 
-    } // namespace io
-} // namespace beewatch
+        return _speedRpm;
+    }
+
+} // namespace beewatch::io

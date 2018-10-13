@@ -4,32 +4,38 @@
 
 #include "hw/fan.h"
 
-namespace beewatch
+namespace beewatch::hw
 {
-    namespace hw
+
+    //==============================================================================
+    Fan::Fan(io::PWM::Ptr&& pwmOut, double maxSpeedRpm)
+        : _maxSpeedRpm(maxSpeedRpm)
     {
+        _pwm = std::move(pwmOut);
+    }
 
-        //==============================================================================
-        Fan::Fan(io::GPIO::Ptr&& fanGpio, io::GPIO::Ptr&& tachometerGpio, double maxSpeedRpm)
-            : _pwm(std::move(fanGpio)),
-              _tachometer(std::move(tachometerGpio), 2),
-              _maxSpeedRpm(maxSpeedRpm)
+    Fan::Fan(io::PWM::Ptr&& pwmOut, io::Tachometer::Ptr&& tachometerIn, double maxSpeedRpm)
+        : Fan(std::move(pwmOut), maxSpeedRpm)
+    {
+        _tachometer = std::move(tachometerIn);
+    }
+
+    Fan::~Fan() = default;
+
+    //==============================================================================
+    double Fan::read()
+    {
+        if (!_tachometer)
         {
+            throw std::runtime_error("Called read() on a Fan without a Tachometer!");
         }
 
-        Fan::~Fan() = default;
+        return _tachometer->read();
+    }
 
-        //==============================================================================
-        double Fan::read()
-        {
-            return _tachometer.read();
-        }
+    void Fan::write(double speedRpm)
+    {
+        return _pwm->write(_maxSpeedRpm / speedRpm);
+    }
 
-        void Fan::write(double speedRpm)
-        {
-            return _pwm.write(_maxSpeedRpm / speedRpm);
-        }
-
-
-    } // namespace hw
-} // namespace beewatch
+} // namespace beewatch::hw

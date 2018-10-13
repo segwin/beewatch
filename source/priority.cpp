@@ -42,28 +42,24 @@ namespace beewatch
         setPriority(_prevLvl);
     }
 
-    
     //==============================================================================
-    const std::map<Priority, int> lvlToNice =
-    {
-        std::make_pair(Priority::Normal, 0),
-        std::make_pair(Priority::RealTime, -20),
-        std::make_pair(Priority::Background, 19)
-    };
+    const std::map<Priority, int> lvlToNice {
+            std::make_pair(Priority::Normal, 0),
+            std::make_pair(Priority::RealTime, -20),
+            std::make_pair(Priority::Background, 19)
+        };
 
-    const std::map<Priority, int> lvlToSchedPolicy =
-    {
-        std::make_pair(Priority::Normal, SCHED_OTHER),
-        std::make_pair(Priority::RealTime, SCHED_FIFO),
-        std::make_pair(Priority::Background, SCHED_OTHER)
-    };
+    const std::map<Priority, int> lvlToSchedPolicy {
+            std::make_pair(Priority::Normal, SCHED_OTHER),
+            std::make_pair(Priority::RealTime, SCHED_FIFO),
+            std::make_pair(Priority::Background, SCHED_OTHER)
+        };
 
-    const std::map<Priority, int> lvlToSchedPriority =
-    {
-        std::make_pair(Priority::Normal, 0),
-        std::make_pair(Priority::RealTime, sched_get_priority_max(SCHED_FIFO)),
-        std::make_pair(Priority::Background, sched_get_priority_min(SCHED_OTHER)),
-    };
+    const std::map<Priority, int> lvlToSchedPriority {
+            std::make_pair(Priority::Normal, 0),
+            std::make_pair(Priority::RealTime, sched_get_priority_max(SCHED_FIFO)),
+            std::make_pair(Priority::Background, sched_get_priority_min(SCHED_OTHER)),
+        };
 
     void PriorityGuard::setPriority(Priority lvl)
     {

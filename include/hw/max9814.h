@@ -4,40 +4,37 @@
 
 #pragma once
 
+#include "io/io.h"
+#include "io/gpio.h"
+
+#include "patterns.h"
+
 #include <memory>
 
-namespace beewatch
+namespace beewatch::hw
 {
-    namespace hw
+
+    //==============================================================================
+    /**
+     * @class MAX9814
+     *
+     * Models a MAX9814 audio amplifier
+     */
+    class MAX9814 : public unique_ownership_t<MAX9814>,
+                    public io::Input<double>
     {
+    public:
+        //==============================================================================
+        /**
+         * @brief Construct MAX9814 object
+         */
+        MAX9814();
 
         //==============================================================================
         /**
-         * @class MAX9814
-         *
-         * Models a MAX9814 audio amplifier
+         * @brief Destroy MAX9814 object
          */
-        class MAX9814
-        {
-        public:
-            //==============================================================================
-            /**
-             * Unique pointer to a MAX9814 object
-             */
-            using Ptr = std::unique_ptr<MAX9814>;
+        virtual ~MAX9814();
+    };
 
-            //==============================================================================
-            /**
-             * @brief Construct MAX9814 object
-             */
-            MAX9814();
-
-            //==============================================================================
-            /**
-             * @brief Destroy MAX9814 object
-             */
-            virtual ~MAX9814();
-        };
-
-    } // namespace hw
 } // namespace beewatch

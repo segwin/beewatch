@@ -8,6 +8,8 @@
 #include <thread>
 
 #ifdef WIN32
+#define CLOCK_MONOTONIC_RAW 4
+
 // Windows clock_gettime() adapted from Asain Kujovic's implementation:
 // https://stackoverflow.com/a/31335254
 #include <Windows.h>
@@ -74,13 +76,6 @@ namespace beewatch
     }
 
     //==============================================================================
-    Time& Time::getInstance()
-    {
-        static Time timeSingleton;
-        return timeSingleton;
-    }
-
-    //==============================================================================
     double Time::now() const
     {
         timespec now;
@@ -111,6 +106,6 @@ namespace beewatch
     }
 
     //==============================================================================
-    Time& g_time = Time::getInstance();
+    Time& g_time = Time::get();
 
 } // namespace beewatch

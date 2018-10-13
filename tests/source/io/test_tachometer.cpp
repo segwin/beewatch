@@ -33,7 +33,7 @@ SCENARIO("Create a Tachometer object to read tacho input on a GPIO", "[tachomete
 
         WHEN("a Tachometer is constructed for this gpio")
         {
-            Tachometer::Ptr tachometer(new Tachometer(std::move(gpioMock)));
+            Tachometer::Ptr tachometer = std::make_unique<Tachometer>(std::move(gpioMock));
 
             THEN("the mocked GPIO should be consumed by the Tachometer object")
             {
@@ -50,7 +50,7 @@ SCENARIO("Create a Tachometer object to read tacho input on a GPIO", "[tachomete
         WHEN("a Tachometer is constructed with " + std::to_string(pulsesPerRevolution) + " pulses per revolution")
         {
             GPIOMocked * rawGpioPtr = dynamic_cast<GPIOMocked*>(gpioMock.get());
-            Tachometer::Ptr tachometer(new Tachometer(std::move(gpioMock), pulsesPerRevolution));
+            Tachometer::Ptr tachometer = std::make_unique<Tachometer>(std::move(gpioMock), pulsesPerRevolution);
 
             for (int frequencyHz : c_frequencyHzCases)
             for (int dutyCyclePct : c_dutyCyclePctCases)

@@ -6,12 +6,10 @@
 
 #include <algorithm>
 
-namespace beewatch
+namespace beewatch::hw
 {
-    namespace hw
-    {
 
+    //==============================================================================
+    // TODO
 
-
-    } // namespace hw
-} // namespace beewatch
+} // namespace beewatch::hw

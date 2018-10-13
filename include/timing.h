@@ -4,13 +4,9 @@
 
 #pragma once
 
+#include "patterns.h"
+
 #include <ctime>
-
-#ifdef WIN32
-#define CLOCK_MONOTONIC_RAW 4
-
-int clock_gettime(int, timespec *spec);
-#endif
 
 namespace beewatch
 {
@@ -20,22 +16,11 @@ namespace beewatch
      *
      * Keeps track of current time and 
      */
-    class Time
+    class Time : public singleton_t<Time>
     {
     public:
         //==============================================================================
-        Time(const Time&) = delete;
-        void operator=(const Time&) = delete;
-
         ~Time() = default;
-
-        //==============================================================================
-        /**
-         * @brief Returns a reference to the singleton class instance
-         *
-         * @returns Singleton Time object
-         */
-        static Time& getInstance();
 
         //==============================================================================
         /**
@@ -53,7 +38,8 @@ namespace beewatch
          */
         void wait(double timeMs) const;
 
-    private:
+
+    protected:
         //==============================================================================
         /**
          * @brief Construct a Time object
@@ -66,6 +52,8 @@ namespace beewatch
          */
         Time();
 
+
+    private:
         //==============================================================================
         /// Time point at construction
         timespec _start;

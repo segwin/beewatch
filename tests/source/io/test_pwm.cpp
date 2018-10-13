@@ -55,7 +55,7 @@ SCENARIO("Create a PWM object to set PWM output on a GPIO", "[pwm][io]")
         WHEN("a PWM object is constructed for that GPIO")
         {
             GPIO * rawGpioPtr = gpio.get();
-            PWM::Ptr pwm = std::make_shared<PWM>(std::move(gpio));
+            PWM::Ptr pwm = std::make_unique<PWM>(std::move(gpio));
 
             THEN("the GPIO should be consumed by the PWM")
             {
@@ -95,7 +95,7 @@ SCENARIO("Create a PWM object to set PWM output on a GPIO", "[pwm][io]")
 
         AND_GIVEN("a PWM configured with that GPIO")
         {
-            PWM::Ptr pwm = std::make_shared<PWM>(std::move(gpio));
+            PWM::Ptr pwm = std::make_unique<PWM>(std::move(gpio));
 
             WHEN("a value (42%) is written to the PWM interface")
             {

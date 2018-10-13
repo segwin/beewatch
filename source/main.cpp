@@ -1,7 +1,9 @@
 #include "hw/dhtxx.h"
 #include "hw/hx711.h"
 #include "io/gpio.h"
+
 #include "logging.h"
+#include "patterns.h"
 
 #include <chrono>
 #include <cmath>
@@ -10,31 +12,14 @@
 #include <vector>
 #include <thread>
 
-
-//==============================================================================
 namespace beewatch
 {
 
     //==============================================================================
-    class Manager
+    class Manager : public singleton_t<Manager>
     {
     public:
-        Manager()
-        {
-            // Populate GPIO list
-            for (int i = 0; i < io::GPIO::NUM_GPIO; ++i)
-            {
-                gpioMap[i] = io::GPIO::claim(i);
-            }
-
-            // Initialise DHT11
-            dht11.reset( new hw::DHTxx(hw::DHTxx::Type::DHT22, std::move(gpioMap[16])) );
-
-            // Initialise HX711
-            //hx711.reset( new hw::HX711(std::move(gpioMap[11]),
-            //                           std::move(gpioMap[8])) );
-        }
-
+        //==============================================================================
         template <typename T>
         static std::string numToStr(T num, int decimalPlaces = 2)
         {
@@ -59,13 +44,35 @@ namespace beewatch
             }
         }
 
+
+    protected:
+        //==============================================================================
+        Manager()
+        {
+            // Populate GPIO list
+            for (int i = 0; i < io::GPIO::NUM_GPIO; ++i)
+            {
+                gpioMap[i] = io::GPIO::claim(i);
+            }
+
+            // Initialise DHT11
+            dht11 = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, std::move(gpioMap[16]));
+
+            // Initialise HX711
+            //hx711 = std::make_unique<hw::HX711>(std::move(gpioMap[11]), std::move(gpioMap[8]));
+        }
+
+
     private:
+        //==============================================================================
         std::map<int, io::GPIO::Ptr> gpioMap;
 
         hw::DHTxx::Ptr dht11;
         hw::HX711::Ptr hx711;
     };
 
+    //==============================================================================
+    Manager& g_manager = Manager::get();
 
 } // namespace beewatch
 
@@ -73,8 +80,6 @@ namespace beewatch
 //==============================================================================
 int main(int, char*[])
 {
-    beewatch::Manager mgr;
-    mgr.ctrlLoop();
-
+    beewatch::g_manager.ctrlLoop();
     return 0;
 }

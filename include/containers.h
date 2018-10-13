@@ -1,5 +1,7 @@
 #pragma once
 
+#include "patterns.h"
+
 #include <map>
 #include <mutex>
 #include <shared_mutex>
@@ -15,7 +17,7 @@ namespace beewatch
      * Map of unique keys & values that can be accessed bidirectionally
      */
     template <typename T1, typename T2>
-    class BidirectionalMap
+    class BidirectionalMap : public shared_ownership_t<BidirectionalMap<T1, T2>>
     {
     public:
         //==============================================================================

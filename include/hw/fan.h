@@ -4,77 +4,74 @@
 
 #pragma once
 
-#include "io/gpio.h"
 #include "io/io.h"
 #include "io/pwm.h"
 #include "io/tachometer.h"
 
 #include <memory>
 
-namespace beewatch
+namespace beewatch::hw
 {
-    namespace hw
+
+    //==============================================================================
+    /**
+     * @class Fan
+     *
+     * Models a 4-pin PWM fan
+     */
+    class Fan : public unique_ownership_t<Fan>,
+                public io::InputOutput<double>
     {
+    public:
+        //==============================================================================
+        /**
+         * @brief Construct Fan object (write-only)
+         *
+         * @param [in] pwmOut           GPIO connected to fan's PWM input
+         * @param [in] maxSpeedRpm      Fan's max speed in RPM
+         */
+        Fan(io::PWM::Ptr&& pwmOut, double maxSpeedRpm);
+
+        /**
+         * @brief Construct Fan object (read + write)
+         *
+         * @param [in] pwmOut           GPIO connected to fan's PWM input
+         * @param [in] tachometerIn     GPIO connected to fan's tachometer output
+         * @param [in] maxSpeedRpm      Fan's max speed in RPM
+         */
+        Fan(io::PWM::Ptr&& pwmOut, io::Tachometer::Ptr&& tachometerIn, double maxSpeedRpm);
+
+        /**
+         * @brief Destroy Fan object
+         */
+        virtual ~Fan();
 
         //==============================================================================
         /**
-         * @class Fan
+         * @brief Read current fan speed
          *
-         * Models a 4-pin PWM fan
+         * @returns Current fan speed in RPM
          */
-        class Fan : public io::InputOutput<double>
-        {
-        public:
-            //==============================================================================
-            /**
-             * Unique pointer to a Fan object
-             */
-            using Ptr = std::unique_ptr<Fan>;
+        double read() override;
+
+        /**
+         * @brief Write new fan speed
+         *
+         * @param [in] speedRpm New fan speed in RPM
+         */
+        void write(double speedRpm) override;
+
+        //==============================================================================
+        double getMaxSpeedRpm() { return _maxSpeedRpm; }
 
 
-            //==============================================================================
-            /**
-             * @brief Construct Fan object
-             *
-             * @param [in] fanGpio          GPIO connected to fan's PWM input
-             * @param [in] tachometerGpio   GPIO connected to fan's tachometer output
-             * @param [in] maxSpeedRpm      Fan's max speed in RPM
-             */
-            Fan(io::GPIO::Ptr&& fanGpio, io::GPIO::Ptr&& tachometerGpio, double maxSpeedRpm);
+    private:
+        //==============================================================================
+        io::PWM::Ptr _pwm;
+        io::Tachometer::Ptr _tachometer;
 
-            /**
-             * @brief Destroy Fan object
-             */
-            virtual ~Fan();
+        //==============================================================================
+        double _maxSpeedRpm;
+    };
 
-
-            //==============================================================================
-            /**
-             * @brief Read current fan speed
-             *
-             * @returns Current fan speed in RPM
-             */
-            double read() override;
-
-            /**
-             * @brief Write new fan speed
-             *
-             * @param [in] speedRpm New fan speed in RPM
-             */
-            void write(double speedRpm) override;
-
-
-            //==============================================================================
-            double getMaxSpeedRpm() { return _maxSpeedRpm; }
-
-
-        protected:
-            //==============================================================================
-            io::PWM _pwm;
-            io::Tachometer _tachometer;
-
-            double _maxSpeedRpm;
-        };
-
-    } // namespace hw
-} // namespace beewatch
+} // namespace beewatch::hw

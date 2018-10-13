@@ -23,9 +23,6 @@ namespace beewatch
         {
         public:
             //==============================================================================
-            using Ptr = std::shared_ptr<Input<T>>;
-
-            //==============================================================================
             virtual T read() = 0;
 
         protected:
@@ -45,9 +42,6 @@ namespace beewatch
         {
         public:
             //==============================================================================
-            using Ptr = std::shared_ptr<Output<T>>;
-
-            //==============================================================================
             virtual void write(T) = 0;
 
         protected:
@@ -65,9 +59,6 @@ namespace beewatch
         template <typename T>
         class InputOutput : public Input<T>, public Output<T>
         {
-        public:
-            //==============================================================================
-            using Ptr = std::shared_ptr<InputOutput<T>>;
         };
 
     } // namespace io

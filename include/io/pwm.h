@@ -7,73 +7,67 @@
 #include "io.h"
 #include "gpio.h"
 
+#include "patterns.h"
+
 #include <map>
 
-namespace beewatch
+namespace beewatch::io
 {
-    namespace io
+
+    //==============================================================================
+    /**
+     * @class PWM
+     *
+     * Models a PWM output interface
+     */
+    class PWM : public unique_ownership_t<PWM>,
+                public Output<double>
     {
+    public:
+        //==============================================================================
+        /**
+         * @brief Construct a PWM object on a given GPIO
+         *
+         * NB: Consumes the given GPIO. It will be released on object destruction.
+         *
+         * @param [in] gpio         GPIO to use for PWM
+         * @param [in] pwmFreqHz    PWM target frequency (Hz)
+         */
+        PWM(GPIO::Ptr&& gpio);
+
+        /**
+         * @brief Destroy PWM object, releasing owned GPIO
+         */
+        virtual ~PWM();
 
         //==============================================================================
         /**
-         * @class PWM
+         * @brief Set the PWM duty cycle to the given ratio
          *
-         * Models a PWM output interface
+         * @param [in] dutyCycle    Duty cycle expressed as a ratio between 0 and 1
          */
-        class PWM : public Output<double>
-        {
-        public:
-            //==============================================================================
-            /**
-             * @brief Construct a PWM object on a given GPIO
-             *
-             * NB: Consumes the given GPIO. It will be released on object destruction.
-             *
-             * @param [in] gpio         GPIO to use for PWM
-             * @param [in] pwmFreqHz    PWM target frequency (Hz)
-             */
-            PWM(GPIO::Ptr&& gpio);
+        virtual void write(double dutyCycle) override;
 
-            /**
-             * @brief Destroy PWM object, releasing owned GPIO
-             */
-            virtual ~PWM();
+        /**
+         * @brief Get duty cycle from last write()
+         *
+         * @returns Current duty cycle
+         */
+        double getDutyCycle() const { return _dutyCycle; }
 
-            //==============================================================================
-            /**
-             * Shared pointer to a PWM object
-             */
-            using Ptr = std::shared_ptr<PWM>;
+        //==============================================================================
+        static constexpr int c_range = 1024;
 
-            //==============================================================================
-            /**
-             * @brief Set the PWM duty cycle to the given ratio
-             *
-             * @param [in] dutyCycle    Duty cycle expressed as a ratio between 0 and 1
-             */
-            virtual void write(double dutyCycle) override;
-
-            /**
-             * @brief Get duty cycle from last write()
-             *
-             * @returns Current duty cycle
-             */
-            double getDutyCycle() const { return _dutyCycle; }
-
-            //==============================================================================
-            static constexpr int c_range = 1024;
-
-            static constexpr int c_clockMaxHz = 19'200'000;
-            static constexpr int c_clockHz = 20'000;
+        static constexpr int c_clockMaxHz = 19'200'000;
+        static constexpr int c_clockHz = 20'000;
 
 
-        private:
-            //==============================================================================
-            GPIO::Ptr _gpio;
+    private:
+        //==============================================================================
+        GPIO::Ptr _gpio;
 
-            //==============================================================================
-            double _dutyCycle;
-        };
+        //==============================================================================
+        double _dutyCycle;
+    };
 
-    } // namespace io
-} // namespace beewatch
+} // namespace beewatch::io

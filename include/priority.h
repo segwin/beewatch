@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "patterns.h"
 
 namespace beewatch
 {
@@ -28,7 +29,7 @@ namespace beewatch
      * Sets thread priority using RAII semantics to manage priority settings
      * with a fixed lifetime.
      */
-    class PriorityGuard
+    class PriorityGuard final : public unique_ownership_t<PriorityGuard>
     {
     public:
         //==============================================================================

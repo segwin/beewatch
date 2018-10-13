@@ -25,7 +25,7 @@ SCENARIO("All Time objects should refer to the same instance", "[time][util][cor
     {
         WHEN("we get a new reference to the Time instance")
         {
-            Time& time2 = Time::getInstance();
+            Time& time2 = Time::get();
 
             THEN("the two references should refer to the same object")
             {
