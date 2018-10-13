@@ -20,6 +20,7 @@ test:
     - bin/testbeewatch
 
 pages:
+  stage: deploy
   before_script:
     - apt update && apt -y install build-essential cmake doxygen graphviz
   script:
