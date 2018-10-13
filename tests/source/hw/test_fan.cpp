@@ -23,7 +23,7 @@ using io::PWM;
 using io::Tachometer;
 
 //==============================================================================
-SCENARIO("A Fan object can be built for a 3-pin fan (PWM only)")
+SCENARIO("A Fan object can be built for a 3-pin fan (PWM only)", "[fan][hw]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);
@@ -57,7 +57,7 @@ SCENARIO("A Fan object can be built for a 3-pin fan (PWM only)")
     }
 }
 
-SCENARIO("A Fan object can be built for a 4-pin fan (PWM + tachometer)")
+SCENARIO("A Fan object can be built for a 4-pin fan (PWM + tachometer)", "[fan][hw]")
 {
     // Disable logger
     g_logger.setVerbosity(Logger::Unattainable);
