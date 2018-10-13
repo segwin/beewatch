@@ -24,6 +24,7 @@ doc:
   before_script:
     - apt update && apt -y install build-essential cmake doxygen graphviz
   script:
+    - cmake . -G "Unix Makefiles"
     - make doc
   artifacts:
     paths:
