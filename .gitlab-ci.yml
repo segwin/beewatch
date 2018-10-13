@@ -18,3 +18,11 @@ test:
   stage: test
   script:
     - bin/testbeewatch
+
+doc:
+  stage: deploy
+  script:
+    - make doc
+  artifacts:
+    paths:
+      - doc
