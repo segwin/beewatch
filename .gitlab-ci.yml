@@ -19,13 +19,15 @@ test:
   script:
     - bin/testbeewatch
 
-doc:
-  stage: deploy
+pages:
   before_script:
     - apt update && apt -y install build-essential cmake doxygen graphviz
   script:
     - cmake . -G "Unix Makefiles"
     - make doc
+    - mv doc/html/ public/
   artifacts:
     paths:
-      - doc
+      - public
+  only:
+    - master
