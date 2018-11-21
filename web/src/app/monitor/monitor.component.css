@@ -1,0 +1,15 @@
+.monitor-list {
+    padding: 24px 0 0 24px;
+}
+
+.monitor-list .monitor {
+    display: inline-block;
+    width: 400px;
+    max-width: calc(100% - 60px);
+    margin-right: 24px;
+    margin-bottom: 24px;
+}
+
+.monitor-details {
+
+}

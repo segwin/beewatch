@@ -1,0 +1,28 @@
+<div id="root" class="full-width full-height">
+  <mat-toolbar id="nav" color="primary">
+    <div class="content-wrap full-width centered">
+      <mat-form-field id="name-editor" [class.active]="editingName" class="name-editor centered">
+        <input #nameEditor matInput [(ngModel)]="name" maxlength="256"
+               (focus)="editingName = true;"
+               (blur)="editingName = false;"
+               (keyup.enter)="nameEditor.blur()"> 
+      </mat-form-field>
+    </div>
+  </mat-toolbar>
+
+  <!--<mat-sidenav-container id="content-container">
+    <mat-sidenav #drawer id="sidenav" [opened]="screenWidth > 840" [mode]="(screenWidth > 840) ? 'side' : 'over'">
+      <button mat-ripple mat-button color="accent"
+              *ngFor="let page of pages"
+              class="nav-button"
+              [class.active]="page == currentPage"
+              (click)="changePage(page)">
+        {{ page }}
+      </button>
+    </mat-sidenav>
+
+  </mat-sidenav-container>-->
+  <div class="content-wrap full-height full-width centered">
+    <app-monitor></app-monitor>
+  </div>
+</div>
