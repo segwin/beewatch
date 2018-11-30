@@ -1,14 +1,29 @@
 <script src="node_modules/chart.js/dist/chart.js"></script>
 
 <div class="monitor-list">
-  <mat-card class="monitor"
-            *ngFor="let monitor of monitors"
-            (click)="onSelect(monitor)">
-    <mat-card-title>Hive {{ monitor.id }}</mat-card-title>
-    <mat-grid-list cols="2" rowHeight="200px">
-      <mat-grid-tile>Indoor temperature + humidity chart</mat-grid-tile>
-      <mat-grid-tile>Outdoor temperature + humidty chart</mat-grid-tile>
-      <mat-grid-tile [colspan]="2">Hive mass chart</mat-grid-tile>
-    </mat-grid-list>
-  </mat-card>
+  <div class="monitor" *ngFor="let monitor of monitors">
+    <h3>Hive {{ monitor.id }}</h3>
+    <div class="charts">
+      <mat-card class="chart">
+        <mat-card-title>Temperature (°C)</mat-card-title>
+        <mat-card-content>
+          <canvas [id]="'temperature-' + monitor.id.toString()"></canvas>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart">
+        <mat-card-title>Humidity (%)</mat-card-title>
+        <mat-card-content>
+          <canvas [id]="'humidity-' + monitor.id.toString()"></canvas>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart">
+        <mat-card-title>Hive mass</mat-card-title>
+        <mat-card-content>
+
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 </div>
