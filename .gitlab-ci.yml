@@ -3,7 +3,7 @@ image: resin/rpi-raspbian:stretch
 build:
   stage: build
   before_script:
-    - apt update && apt -y install build-essential cmake
+    - apt update && apt -y install build-essential cmake libcpprest-dev
     - gcc --version
     - cmake --version
   script:
@@ -22,7 +22,7 @@ test:
 pages:
   stage: deploy
   before_script:
-    - apt update && apt -y install build-essential cmake doxygen graphviz
+    - apt update && apt -y install build-essential cmake doxygen graphviz libcpprest-dev
   script:
     - cmake . -G "Unix Makefiles"
     - make doc
