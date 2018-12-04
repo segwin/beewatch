@@ -5,6 +5,7 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 
 namespace beewatch
 {
@@ -23,6 +24,39 @@ namespace beewatch
     inline constexpr bool contains(InputIterator first, InputIterator last, const Value& val)
     {
         return std::find(first, last, val) != last;
+    }
+
+    //==============================================================================
+    /**
+     * @brief Get average value in range
+     *
+     * NB: Value type must implement operator+ and operator*. We assume the value to be numeric.
+     * 
+     * @param [in] first    Iterator to first element in range
+     * @param [in] last     Iterator to last element in range (typically container.end())
+     */
+    template <typename InputIterator>
+    inline constexpr typename std::iterator_traits<InputIterator>::value_type average(InputIterator first, InputIterator last)
+    {
+        using ValueType = typename std::iterator_traits<InputIterator>::value_type;
+        auto size = std::distance(first, last);
+        
+        std::transform(first, last, first, [size](ValueType value) { return value / size; });
+
+        return std::accumulate(first, last, 0);
+    }
+
+    //==============================================================================
+    /**
+     * @brief Removes all elements in container that match the given predicate
+     * 
+     * @param [in] container    Container in which to filter out elements
+     * @param [in] predicate    Predicate to use to filter container
+     */
+    template <typename Container, typename UnaryPredicate>
+    inline constexpr void filter(Container& container, UnaryPredicate predicate)
+    {
+        container.erase(std::remove_if(container.begin(), container.end(), predicate), container.end());
     }
 
 } // namespace beewatch
