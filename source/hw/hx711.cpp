@@ -3,10 +3,14 @@
 //==============================================================================
 
 #include "hw/hx711.h"
+
+#include "algorithms.h"
+#include "priority.h"
 #include "timing.h"
 
 #include <cassert>
 #include <iostream>
+#include <limits>
 
 namespace beewatch::hw
 {
@@ -44,6 +48,12 @@ namespace beewatch::hw
     //==============================================================================
     double HX711::read()
     {
+        // Only one read is allowed at a time
+        std::lock_guard<std::mutex> lock(_readMutex);
+
+        // Require real-time thread and process priority
+        PriorityGuard realtime(Priority::RealTime);
+
         // Save energy by keeping HX711 powered off except during reads
         enable();
 
@@ -58,8 +68,6 @@ namespace beewatch::hw
     int32_t HX711::readRaw()
     {
         assert(isValid());
-
-        std::lock_guard<std::mutex> lock(_readMutex);
         
         uint32_t val;
         uint8_t data[3];
@@ -103,26 +111,30 @@ namespace beewatch::hw
 
     int32_t HX711::readRawAvg(size_t numSamples)
     {
-        // Sample HX711 output N times and average results
-        int64_t samplesSum = 0;
+        // Sample HX711 output N times
+        std::vector<int32_t> samples;
 
-        for (int i = 0; i < NUM_SAMPLES_PER_READ; ++i)
+        for (size_t i = 0; i < numSamples; ++i)
         {
-            samplesSum += readRaw();
+            samples.push_back(readRaw());
         }
 
-        int32_t avgVal = (int32_t)((double)samplesSum / (double)numSamples);
+        // Compute average and filter outliers
+        int32_t avg = average(samples.begin(), samples.end());
+        filter(samples, [&](int32_t sample) { return sample > 1.25 * avg || sample < 0.75 * avg; });
 
-        assert(avgVal > (int32_t)0xFF800000 && avgVal < (int32_t)0x007FFFFF);
+        // Recalculate average
+        avg = average(samples.begin(), samples.end());
 
-        return avgVal;
+        assert(avg > (int32_t)0xFF800000 && avg < (int32_t)0x007FFFFF);
+
+        return avg;
     }
 
     
     //==============================================================================
     void HX711::enable()
     {
-        std::lock_guard<std::mutex> lock(_readMutex);
         _pdSck->write(io::LogicalState::LO);
 
         _isOn = true;
@@ -130,7 +142,6 @@ namespace beewatch::hw
 
     void HX711::disable()
     {
-        std::lock_guard<std::mutex> lock(_readMutex);
         _pdSck->write(io::LogicalState::HI);
 
         _isOn = false;
@@ -156,26 +167,24 @@ namespace beewatch::hw
         std::cout << std::endl;
 
         /// Run read cycle to configure HX711 channel & gain factor
-        readRaw();
+        read();
 
         /// Measure tare
-        std::string dummy;
-
         std::cout << "Remove all weight from the sensor, then press <ENTER> to continue. ";
-        std::cin >> dummy;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.clear();
 
         std::cout << "  -> Measuring tare..." << std::endl;
 
-        _tare = readRawAvg(NUM_SAMPLES_PER_READ);
+        _tare = read();
 
-        std::cout << "  -> Tare value = " << _tare << " [V]" << std::endl;
+        std::cout << "  -> Tare value = " << _tare << " [steps]" << std::endl;
 
         std::cout << std::endl;
 
         /// Measure scale factor
         std::cout << "Place a known weight on the sensor, then press <ENTER> to continue. ";
-        std::cin >> dummy;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin.clear();
 
         double testMassKg;
@@ -191,25 +200,23 @@ namespace beewatch::hw
             {
                 std::cout << "    ** Invalid input! Value must be a valid fractional or whole number." << std::endl;
 
-                std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cin.clear();
             }
         }
 
         std::cout << "  -> Test mass = " << testMassKg << " [kg]" << std::endl;
 
-        int32_t val = readRawAvg(NUM_SAMPLES_PER_READ);
-        std::cout << "  -> Measured value = " << val << " [V]" << std::endl;
+        int32_t val = read();
+        std::cout << "  -> Measured value = " << val << " [steps]" << std::endl;
 
         _kgPerVolt = testMassKg / (double)(val - _tare);
-        std::cout << "  -> Resulting scale factor = " << _kgPerVolt << " [kg/V]" << std::endl;
+        std::cout << "  -> Resulting scale factor = " << _kgPerVolt << " [kg/step]" << std::endl;
     }
 
     //==============================================================================
     inline uint8_t HX711::shiftIn()
     {
-        assert(isReady());
-
         // Shift in 1 byte
         uint8_t result = 0;
 
