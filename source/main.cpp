@@ -4,6 +4,7 @@
 
 #include "logging.h"
 #include "patterns.h"
+#include "timing.h"
 
 #include <chrono>
 #include <cmath>
@@ -40,6 +41,11 @@ namespace beewatch
                 g_logger.print(Logger::Info, "Humidity: " + numToStr(data.humidity) + " %");
                 g_logger.print(Logger::Info, "Temperature: " + numToStr(data.temperature) + " deg Celsius");
 
+                // Measure mass
+                //auto mass = hx711->read();
+                //
+                //g_logger.print(Logger::Info, "Mass: " + numToStr(mass) + " kg");
+
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
         }
@@ -49,30 +55,19 @@ namespace beewatch
         //==============================================================================
         Manager()
         {
-            // Populate GPIO list
-            for (int i = 0; i < io::GPIO::NUM_GPIO; ++i)
-            {
-                gpioMap[i] = io::GPIO::claim(i);
-            }
-
             // Initialise DHT11
-            dht11 = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, std::move(gpioMap[16]));
+            dht11 = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, io::GPIO::claim(16));
 
             // Initialise HX711
-            //hx711 = std::make_unique<hw::HX711>(std::move(gpioMap[11]), std::move(gpioMap[8]));
+            //hx711 = std::make_unique<hw::HX711>(io::GPIO::claim(5), io::GPIO::claim(6));
         }
 
 
     private:
         //==============================================================================
-        std::map<int, io::GPIO::Ptr> gpioMap;
-
         hw::DHTxx::Ptr dht11;
         hw::HX711::Ptr hx711;
     };
-
-    //==============================================================================
-    Manager& g_manager = Manager::get();
 
 } // namespace beewatch
 
@@ -80,6 +75,7 @@ namespace beewatch
 //==============================================================================
 int main(int, char*[])
 {
-    beewatch::g_manager.ctrlLoop();
+    auto& manager = beewatch::Manager::get();
+    manager.ctrlLoop();
     return 0;
 }
