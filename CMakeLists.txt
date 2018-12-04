@@ -58,7 +58,6 @@ endif()
 option(BUILD_DOCUMENTATION "Create HTML documentation using Doxygen" ${build_doc_default})
 
 
-
 # 
 # Declare project
 # 
@@ -151,6 +150,9 @@ if (wiringpi_lib)
     add_definitions(-DHAS_WIRINGPI)
 endif()
 
+set(cpprestsdk_DIR /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/cmake/)
+find_package(cpprestsdk REQUIRED)
+
 
 # 
 # Sources
@@ -231,6 +233,7 @@ if (UNIX AND wiringpi_lib)
         ${DEFAULT_LIBRARIES}
         ${project_lib}
         ${wiringpi_lib}
+        cpprestsdk::cpprest
     )
 
 	# Set compile options
