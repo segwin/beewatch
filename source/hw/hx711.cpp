@@ -75,7 +75,7 @@ namespace beewatch::hw
         // Wait for ready state
         while (!isReady())
         {
-            g_time.wait(10e-3);
+            g_timeRaw.wait(10e-3);
         }
 
         // Read data (24 bit integer)
@@ -222,9 +222,9 @@ namespace beewatch::hw
 
         for (int i = 0; i < 8; ++i)
         {
-            g_time.wait(1e-3);
+            g_timeRaw.wait(1e-3);
             _pdSck->write(io::LogicalState::HI);
-            g_time.wait(1e-3);
+            g_timeRaw.wait(1e-3);
 
             result |= (uint8_t)_dout->read() << (7 - i);
             

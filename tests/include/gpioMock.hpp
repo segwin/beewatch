@@ -75,7 +75,7 @@ private:
         const double edgeSimPeriodMs = 1e3 / edgeSimFrequencyHz;
 
         // Wait for given fraction of a cycle (used to test various offsets)
-        g_time.wait(edgeSimPeriodMs * edgeSimCycleOffsetRatio);
+        g_timeRaw.wait(edgeSimPeriodMs * edgeSimCycleOffsetRatio);
 
         if (type == EdgeType::None)
         {
@@ -92,14 +92,14 @@ private:
             {
                 callback();
                 edgeSimTriggerCount++;
-                g_time.wait(waitLoMs);
+                g_timeRaw.wait(waitLoMs);
 
                 if (stopEdgeDetect)
                     break;
 
                 callback();
                 edgeSimTriggerCount++;
-                g_time.wait(waitHiMs);
+                g_timeRaw.wait(waitHiMs);
             }
         }
         else    // EdgeType::Rising or EdgeType::Falling
@@ -109,7 +109,7 @@ private:
             {
                 callback();
                 edgeSimTriggerCount++;
-                g_time.wait(edgeSimPeriodMs);
+                g_timeRaw.wait(edgeSimPeriodMs);
             }
         }
     }

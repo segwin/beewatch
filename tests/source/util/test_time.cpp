@@ -19,17 +19,27 @@ using namespace beewatch;
 using namespace std::chrono;
 
 //==============================================================================
-SCENARIO("All Time objects should refer to the same instance", "[time][util][core]")
+SCENARIO("All Time objects with the same clock should refer to the same instance", "[time][util][core]")
 {
-    GIVEN("the global Time instance")
+    GIVEN("the global Time instances")
     {
-        WHEN("we get a new reference to the Time instance")
+        WHEN("we get a new reference to the monotonic Time instance")
         {
-            Time& time2 = Time::get();
+            auto& time2 = Time<CLOCK_MONOTONIC_RAW>::get();
 
             THEN("the two references should refer to the same object")
             {
-                REQUIRE(&g_time == &time2);
+                REQUIRE(&g_timeRaw == &time2);
+            }
+        }
+
+        WHEN("we get a new reference to the realtime Time instance")
+        {
+            auto& time2 = Time<CLOCK_REALTIME>::get();
+
+            THEN("the two references should refer to the same object")
+            {
+                REQUIRE(&g_timeReal == &time2);
             }
         }
     }
@@ -38,14 +48,14 @@ SCENARIO("All Time objects should refer to the same instance", "[time][util][cor
 //==============================================================================
 SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][timingSensitive][!mayfail]")
 {
-    GIVEN("the global Time instance and a high process priority")
+    GIVEN("the global monotonic Time instance and a high process priority")
     {
         PriorityGuard priority(Priority::RealTime);
 
         WHEN("we call time.wait() for 1s")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(1e3);
+            g_timeRaw.wait(1e3);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 1s +/- 5ms")
@@ -58,7 +68,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
         WHEN("we call time.wait() for 10ms")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(10.0);
+            g_timeRaw.wait(10.0);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 10ms +/- 1ms")
@@ -71,7 +81,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
         WHEN("we call time.wait() for 1ms")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(1.0);
+            g_timeRaw.wait(1.0);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 1ms +/- 500us")
@@ -84,7 +94,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
         WHEN("we call time.wait() for 50us")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(50e-3);
+            g_timeRaw.wait(50e-3);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 50us +/- 5us")
@@ -97,7 +107,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
         WHEN("we call time.wait() for 10us")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(10e-3);
+            g_timeRaw.wait(10e-3);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 10us +/- 2.5us")
@@ -110,7 +120,7 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
         WHEN("we call time.wait() for 1us")
         {
             auto start = high_resolution_clock::now();
-            g_time.wait(1e-3);
+            g_timeRaw.wait(1e-3);
             auto end = high_resolution_clock::now();
 
             THEN("we should wait for 1us +/- 3us")
@@ -125,13 +135,13 @@ SCENARIO("Use Time::wait() to delay by a given amount of time", "[time][util][ti
 //==============================================================================
 SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!mayfail]")
 {
-    GIVEN("the global Time instance and a high process priority")
+    GIVEN("the global monotonic Time instance and a high process priority")
     {
         PriorityGuard priority(Priority::RealTime);
 
         WHEN("we call time.now()")
         {
-            double now = g_time.now();
+            double now = g_timeRaw.now();
 
             THEN("we get some arbritrary non-negative value")
             {
@@ -141,9 +151,9 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
 
         WHEN("we call time.now() twice with a 1s interval")
         {
-            double startMs = g_time.now();
-            g_time.wait(1e3);
-            double endMs = g_time.now();
+            double startMs = g_timeRaw.now();
+            g_timeRaw.wait(1e3);
+            double endMs = g_timeRaw.now();
 
             THEN("the difference should be 1s +/- 1ms")
             {
@@ -154,9 +164,9 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
 
         WHEN("we call time.now() twice with a 10ms interval")
         {
-            double startMs = g_time.now();
-            g_time.wait(10.0);
-            double endMs = g_time.now();
+            double startMs = g_timeRaw.now();
+            g_timeRaw.wait(10.0);
+            double endMs = g_timeRaw.now();
 
             THEN("the difference should be 10ms +/- 500us")
             {
@@ -167,9 +177,9 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
 
         WHEN("we call time.now() twice with a 1ms interval")
         {
-            double startMs = g_time.now();
-            g_time.wait(1.0);
-            double endMs = g_time.now();
+            double startMs = g_timeRaw.now();
+            g_timeRaw.wait(1.0);
+            double endMs = g_timeRaw.now();
 
             THEN("the difference should be 1ms +/- 100us")
             {
@@ -180,9 +190,9 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
 
         WHEN("we call time.now() twice with a 100us interval")
         {
-            double startMs = g_time.now();
-            g_time.wait(100e-3);
-            double endMs = g_time.now();
+            double startMs = g_timeRaw.now();
+            g_timeRaw.wait(100e-3);
+            double endMs = g_timeRaw.now();
 
             THEN("the difference should be 100us +/- 5us")
             {
@@ -193,9 +203,9 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
 
         WHEN("we call time.now() twice with a 10us interval")
         {
-            double startMs = g_time.now();
-            g_time.wait(10e-3);
-            double endMs = g_time.now();
+            double startMs = g_timeRaw.now();
+            g_timeRaw.wait(10e-3);
+            double endMs = g_timeRaw.now();
 
             THEN("the difference should be 10us +/- 5us")
             {
@@ -204,4 +214,6 @@ SCENARIO("Use Time::now() to get current time", "[time][util][timingSensitive][!
             }
         }
     }
+
+    // TODO: Add tests for g_timeReal object (compare to system time)
 }

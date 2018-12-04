@@ -122,10 +122,10 @@ namespace beewatch::hw
         _gpio->setMode(GPIO::Mode::Output);
 
         _gpio->write(LogicalState::LO);
-        g_time.wait(20.0);
+        g_timeRaw.wait(20.0);
 
         _gpio->write(LogicalState::HI);
-        g_time.wait(40e-3);
+        g_timeRaw.wait(40e-3);
 
         _gpio->setMode(GPIO::Mode::Input);
 
@@ -134,11 +134,11 @@ namespace beewatch::hw
          * 2. DHT should signal LO (80us), then HI (80us)
          */
         // LO
-        start = g_time.now();
+        start = g_timeRaw.now();
 
         do
         {
-            now = g_time.now();
+            now = g_timeRaw.now();
             diff = now - start;
 
             if (diff > READ_TIMEOUT_US)
@@ -148,11 +148,11 @@ namespace beewatch::hw
         } while (_gpio->read() == LogicalState::LO);
 
         // LO
-        start = g_time.now();
+        start = g_timeRaw.now();
 
         do
         {
-            now = g_time.now();
+            now = g_timeRaw.now();
             diff = now - start;
 
             if (diff > READ_TIMEOUT_US)
@@ -167,11 +167,11 @@ namespace beewatch::hw
         for (int i = 0; i < READ_BITS; ++i)
         { 
             // LO
-            start = g_time.now();
+            start = g_timeRaw.now();
 
             do
             {
-                now = g_time.now();
+                now = g_timeRaw.now();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)
@@ -181,11 +181,11 @@ namespace beewatch::hw
             } while (_gpio->read() == LogicalState::LO);
 
             // HI
-            start = g_time.now();
+            start = g_timeRaw.now();
 
             do
             {
-                now = g_time.now();
+                now = g_timeRaw.now();
                 diff = now - start;
 
                 if (diff > READ_TIMEOUT_US)

@@ -44,7 +44,7 @@ namespace beewatch::io
         _gpio->setEdgeDetection(GPIO::EdgeType::Both, &incrementPulseCount);
 
         // Wait for 500 ms to detect down to 2 pulse/s (1 Hz if nb. pulses per revolution = 2)
-        g_time.wait(c_readTimeMs);
+        g_timeRaw.wait(c_readTimeMs);
 
         _gpio->clearEdgeDetection();
 
