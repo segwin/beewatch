@@ -1,4 +1,4 @@
-image: resin/rpi-raspbian:stretch
+image: ubuntu:latest
 
 build:
   stage: build
