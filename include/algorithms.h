@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <string>
 
 namespace beewatch
 {
