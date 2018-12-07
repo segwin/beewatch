@@ -78,7 +78,7 @@ Ubuntu are both supported.
 
 **Ubuntu Core:**
 
-```
+```bash
 # Install cpprestsdk library
 apt install libcpprest-dev
 
