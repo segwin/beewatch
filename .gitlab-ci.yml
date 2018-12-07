@@ -4,7 +4,7 @@ build:
   stage: build
   before_script:
     # Install build dependencies
-    - apt update && apt -y install build-essential cmake nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubuntu0.2 libcpprest-dev npm libssl-dev
+    - apt update && apt -y install build-essential cmake nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubuntu0.2 libcpprest-dev npm libssl-dev git
     - gcc --version
     - cmake --version
 
