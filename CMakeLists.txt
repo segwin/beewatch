@@ -191,6 +191,16 @@ source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp
 
 
 #
+# Web app
+#
+
+add_custom_target(${project_web}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/web
+    COMMAND ng build --progress=true
+)
+
+
+#
 # Library
 #
 
@@ -213,14 +223,8 @@ target_compile_options(${project_lib}
     ${DEFAULT_COMPILE_OPTIONS}
 )
 
-
-#
-# Web app
-#
-
-add_custom_target(${project_web}
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/web/ && ng build --progress=true
-)
+# Add web page dependency
+add_dependencies(${project_lib} ${project_web})
 
 
 #
