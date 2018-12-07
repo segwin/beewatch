@@ -40,6 +40,7 @@ string(TOUPPER ${META_PROJECT_ID} META_PROJECT_ID)
 
 set(project_exe "${META_PROJECT_NAME}")
 set(project_lib "lib${META_PROJECT_NAME}")
+set(project_web "web")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
     set(project_exe "${project_exe}d")
@@ -210,6 +211,15 @@ target_include_directories(${project_lib}
 target_compile_options(${project_lib}
     PRIVATE
     ${DEFAULT_COMPILE_OPTIONS}
+)
+
+
+#
+# Web app
+#
+
+add_custom_target(${project_web}
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/web/ && ng build --progress=true
 )
 
 

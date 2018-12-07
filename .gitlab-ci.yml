@@ -3,9 +3,14 @@ image: ubuntu:latest
 build:
   stage: build
   before_script:
-    - apt update && apt -y install build-essential cmake libcpprest-dev
+    # Install build dependencies
+    - apt update && apt -y install build-essential cmake libcpprest-dev npm
     - gcc --version
     - cmake --version
+
+    # Install Angular dependencies
+    - npm install -g @angular/cli
+    - cd web/ && npm install && npm update && npm install
   script:
     - cmake . -G "Unix Makefiles"
     - make
@@ -13,6 +18,7 @@ build:
     paths:
       - bin
       - lib
+      - web/dist
 
 test:
   stage: test
