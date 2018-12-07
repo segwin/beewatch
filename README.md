@@ -35,10 +35,10 @@ interface. To track all the items on the project's wishlist, please see the issu
 
 ### Who is it for?
 
-My dad, who lives in the countryside in eastern Ontario, Canada and is relatively new
-to beekeeping. This is an open source project though, so anyone else with similar needs
-should be able to build a similar system for themselves using the same parts and the software
-provided here.
+My dad, who lives in eastern Ontario, Canada and is relatively new to beekeeping.
+This is an open source project though, so anyone else with similar needs should
+be able to build a similar system for themselves using the same parts and the
+software provided here.
 
 
 ## Getting started
