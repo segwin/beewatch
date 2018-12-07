@@ -10,7 +10,7 @@ build:
 
     # Install Angular dependencies
     - npm install -g @angular/cli
-    - cd web/ && npm install && npm update && npm install
+    - cd web/ && npm install && npm update && npm install && cd ../
   script:
     - cmake . -G "Unix Makefiles"
     - make
