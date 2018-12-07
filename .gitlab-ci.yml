@@ -27,8 +27,8 @@ pages:
     - cmake . -G "Unix Makefiles"
     - make doc
     - mv doc/html/ public/
-#  artifacts:
-#    paths:
-#      - public
+  artifacts:
+    paths:
+      - public
   only:
     - master
