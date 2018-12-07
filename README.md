@@ -76,7 +76,7 @@ can house enough fans to ensure enough airflow to manage the internal environmen
 The project is designed to run on any Raspberry Pi board since the model A+. Raspbian and
 Ubuntu are both supported.
 
-*Ubuntu Core:*
+***Ubuntu Core:***
 
 ```
 # Install cpprestsdk library
@@ -95,7 +95,7 @@ cd vendor/wiringpi/
 # Build & install application
 ```
 
-*Raspbian:*
+***Raspbian:***
 ```bash
 # Install wiringpi library
 apt install wiringpi
