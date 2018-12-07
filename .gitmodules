@@ -1,0 +1,6 @@
+[submodule "vendor/wiringpi"]
+	path = vendor/wiringpi
+	url = git://git.drogon.net/wiringPi
+[submodule "vendor/cpprestsdk"]
+	path = vendor/cpprestsdk
+	url = https://github.com/Microsoft/cpprestsdk.git
