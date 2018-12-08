@@ -7,6 +7,8 @@ int main(int argc, char* argv[])
     {
         // 
         auto& app = beewatch::Manager::get();
+
+        app.init(argc, argv);
         app.start();
     }
     catch (const std::exception& e)

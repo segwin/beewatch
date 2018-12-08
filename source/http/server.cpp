@@ -108,8 +108,12 @@ namespace beewatch::http
         const auto relative_uri = request.relative_uri();
         auto uri = string::tolower(relative_uri.path());
 
-        // Remove trailing slashes except for root path ('/')
-        while (uri.size() > 1 && uri.back() == '/')
+        // Remove root separator
+        if (!uri.empty() && uri.front() == '/')
+            uri.erase(0, 1);
+
+        // Remove trailing slashes
+        while (!uri.empty() && uri.back() == '/')
             uri.pop_back();
 
         return uri;
@@ -316,7 +320,7 @@ namespace beewatch::http
         
 
         // Create listener and add handler for supported methods
-        http_listener listener("http://localhost");
+        http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/");
 
         listener.support(methods::GET,  answerRequest);
         listener.support(methods::POST, answerRequest);

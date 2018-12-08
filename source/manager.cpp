@@ -27,8 +27,10 @@ namespace beewatch
     //==============================================================================
     void Manager::init(int argc, char * argv[])
     {
-        std::map<std::string, std::string> args;
         std::string exeName = argv[0];
+
+        std::string webRoot = "";
+        int webPort = 8080;
 
         for (int i = 1; i < argc; ++i)
         {
@@ -36,16 +38,46 @@ namespace beewatch
 
             if (arg == "-w" || arg == "--web-root")
             {
-                if (i + 1 < argc)
+                if (i + 1 < argc && argv[i+1][0] != '-')
                 {
                     i++;
-                    args["web-root"] = argv[i];
+                    webRoot = argv[i];
                 }
                 else
                 {
                     std::cerr << "Expected path after \"" << arg << "\" option!" << std::endl;
                     printUsage(exeName);
+                    exit(-1);
                 }
+            }
+            else if (arg == "-p" || arg == "--port")
+            {
+                if (i + 1 < argc && argv[i+1][0] != '-')
+                {
+                    i++;
+
+                    try
+                    {
+                        webPort = std::stoi(argv[i]);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Received invalid argument for \"" << arg << "\" option!" << std::endl;
+                        printUsage(exeName);
+                        exit(-1);
+                    }
+                }
+                else
+                {
+                    std::cerr << "Expected port value after \"" << arg << "\" option!" << std::endl;
+                    printUsage(exeName);
+                    exit(-1);
+                }
+            }
+            else if (arg == "-d" || arg == "--debug")
+            {
+                std::cout << "Enabling debug logs" << std::endl;
+                g_logger.setVerbosity(Logger::Debug);
             }
             else if (arg == "-h" || "--help")
             {
@@ -54,24 +86,38 @@ namespace beewatch
             }
         }
 
-        if (args["web-root"].empty())
+        if (webRoot.empty())
         {
             std::cerr << "No argument for \"--web-root\" provided!" << std::endl;
             printUsage(exeName);
+            exit(-1);
         }
         else
         {
-            _webServer = std::make_unique<http::Server>(80, args["web-root"], *this);
+            _webServer = std::make_unique<http::Server>(webPort, webRoot, *this);
         }
     }
 
     void Manager::printUsage(std::string exeName)
     {
-        std::cout << exeName << " [-w|--web /path/to/web/dist] [-h|--help]" << std::endl
+        std::cout << exeName << " [-w|--web /path/to/web/dist] [-d|--debug] [-h|--help]" << std::endl
                   << std::endl
                   << "Arguments:" << std::endl
                   << "    -w, --web /path/to/web/dist       (Required) Specify path to web page build directory" << std::endl
+                  << "    -p, --port port                   Port to listen on for web server (default: 8080)" << std::endl
+                  << "    -d, --debug                       Enable debug logging (default: off)" << std::endl
                   << "    -h, --help                        Display this help message" << std::endl;
+    }
+    
+    //==============================================================================
+    void Manager::start(bool blocking)
+    {
+        _ctrlThread = std::make_unique<std::thread>(&Manager::ctrlLoop, this);
+
+        if (blocking)
+        {
+            _ctrlThread->join();
+        }
     }
 
     //==============================================================================
