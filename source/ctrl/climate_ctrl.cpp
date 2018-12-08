@@ -4,8 +4,8 @@
 
 #include "ctrl/climate_ctrl.h"
 
-#include "algorithms.h"
-#include "logging.h"
+#include "util/algorithms.hpp"
+#include "util/logging.h"
 
 #include <cassert>
 

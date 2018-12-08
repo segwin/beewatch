@@ -3,7 +3,8 @@
 //==============================================================================
 
 #include "io/tachometer.h"
-#include "logging.h"
+
+#include "util/logging.h"
 
 #include "catch.hpp"
 #include "gpioMock.hpp"

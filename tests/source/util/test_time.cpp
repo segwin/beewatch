@@ -2,8 +2,8 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "timing.h"
-#include "priority.h"
+#include "util/time.hpp"
+#include "util/priority.h"
 
 #include "catch.hpp"
 

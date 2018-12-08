@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "data_types.h"
-#include "manager.h"
-#include "patterns.h"
+#include "util/data_types.hpp"
+#include "util/patterns.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -15,15 +14,33 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
-namespace beewatch::rest
+namespace beewatch::http
 {
+    
+    //==============================================================================
+    /**
+     * @interface IManager
+     *
+     * HTTP server's interface for the manager class
+     */
+    class IManager
+    {
+    public:
+        //==============================================================================
+        virtual std::string getName() const = 0;
+        virtual void setName(std::string name) = 0;
+        
+        //==============================================================================
+        virtual std::map<time_t, ClimateData<double>> getClimateSamples(time_t since = 0) const = 0;
+    };
 
     //==============================================================================
     /**
-     * @class RestAPI
+     * @class Server
      */
-    class RestAPI : public unique_ownership_t<RestAPI>
+    class Server : public unique_ownership_t<Server>
     {
     public:
         //==============================================================================
@@ -32,12 +49,15 @@ namespace beewatch::rest
          *
          * @param [in] port     Port to listen on
          */
-        RestAPI(int port, Manager& manager);
+        Server(int port, std::string webRoot, IManager& manager);
 
         /**
          * @brief Default destructor
          */
-        virtual ~RestAPI();
+        virtual ~Server();
+        
+        //==============================================================================
+        void setWebRoot(std::string webRootPath);
         
         //==============================================================================
         /**
@@ -50,45 +70,15 @@ namespace beewatch::rest
          */
         void stop();
 
-        //==============================================================================
-        /**
-         * @brief Get temperature & humidity samples dated from the given timestamp
-         *
-         * @param [in] since    Unix timestamp of earliest sample to get
-         *
-         * @returns Climate data ordered by sample time
-         */
-        std::map<time_t, ClimateData<double>> getInteriorClimateSamples(time_t since = 0) const;
-        std::map<time_t, ClimateData<double>> getExteriorClimateSamples(time_t since = 0) const;
-
-        //==============================================================================
-        /**
-         * @brief Get device name
-         *
-         * @returns Current device name
-         */
-        std::string getName() const;
-
-        /**
-         * @brief Set device name
-         *
-         * @param [in] name     New name to use for device
-         */
-        void setName(std::string name);
-        
-        //==============================================================================
-        /**
-         * @brief Get application version
-         *
-         * @returns Application version string
-         */
-        std::string getVersion() const;
-
 
     private:
         //==============================================================================
         int _port;
-        Manager& _manager;
+
+        std::string _webRoot;
+        std::vector<std::string> _webResources;
+
+        IManager& _manager;
         
         //==============================================================================
         std::unique_ptr<std::thread> _thread;
@@ -103,5 +93,5 @@ namespace beewatch::rest
         void stop(std::unique_lock<std::mutex>& lock);
     };
 
-} // namespace beewatch::rest
+} // namespace beewatch::http
 

@@ -7,7 +7,7 @@
 #include "wiringPiMock.hpp"
 
 #include "io/gpio.h"
-#include "timing.h"
+#include "util/time.hpp"
 
 #include <atomic>
 #include <cassert>

@@ -4,9 +4,9 @@
 
 #include "hw/hx711.h"
 
-#include "algorithms.h"
-#include "priority.h"
-#include "timing.h"
+#include "util/algorithms.hpp"
+#include "util/priority.h"
+#include "util/time.hpp"
 
 #include <cassert>
 #include <iostream>

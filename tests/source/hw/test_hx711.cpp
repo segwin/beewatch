@@ -3,7 +3,8 @@
 //==============================================================================
 
 #include "hw/hx711.h"
-#include "logging.h"
+
+#include "util/logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"

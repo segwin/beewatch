@@ -7,7 +7,7 @@
 #include "io.h"
 #include "gpio.h"
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 
 #include <map>
 

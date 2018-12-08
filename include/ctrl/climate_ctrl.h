@@ -7,7 +7,7 @@
 #include "hw/dhtxx.h"
 #include "hw/fan.h"
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 
 #include <memory>
 #include <mutex>

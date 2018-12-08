@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 
 #ifndef HAS_WIRINGPI
 #include <chrono>

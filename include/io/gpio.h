@@ -6,7 +6,7 @@
 
 #include "io.h"
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 #include "external/wiringPi.h"
 
 #include <array>

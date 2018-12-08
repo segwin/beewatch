@@ -2,9 +2,9 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "priority.h"
+#include "util/priority.h"
 
-#include "logging.h"
+#include "util/logging.h"
 
 #ifdef __linux__
 #include <errno.h>

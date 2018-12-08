@@ -3,7 +3,8 @@
 //==============================================================================
 
 #include "hw/fan.h"
-#include "logging.h"
+
+#include "util/logging.h"
 
 #include "catch.hpp"
 

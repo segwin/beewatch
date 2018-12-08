@@ -7,7 +7,7 @@
 #include "io/io.h"
 #include "io/gpio.h"
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 
 #include <memory>
 

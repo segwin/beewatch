@@ -3,7 +3,8 @@
 //==============================================================================
 
 #include "io/pwm.h"
-#include "logging.h"
+
+#include "util/logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"

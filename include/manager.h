@@ -7,41 +7,48 @@
 #include "hw/dhtxx.h"
 #include "hw/hx711.h"
 #include "io/gpio.h"
+#include "http/server.h"
 
-#include "logging.h"
-#include "patterns.h"
-#include "str.h"
-#include "timing.h"
+#include "util/patterns.hpp"
 
-#include <chrono>
-#include <iostream>
 #include <map>
 #include <shared_mutex>
 #include <thread>
-#include <vector>
 
 
 namespace beewatch
 {
 
     //==============================================================================
-    class Manager : public singleton_t<Manager>
+    class Manager : public singleton_t<Manager>,
+                    public http::IManager
     {
     public:
+        //==============================================================================
+        /// Interpret command line arguments and initialise application
+        void init(int argc, char * argv[]);
+
+        /// Print command line usage message
+        void printUsage(std::string exeName);
+        
+        //==============================================================================
+        /// Start app
+        void start(bool blocking = true);
+
         //==============================================================================
         /**
          * @brief Get device name
          *
          * @returns Current device name
          */
-        std::string getName() const;
+        virtual std::string getName() const override;
         
         /**
          * @brief Set device name
          *
          * @param [in] name     New device name
          */
-        void setName(std::string name);
+        virtual void setName(std::string name) override;
         
         //==============================================================================
         /**
@@ -51,7 +58,7 @@ namespace beewatch
          *
          * @returns Climate data ordered by sample time
          */
-        std::map<time_t, ClimateData<double>> getClimateSamples(time_t since = 0) const;
+        virtual std::map<time_t, ClimateData<double>> getClimateSamples(time_t since = 0) const override;
 
 
     protected:
@@ -78,6 +85,11 @@ namespace beewatch
         std::string _name;
 
         //==============================================================================
+        // Web server
+        http::Server::Ptr _webServer;
+
+        //==============================================================================
+        // Sensors
         hw::DHTxx::Ptr _climateSensor;
         hw::HX711::Ptr _massSensor;
     };

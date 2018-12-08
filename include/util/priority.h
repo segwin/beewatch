@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "patterns.h"
+#include "util/patterns.hpp"
 
 namespace beewatch
 {

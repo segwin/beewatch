@@ -3,7 +3,8 @@
 //==============================================================================
 
 #include "io/tachometer.h"
-#include "timing.h"
+
+#include "util/time.hpp"
 
 #include <chrono>
 

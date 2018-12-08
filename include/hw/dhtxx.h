@@ -7,8 +7,8 @@
 #include "io/io.h"
 #include "io/gpio.h"
 
-#include "patterns.h"
-#include "data_types.h"
+#include "util/patterns.hpp"
+#include "util/data_types.hpp"
 
 #include <bitset>
 #include <memory>

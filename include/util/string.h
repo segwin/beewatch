@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cmath>
 #include <string>
 
-namespace beewatch
+namespace beewatch::string
 {
 
     //==============================================================================
@@ -20,7 +19,7 @@ namespace beewatch
      * @returns String representation of given number
      */
     template <typename T>
-    inline std::string numToStr(T num, int decimalPlaces = 2)
+    static inline std::string fromNumber(T num, int decimalPlaces = 2)
     {
         int wholePart = static_cast<int>(num);
 
@@ -38,11 +37,7 @@ namespace beewatch
      *
      * @returns Lowercase string
      */
-    inline std::string tolower(std::string str)
-    {
-        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-        return str;
-    }
+    std::string tolower(std::string str);
 
     /**
      * @brief Transform string to uppercase
@@ -51,10 +46,6 @@ namespace beewatch
      *
      * @returns Uppercase string
      */
-    inline std::string toupper(std::string str)
-    {
-        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-        return str;
-    }
+    std::string toupper(std::string str);
 
-} // namespace beewatch
+} // namespace beewatch::string

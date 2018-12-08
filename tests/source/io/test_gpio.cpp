@@ -3,8 +3,9 @@
 //==============================================================================
 
 #include "io/gpio.h"
-#include "algorithms.h"
-#include "logging.h"
+
+#include "util/algorithms.hpp"
+#include "util/logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"
