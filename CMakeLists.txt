@@ -10,9 +10,9 @@ include(cmake/GetDirContents.cmake)
 include(cmake/GetGitRevisionDescription.cmake)
 
 
-# 
+#
 # Project description and (meta) information
-# 
+#
 
 # Get git revision
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -59,9 +59,9 @@ endif()
 option(BUILD_DOCUMENTATION "Create HTML documentation using Doxygen" ${build_doc_default})
 
 
-# 
+#
 # Declare project
-# 
+#
 
 # Generate folders for IDE targets (e.g., VisualStudio solutions)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -79,16 +79,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 file(WRITE "${PROJECT_BINARY_DIR}/VERSION" "${META_NAME_VERSION}")
 
 
-# 
+#
 # Compiler settings and options
-# 
+#
 
 include(cmake/CompileOptions.cmake)
 
 
-# 
+#
 # Deployment/installation setup
-# 
+#
 
 # Get project name
 set(project ${META_PROJECT_NAME})
@@ -140,7 +140,7 @@ if(NOT SYSTEM_DIR_INSTALL)
     if(APPLE)
         set(CMAKE_INSTALL_RPATH "@loader_path/../../../${INSTALL_LIB}")
     else()
-        set(CMAKE_INSTALL_RPATH "$ORIGIN/${INSTALL_LIB}")       
+        set(CMAKE_INSTALL_RPATH "$ORIGIN/${INSTALL_LIB}")
     endif()
 endif()
 
@@ -154,10 +154,12 @@ endif()
 set(cpprestsdk_DIR /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/cmake/)
 find_package(cpprestsdk REQUIRED)
 
+find_package(Boost REQUIRED COMPONENTS system filesystem)
 
-# 
+
+#
 # Sources
-# 
+#
 set(global_include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(dynamic_include_path "${CMAKE_CURRENT_BINARY_DIR}/include")
 set(global_source_path "${CMAKE_CURRENT_SOURCE_DIR}/source")
@@ -182,11 +184,11 @@ set(header_group         "Header Files (API)")
 set(header_group_dynamic "Header Files (Generated)")
 set(source_group         "Source Files")
 
-source_group_by_path(${global_include_path}  "\\\\.h$|\\\\.hpp$" 
+source_group_by_path(${global_include_path}  "\\\\.h$|\\\\.hpp$"
     ${header_group} ${headers})
-source_group_by_path(${dynamic_include_path} "\\\\.h$|\\\\.hpp$" 
+source_group_by_path(${dynamic_include_path} "\\\\.h$|\\\\.hpp$"
     ${header_group_dynamic} ${dynamic_headers})
-source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$" 
+source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp$"
     ${source_group} ${sources})
 
 
@@ -215,6 +217,9 @@ target_include_directories(${project_lib}
     ${DEFAULT_INCLUDE_DIRECTORIES}
     ${global_include_path}
     ${dynamic_include_path}
+
+    SYSTEM PRIVATE
+    ${Boost_INCLUDE_DIRS}
 )
 
 # Set compile options
@@ -224,7 +229,7 @@ target_compile_options(${project_lib}
 )
 
 # Add web page dependency
-add_dependencies(${project_lib} ${project_web})
+#add_dependencies(${project_lib} ${project_web})
 
 
 #
@@ -239,6 +244,9 @@ if (UNIX AND wiringpi_lib)
         ${DEFAULT_INCLUDE_DIRECTORIES}
         ${global_include_path}
         ${dynamic_include_path}
+
+        SYSTEM PRIVATE
+        ${Boost_INCLUDE_DIRS}
     )
 
     # Link external libraries
@@ -248,6 +256,7 @@ if (UNIX AND wiringpi_lib)
         ${project_lib}
         ${wiringpi_lib}
         cpprestsdk::cpprest
+        ${Boost_LIBRARIES}
     )
 
 	# Set compile options
@@ -307,6 +316,7 @@ target_include_directories(${tests}
 
     SYSTEM PRIVATE
     ${tests_lib_path}
+    ${Boost_INCLUDE_DIRS}
 )
 
 # Set compile options
@@ -328,6 +338,7 @@ target_link_libraries(${tests}
     ${DEFAULT_LIBRARIES}
     ${project_lib}
     ${wiringpi_lib}
+    ${Boost_LIBRARIES}
 )
 
 
@@ -340,7 +351,7 @@ if (BUILD_DOCUMENTATION)
     set(doxyfile    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
     configure_file(${doxyfile_in} ${doxyfile})
-    
+
     set(doc_path "${CMAKE_CURRENT_SOURCE_DIR}/doc")
 
     add_custom_target(doc_directory
@@ -357,9 +368,9 @@ endif()
 
 
 
-# 
+#
 # Deployment (global project files)
-# 
+#
 
 # Install version file
 install(FILES "${PROJECT_BINARY_DIR}/VERSION" DESTINATION ${INSTALL_ROOT} COMPONENT runtime)
