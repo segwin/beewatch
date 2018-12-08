@@ -76,7 +76,7 @@ namespace beewatch::http
         int _port;
 
         std::string _webRoot;
-        std::vector<std::string> _webResources;
+        std::map<std::string, std::string> _webResources;
 
         IManager& _manager;
         

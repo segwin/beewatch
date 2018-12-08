@@ -38,7 +38,15 @@ namespace beewatch::http
     void Server::setWebRoot(std::string webRootPath)
     {
         _webRoot = webRootPath;
-        _webResources = file::listContents(_webRoot, true);
+
+        // Preload all web resources in memory
+        _webResources.clear();
+
+        std::vector<std::string> resourceFiles = file::listContents(_webRoot, true);
+        for (const auto& resourceFile : resourceFiles)
+        {
+            _webResources[resourceFile] = file::readText(_webRoot + resourceFile);
+        }
     }
 
     //==============================================================================
@@ -256,7 +264,7 @@ namespace beewatch::http
         
         // Web resource request handler
         std::string& webRoot = _webRoot;
-        const std::vector<std::string>& webResources = _webResources;
+        const auto& webResources = _webResources;
 
         auto answerResourceRequest = [&webRoot, &webResources](const http_request& request) {
             http_response answer;
@@ -274,12 +282,12 @@ namespace beewatch::http
             }
 
             // Compare uri to recognised resources & answer accordingly
-            for (const std::string& resource : webResources)
+            for (const auto& mappedResource : webResources)
             {
-                if (string::tolower(uri) == string::tolower(resource))
+                if (string::tolower(uri) == string::tolower(mappedResource.first))
                 {
                     answer.set_status_code(status_codes::OK);
-                    answer.set_body(file::readText(webRoot + resource), "text/html; charset=utf-8");
+                    answer.set_body(file::readText(webRoot + mappedResource.first), "text/html; charset=utf-8");
 
                     return answer;
                 }
