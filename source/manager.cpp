@@ -80,7 +80,7 @@ namespace beewatch
             //  -s, --long "required arg"           Argument description message                                        
             std::ostringstream oss;
             
-            oss << std::setw(36) << helpShort() << _description << std::endl;
+            oss << std::setw(36) << std::left << helpShort() << _description;
 
             return oss.str();
         }
