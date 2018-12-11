@@ -146,9 +146,9 @@ namespace beewatch::http
                                 {
                                     answer["error"] = json::value::string("Caught error while interpreting \"since\" "
                                                                           "parameter in \"GET /data/climate\" request "
-                                                                          "(node: " + node.second.as_string());
+                                                                          "(node: " + node.second.serialize());
 
-                                    g_logger.print(Logger::Error, answer["error"].as_string());
+                                    g_logger.print(Logger::Error, answer["error"].serialize());
 
                                     request.reply(status_codes::BadRequest, answer);
                                     return;
@@ -215,9 +215,9 @@ namespace beewatch::http
                                 {
                                     answer["error"] = json::value::string("Caught error while interpreting \"name\" "
                                                                           "parameter in \"POST /name\" request (node: " +
-                                                                          node.second.as_string());
+                                                                          node.second.serialize());
 
-                                    g_logger.print(Logger::Error, answer["error"].as_string());
+                                    g_logger.print(Logger::Error, answer["error"].serialize());
 
                                     request.reply(status_codes::BadRequest, answer);
                                     return;
@@ -238,7 +238,7 @@ namespace beewatch::http
                     else
                     {
                         answer["error"] = json::value::string("No value for \"name\" provided in \"POST /name\" request!");
-                        g_logger.print(Logger::Error, answer["error"].as_string());
+                        g_logger.print(Logger::Error, answer["error"].serialize());
 
                         request.reply(status_codes::BadRequest, answer);
                         return;
@@ -247,7 +247,7 @@ namespace beewatch::http
             }
 
             answer["error"] = json::value::string("Invalid API request: \"" + request.to_string() + "\"");
-            g_logger.print(Logger::Error, answer["error"].as_string());
+            g_logger.print(Logger::Error, answer["error"].serialize());
 
             request.reply(status_codes::NotFound, answer);
             return;
