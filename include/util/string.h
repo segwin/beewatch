@@ -48,4 +48,7 @@ namespace beewatch::string
      */
     std::string toupper(std::string str);
 
+    //==============================================================================
+    std::string indent(std::string str, int indentSize = 4);
+
 } // namespace beewatch::string
