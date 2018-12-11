@@ -8,11 +8,89 @@
 #include "util/string.h"
 #include "util/time.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <iomanip>
 #include <iostream>
+#include <set>
+#include <sstream>
 
 namespace beewatch
 {
+
+    //==============================================================================
+    class Argument
+    {
+    public:
+        /**
+         * @brief Declare argument with a long name (--long-name) and an optional
+         *        1-character synonym (-s)
+         */
+        Argument(std::string name, std::string description,
+                 std::string expectedArg = "", char shortName = '\0')
+        {
+            _name = std::string("--") + name;
+            _shortName = shortName == '\0' ? "" : std::string("-") + shortName;
+            _description = description;
+            _expectedArg = expectedArg;
+        }
+
+        /**
+         * @brief Compare two Argument objects to allow placement in a map
+         */
+        bool operator<(const Argument& arg) const
+        {
+            return _name < arg._name;
+        }
+
+        /**
+         * @brief Compare the given argument string with this argument
+         */
+        bool operator==(std::string arg) const
+        {
+            return arg == _name || (!_shortName.empty() && arg == _shortName);
+        }
+
+        /**
+         * @brief Return short argument usage string
+         */
+        std::string helpShort() const
+        {
+            // Build usage string using the following format:
+            //  -s, --long "required arg"
+            std::string usage;
+
+            if (!_shortName.empty())
+                usage += _shortName + " ";
+
+            usage += _name + " ";
+
+            if (!_expectedArg.empty())
+                usage += "\"" + _expectedArg + "\" ";
+
+            return usage;
+        }
+
+        /**
+         * @brief Return argument help message with description
+         */
+        std::string helpLong() const
+        {
+            // Append description to short description, aligned to the 36th character:
+            //  -s, --long "required arg"           Argument description message                                        
+            std::ostringstream oss;
+            
+            oss << std::setw(36) << helpShort() << _description << std::endl;
+
+            return oss.str();
+        }
+
+    private:
+        std::string _name;
+        std::string _shortName;
+        std::string _description;
+        std::string _expectedArg;
+    };
     
     //==============================================================================
     Manager::Manager()
@@ -25,88 +103,97 @@ namespace beewatch
     }
     
     //==============================================================================
+    // Build set of arguments
+    static const std::set<Argument>& getKnownArgs()
+    {
+        static std::set<Argument> knownArgs = {
+            Argument { "port",  "Port to use for REST API listener (default: 8080)", "port", 'p' },
+            Argument { "debug", "Enable debug logging (default: off)",               {},     'd' },
+            Argument { "help",  "Display this help message",                         {},     'h' }
+        };
+
+        return knownArgs;
+    }
+
     void Manager::init(int argc, char * argv[])
     {
-        std::string exeName = argv[0];
+        setName(argv[0]);
+        int apiPort = 8080;
 
-        std::string webRoot = "";
-        int webPort = 8080;
+        const auto& knownArgs = getKnownArgs();
 
         for (int i = 1; i < argc; ++i)
         {
             std::string arg = argv[i];
 
-            if (arg == "-w" || arg == "--web-root")
+            auto match = std::find(knownArgs.begin(), knownArgs.end(), arg);
+
+            if (match == knownArgs.end())
             {
-                if (i + 1 < argc && argv[i+1][0] != '-')
-                {
-                    i++;
-                    webRoot = argv[i];
-                }
-                else
-                {
-                    std::cerr << "Expected path after \"" << arg << "\" option!" << std::endl;
-                    printUsage(exeName);
-                    exit(-1);
-                }
+                std::cerr << "Received unknown argument: \"" << arg << "\"" << std::endl;
+                printUsage();
+                exit(-1);
             }
-            else if (arg == "-p" || arg == "--port")
+            else if (*match == "--port")
             {
-                if (i + 1 < argc && argv[i+1][0] != '-')
+                if (i+1 < argc && argv[i+1][0] != '-')
                 {
                     i++;
 
                     try
                     {
-                        webPort = std::stoi(argv[i]);
+                        apiPort = std::stoi(argv[i]);
                     }
                     catch (const std::exception& e)
                     {
-                        std::cerr << "Received invalid argument for \"" << arg << "\" option!" << std::endl;
-                        printUsage(exeName);
+                        std::cerr << "Received invalid option for \"" << arg << "\": \"" << argv[i] << "\"" << std::endl;
+                        printUsage();
                         exit(-1);
                     }
                 }
                 else
                 {
-                    std::cerr << "Expected port value after \"" << arg << "\" option!" << std::endl;
-                    printUsage(exeName);
+                    std::cerr << "Expected port value after \"" << arg << "\"" << std::endl;
+                    printUsage();
                     exit(-1);
                 }
             }
-            else if (arg == "-d" || arg == "--debug")
+            else if (*match == "--debug")
             {
-                std::cout << "Enabling debug logs" << std::endl;
+                g_logger.print(Logger::Info, "Enabling debug logs");
                 g_logger.setVerbosity(Logger::Debug);
             }
-            else if (arg == "-h" || "--help")
+            else if (*match == "--help")
             {
-                printUsage(exeName);
+                printUsage();
                 exit(0);
             }
         }
 
-        if (webRoot.empty())
-        {
-            std::cerr << "No argument for \"--web-root\" provided!" << std::endl;
-            printUsage(exeName);
-            exit(-1);
-        }
-        else
-        {
-            _webServer = std::make_unique<http::Server>(webPort, webRoot, *this);
-        }
+        _apiServer = std::make_unique<http::Server>(apiPort, *this);
     }
 
-    void Manager::printUsage(std::string exeName)
+    void Manager::printUsage()
     {
-        std::cout << exeName << " [-w|--web /path/to/web/dist] [-d|--debug] [-h|--help]" << std::endl
-                  << std::endl
-                  << "Arguments:" << std::endl
-                  << "    -w, --web /path/to/web/dist       (Required) Specify path to web page build directory" << std::endl
-                  << "    -p, --port port                   Port to listen on for web server (default: 8080)" << std::endl
-                  << "    -d, --debug                       Enable debug logging (default: off)" << std::endl
-                  << "    -h, --help                        Display this help message" << std::endl;
+        const auto& knownArgs = getKnownArgs();
+
+        // First line:
+        //  exe [-1, --long-1 "required argument"] [-2, --long-2] ...
+        std::cout << getName();
+
+        for (const auto& arg : knownArgs)
+        {
+            std::cout << " [" << arg.helpShort() << "]";
+        }
+
+        std::cout << std::endl;
+
+        // Following lines:
+        //      -1, --long-1 "required argument"    Argument description message
+        for (const auto& arg : knownArgs)
+        {
+            std::cout << "    " << arg.helpLong() << std::endl;
+        }
     }
     
     //==============================================================================

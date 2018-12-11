@@ -49,15 +49,12 @@ namespace beewatch::http
          *
          * @param [in] port     Port to listen on
          */
-        Server(int port, std::string webRoot, IManager& manager);
+        Server(int port, IManager& manager);
 
         /**
          * @brief Default destructor
          */
         virtual ~Server();
-        
-        //==============================================================================
-        void setWebRoot(std::string webRootPath);
         
         //==============================================================================
         /**
@@ -74,9 +71,6 @@ namespace beewatch::http
     private:
         //==============================================================================
         int _port;
-
-        std::string _webRoot;
-        std::map<std::string, std::string> _webResources;
 
         IManager& _manager;
         

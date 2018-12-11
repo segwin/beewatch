@@ -22,31 +22,15 @@ namespace beewatch::http
     using namespace web::json;
 
     //==============================================================================
-    Server::Server(int port, std::string webRoot, IManager& manager)
+    Server::Server(int port, IManager& manager)
         : _port(port), _manager(manager), _changingState(false)
     {
-        setWebRoot(webRoot);
         restart();
     }
 
     Server::~Server()
     {
         stop();
-    }
-    
-    //==============================================================================
-    void Server::setWebRoot(std::string webRootPath)
-    {
-        _webRoot = webRootPath;
-
-        // Preload all web resources in memory
-        _webResources.clear();
-
-        std::vector<std::string> resourceFiles = file::listContents(_webRoot, true);
-        for (const auto& resourceFile : resourceFiles)
-        {
-            _webResources[resourceFile] = file::readText(_webRoot + resourceFile);
-        }
     }
 
     //==============================================================================
@@ -132,9 +116,7 @@ namespace beewatch::http
         std::unique_lock<std::mutex> lock(_mutex);
         
         // REST API handler
-        IManager& manager = _manager;
-
-        auto answerAPIRequest = [&manager](const http_request& request) {
+        auto answerRequest = [this](http_request request) {
             g_logger.print(Logger::Debug, "Received " + request.method() + " request");
 
             // Compare uri to API values & answer accordingly
@@ -143,7 +125,7 @@ namespace beewatch::http
 
             if (request.method() == methods::GET)
             {
-                if (uri == "/api/data/climate")
+                if (uri == "data/climate")
                 {
                     auto msg = request.extract_json().get();
                     time_t since = 0;
@@ -168,7 +150,8 @@ namespace beewatch::http
 
                                     g_logger.print(Logger::Error, answer["error"].as_string());
 
-                                    return answer;
+                                    request.reply(status_codes::BadRequest, answer);
+                                    return;
                                 }
                             }
                         }
@@ -176,7 +159,7 @@ namespace beewatch::http
 
                     answer["interior"] = json::value::object();
 
-                    auto climateSamples = manager.getClimateSamples(since);
+                    auto climateSamples = _manager.getClimateSamples(since);
                     for (auto& sample : climateSamples)
                     {
                         answer["interior"][sample.first] = json::value::object();
@@ -185,14 +168,17 @@ namespace beewatch::http
                         answer["interior"]["humidity"] = sample.second.humidity;
                     }
 
-                    return answer;
+                    request.reply(status_codes::OK, answer);
+                    return;
                 }
-                else if (uri == "/api/name")
+                else if (uri == "name")
                 {
-                    answer["name"] = json::value::string(manager.getName());
-                    return answer;
+                    answer["name"] = json::value::string(_manager.getName());
+
+                    request.reply(status_codes::OK, answer);
+                    return;
                 }
-                else if (uri == "/api/version")
+                else if (uri == "version")
                 {
                     answer["version"] = json::value::string(NAME_VERSION);
                     
@@ -201,12 +187,13 @@ namespace beewatch::http
                     answer["patch"] = json::value::string(VERSION_PATCH);
                     answer["revision"] = json::value::string(VERSION_REVISION);
                     
-                    return answer;
+                    request.reply(status_codes::OK, answer);
+                    return;
                 }
             }
             else if (request.method() == methods::POST)
             {
-                if (uri == "/api/name")
+                if (uri == "name")
                 {
                     // Get new name, only set requestIsValid if found
                     auto msg = request.extract_json().get();
@@ -232,7 +219,8 @@ namespace beewatch::http
 
                                     g_logger.print(Logger::Error, answer["error"].as_string());
 
-                                    return answer;
+                                    request.reply(status_codes::BadRequest, answer);
+                                    return;
                                 }
                             }
                         }
@@ -241,17 +229,19 @@ namespace beewatch::http
                     if (!name.empty())
                     {
                         // Set new name and return it in response
-                        manager.setName(name);
-                        answer["name"] = json::value::string(manager.getName());
+                        _manager.setName(name);
+                        answer["name"] = json::value::string(_manager.getName());
 
-                        return answer;
+                        request.reply(status_codes::OK, answer);
+                        return;
                     }
                     else
                     {
                         answer["error"] = json::value::string("No value for \"name\" provided in \"POST /name\" request!");
                         g_logger.print(Logger::Error, answer["error"].as_string());
 
-                        return answer;
+                        request.reply(status_codes::BadRequest, answer);
+                        return;
                     }
                 }
             }
@@ -259,76 +249,13 @@ namespace beewatch::http
             answer["error"] = json::value::string("Invalid API request: \"" + request.to_string() + "\"");
             g_logger.print(Logger::Error, answer["error"].as_string());
 
-            return answer;
-        };
-        
-        // Web resource request handler
-        std::string& webRoot = _webRoot;
-        const auto& webResources = _webResources;
-
-        auto answerResourceRequest = [&webRoot, &webResources](const http_request& request) {
-            http_response answer;
-            
-            auto uri = getRequestURI(request);
-
-            // Only GET requests are expected for web resources
-            if (request.method() != methods::GET)
-            {
-                answer.set_status_code(status_codes::BadRequest);
-                answer.set_body("<h1>400 - Requested an invalid resource (\"" + request.method() + " " + uri + "\")",
-                                "text/html; charset=utf-8");
-
-                return answer;
-            }
-
-            // Compare uri to recognised resources & answer accordingly
-            for (const auto& mappedResource : webResources)
-            {
-                if (string::tolower(uri) == string::tolower(mappedResource.first))
-                {
-                    answer.set_status_code(status_codes::OK);
-                    answer.set_body(file::readText(webRoot + mappedResource.first), "text/html; charset=utf-8");
-
-                    return answer;
-                }
-            }
-            
-            answer.set_status_code(status_codes::NotFound);
-            answer.set_body("<h1>404 - The requested resource (\"" + uri + "\") was not found</h1>",
-                            "text/html; charset=utf-8");
-
-            return answer;
-        };
-
-        // General request handler
-        auto answerRequest = [&answerAPIRequest, &answerResourceRequest](http_request request) {
-            auto uri = getRequestURI(request);
-
-            if (uri.size() >= 4 && uri.substr(0, 4) == "/api")
-            {
-                json::value answer = answerAPIRequest(request);
-                status_code status = status_codes::OK;
-                
-                if (answer.has_field("error"))
-                {
-                    status = status_codes::BadRequest;
-                }
-
-                g_logger.print(Logger::Debug, "Response: " + answer.as_string());
-                request.reply(status, answer);
-            }
-            else
-            {
-                http_response answer = answerResourceRequest(request);
-
-                g_logger.print(Logger::Debug, "Response: " + answer.to_string());
-                request.reply(answer);
-            }
+            request.reply(status_codes::NotFound, answer);
+            return;
         };
         
 
         // Create listener and add handler for supported methods
-        http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/");
+        http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/api/");
 
         listener.support(methods::GET,  answerRequest);
         listener.support(methods::POST, answerRequest);

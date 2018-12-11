@@ -29,7 +29,7 @@ namespace beewatch
         void init(int argc, char * argv[]);
 
         /// Print command line usage message
-        void printUsage(std::string exeName);
+        void printUsage();
         
         //==============================================================================
         /// Start app
@@ -86,7 +86,7 @@ namespace beewatch
 
         //==============================================================================
         // Web server
-        http::Server::Ptr _webServer;
+        http::Server::Ptr _apiServer;
 
         //==============================================================================
         // Sensors
