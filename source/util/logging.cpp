@@ -52,7 +52,7 @@ namespace beewatch
     Logger::Logger()
     {
         // Open log file
-        openlog(PROJECT_NAME, LOG_CONS | LOG_NDELAY, LOG_USER);
+        openlog(PROJECT_NAME, LOG_CONS | LOG_NDELAY, LOG_LOCAL4);
         setVerbosity(Info);
 
         // Write header
@@ -65,7 +65,7 @@ namespace beewatch
         log(Info, divider);
         log(Info, "");
 
-        setlogmask(mapLevelToSyslog.at(Warning));
+        setVerbosity(Warning);
     }
 
     Logger::~Logger()
