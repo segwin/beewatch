@@ -111,6 +111,12 @@ namespace beewatch::http
         return uri;
     }
 
+    inline static std::map<std::string, std::string> getRequestQuery(const http_request& request)
+    {
+        const auto relative_uri = request.relative_uri();
+        return relative_uri.split_query(relative_uri.query());
+    }
+
     void Server::listen()
     {
         std::unique_lock<std::mutex> lock(_mutex);
@@ -127,45 +133,46 @@ namespace beewatch::http
             {
                 if (uri == "data/climate")
                 {
-                    auto msg = request.extract_json().get();
+                    auto query = getRequestQuery(request);
                     time_t since = 0;
 
-                    if (msg.is_object())
+                    if (query.find("since") != query.end())
                     {
-                        auto& jsonMsg = msg.as_object();
-                        for (const auto& node : jsonMsg)
+                        try
                         {
-                            if (node.first == "since")
-                            {
-                                try
-                                {
-                                    since = node.second.as_integer();
-                                    break;
-                                }
-                                catch (const json_exception& e)
-                                {
-                                    answer["error"] = json::value::string("Caught error while interpreting \"since\" "
-                                                                          "parameter in \"GET /data/climate\" request "
-                                                                          "(node: " + node.second.serialize());
+                            since = std::stoi(query.at("since"));
+                        }
+                        catch (const std::invalid_argument)
+                        {
+                            answer["error"] = json::value::string("Caught error while interpreting \"since\" "
+                                                                  "parameter in \"GET /data/climate\" request "
+                                                                  "(got \"?since=" + query.at("since") + "\"");
 
-                                    g_logger.print(Logger::Error, answer["error"].serialize());
+                            g_logger.print(Logger::Error, answer["error"].serialize());
 
-                                    request.reply(status_codes::BadRequest, answer);
-                                    return;
-                                }
-                            }
+                            request.reply(status_codes::BadRequest, answer);
+                            return;
                         }
                     }
 
-                    answer["interior"] = json::value::object();
+                    // Create JSON array from map of climate samples
+                    auto samples = _manager.getClimateSamples(since);
 
-                    auto climateSamples = _manager.getClimateSamples(since);
-                    for (auto& sample : climateSamples)
+                    answer["interior"] = json::value::object(true);
+                    answer["interior"]["timestamps"] = json::value::array(samples.size());
+                    answer["interior"]["samples"] = json::value::array(samples.size());
+
+                    size_t index = 0;
+                    for (auto& sample : samples)
                     {
-                        answer["interior"][sample.first] = json::value::object();
+                        answer["interior"]["timestamps"][index] = json::value::number(sample.first);
 
-                        answer["interior"]["temperature"] = sample.second.temperature;
-                        answer["interior"]["humidity"] = sample.second.humidity;
+                        answer["interior"]["samples"][index] = json::value::object({
+                                { "temperature", sample.second.temperature },
+                                { "humidity", sample.second.humidity }
+                            }, true);
+
+                        ++index;
                     }
 
                     request.reply(status_codes::OK, answer);
@@ -255,7 +262,7 @@ namespace beewatch::http
         
 
         // Create listener and add handler for supported methods
-        http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/api/");
+        http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/api/v1/");
 
         listener.support(methods::GET,  answerRequest);
         listener.support(methods::POST, answerRequest);
