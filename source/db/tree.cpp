@@ -2,8 +2,6 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#pragma once
-
 #include "db/tree.h"
 
 #include "util/logging.h"
@@ -23,7 +21,12 @@ namespace beewatch::db
 
     Node::Ptr Node::create(Ptr parent, std::string value, std::vector<Ptr> children)
     {
-        return std::make_shared<Node>(parent, value, children);
+        struct accessor_t : public Node {
+            accessor_t(Ptr parent, std::string value, std::vector<Ptr> children)
+                : Node(parent, value, children) {}
+        };
+
+        return std::make_shared<accessor_t>(parent, value, children);
     }
 
     Node::Ptr Node::get()
@@ -59,7 +62,7 @@ namespace beewatch::db
         std::unique_lock<std::shared_mutex> lockNode(_mutex);
         std::unique_lock<std::shared_mutex> lockChild(child->_mutex);
 
-        auto it = std::find_if(_children.begin(), _children.end(), child);
+        auto it = std::find(_children.begin(), _children.end(), child);
 
         if (it == _children.end())
         {

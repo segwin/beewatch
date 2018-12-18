@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "patterns.hpp"
+#include "util/patterns.hpp"
 
 #include <shared_mutex>
 #include <string>
@@ -26,6 +26,9 @@ namespace beewatch::db
         Node(Ptr parent = nullptr, std::string value = "", std::vector<Ptr> children = {});
 
     public:
+        //==============================================================================
+        virtual ~Node() = default;
+
         //==============================================================================
         /**
          * @brief Construct node, returning a shared pointer

@@ -2,9 +2,9 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "util/db.h"
+#include "db/db.h"
 
-namespace beewatch
+namespace beewatch::db
 {
 
     //==============================================================================

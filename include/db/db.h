@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "patterns.hpp"
+#include "util/patterns.hpp"
 
 namespace beewatch::db
 {
