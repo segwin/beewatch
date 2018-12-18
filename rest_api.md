@@ -29,7 +29,7 @@ the enclosure.
         (...)
         1545097428
       ],
-    'samples:' [
+    'samples': [
         {
           'temperature': 2.5,
           'humidity': 62.5
@@ -48,7 +48,7 @@ the enclosure.
     'timestamps': [
         (...)
       ],
-    'samples:' [
+    'samples': [
         (...)
       ]
   },
