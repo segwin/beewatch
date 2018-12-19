@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -47,9 +48,10 @@ namespace beewatch::http
         /**
          * @brief Construct interface around a given port
          *
+         * @param [in] manager  Manager to push/pull data to/from
          * @param [in] port     Port to listen on
          */
-        Server(int port, IManager& manager);
+        Server(IManager& manager, uint16_t port = DEFAULT_PORT);
 
         /**
          * @brief Default destructor
@@ -66,11 +68,14 @@ namespace beewatch::http
          * @brief Stop listener thread
          */
         void stop();
+        
+        //==============================================================================
+        static constexpr uint16_t DEFAULT_PORT = 8080;
 
 
     private:
         //==============================================================================
-        int _port;
+        uint16_t _port;
 
         IManager& _manager;
         

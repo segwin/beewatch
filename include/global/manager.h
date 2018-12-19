@@ -8,6 +8,7 @@
 #include "hw/hx711.h"
 #include "io/gpio.h"
 #include "http/server.h"
+#include "util/db.h"
 
 #include "util/patterns.hpp"
 
@@ -87,6 +88,10 @@ namespace beewatch
         //==============================================================================
         // Web server
         http::Server::Ptr _apiServer;
+
+        //==============================================================================
+        // Database
+        DB::Ptr _db;
 
         //==============================================================================
         // Sensors

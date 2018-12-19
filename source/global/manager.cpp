@@ -4,7 +4,6 @@
 
 #include "global/manager.h"
 
-#include "global/db.h"
 #include "global/logging.h"
 #include "global/time.hpp"
 #include "util/string.h"
@@ -29,11 +28,11 @@ namespace beewatch
          */
         Argument(std::string name, std::string description,
                  std::string expectedArg = "", char shortName = '\0')
+            : name(std::string("--") + name),
+              shortName(shortName == '\0' ? "" : std::string("-") + shortName),
+              description(description),
+              expectedArg(expectedArg)
         {
-            _name = std::string("--") + name;
-            _shortName = shortName == '\0' ? "" : std::string("-") + shortName;
-            _description = description;
-            _expectedArg = expectedArg;
         }
 
         /**
@@ -41,7 +40,7 @@ namespace beewatch
          */
         bool operator<(const Argument& arg) const
         {
-            return _name < arg._name;
+            return name < arg.name;
         }
 
         /**
@@ -49,7 +48,7 @@ namespace beewatch
          */
         bool operator==(std::string arg) const
         {
-            return arg == _name || (!_shortName.empty() && arg == _shortName);
+            return arg == name || (!shortName.empty() && arg == shortName);
         }
 
         /**
@@ -61,13 +60,13 @@ namespace beewatch
             //  -s, --long "required arg"
             std::string usage;
 
-            if (!_shortName.empty())
-                usage += _shortName + " ";
+            if (!shortName.empty())
+                usage += shortName + " ";
 
-            usage += _name + " ";
+            usage += name + " ";
 
-            if (!_expectedArg.empty())
-                usage += "\"" + _expectedArg + "\" ";
+            if (!expectedArg.empty())
+                usage += "\"" + expectedArg + "\" ";
 
             return usage;
         }
@@ -78,21 +77,20 @@ namespace beewatch
         std::string helpLong() const
         {
             // Append description to short description, aligned to the 36th character:
-            //  -s, --long "required arg"           Argument description message                                        
+            //  -s, --long "required arg"           Argument description message
             std::ostringstream oss;
-            
-            oss << std::setw(36) << std::left << helpShort() << _description;
+
+            oss << std::setw(36) << std::left << helpShort() << description;
 
             return oss.str();
         }
 
-    private:
-        std::string _name;
-        std::string _shortName;
-        std::string _description;
-        std::string _expectedArg;
+        const std::string name;
+        const std::string shortName;
+        const std::string description;
+        const std::string expectedArg;
     };
-    
+
     //==============================================================================
     Manager::Manager()
     {
@@ -102,15 +100,51 @@ namespace beewatch
         // Initialise HX711
         //hx711 = std::make_unique<hw::HX711>(io::GPIO::claim(5), io::GPIO::claim(6));
     }
-    
+
     //==============================================================================
     // Build set of arguments
     static const std::set<Argument>& getKnownArgs()
     {
         static std::set<Argument> knownArgs = {
-            Argument { "port",  "Port to use for REST API listener (default: 8080)", "port", 'p' },
-            Argument { "debug", "Enable debug logging (default: off)",               {},     'd' },
-            Argument { "help",  "Display this help message",                         {},     'h' }
+            Argument {
+                "rest-port",
+                "Port to use for REST API listener (default: 8080)",
+                "REST port",
+                'r'
+            },
+
+            Argument {
+                "db-host",
+                "MongoDB host (default: localhost)",
+                "ip/hostname",
+                'D'
+            },
+
+            Argument {
+                "db-port",
+                "Port to use to connect to MongoDB (default: 27017)",
+                "DB port",
+                'd'
+            },
+
+            Argument {
+                "db-name",
+                "MongoDB database name (default: beewatch)",
+                "db name"
+            },
+
+            Argument {
+                "debug",
+                "Enable debug logging (default: off)",
+                {}
+            },
+
+            Argument {
+                "help",
+                "Display this help message",
+                {},
+                'h'
+            }
         };
 
         return knownArgs;
@@ -119,8 +153,15 @@ namespace beewatch
     void Manager::init(int argc, char * argv[])
     {
         setName(argv[0]);
-        int apiPort = 8080;
 
+        // Defaults
+        int restPort = http::Server::DEFAULT_PORT;
+
+        std::string dbName = DB::DEFAULT_NAME;
+        std::string dbHost = DB::DEFAULT_HOST;
+        int dbPort = DB::DEFAULT_PORT;
+
+        // Parse args
         const auto& knownArgs = getKnownArgs();
 
         for (int i = 1; i < argc; ++i)
@@ -129,32 +170,83 @@ namespace beewatch
 
             auto match = std::find(knownArgs.begin(), knownArgs.end(), arg);
 
+            // TODO: It would be nice to wrap the arg parsing in a class
             if (match == knownArgs.end())
             {
                 std::cerr << "Received unknown argument: \"" << arg << "\"" << std::endl;
                 printUsage();
                 exit(-1);
             }
-            else if (*match == "--port")
+            else if (*match == "--rest-port")
             {
                 if (i+1 < argc && argv[i+1][0] != '-')
                 {
-                    i++;
-
                     try
                     {
-                        apiPort = std::stoi(argv[i]);
+                        restPort = std::stoi(argv[++i]);
                     }
                     catch (const std::exception& e)
                     {
-                        std::cerr << "Received invalid option for \"" << arg << "\": \"" << argv[i] << "\"" << std::endl;
+                        std::cerr << "Received invalid option for \"" << arg << "\": \""
+                                  << argv[i] << "\"" << std::endl;
+
                         printUsage();
                         exit(-1);
                     }
                 }
                 else
                 {
-                    std::cerr << "Expected port value after \"" << arg << "\"" << std::endl;
+                    std::cerr << "Expected " << match->expectedArg << " after \"" << arg << "\"" << std::endl;
+                    printUsage();
+                    exit(-1);
+                }
+            }
+            else if (*match == "--db-host")
+            {
+                if (i+1 < argc && argv[i+1][0] != '-')
+                {
+                    dbHost = argv[++i];
+                }
+                else
+                {
+                    std::cerr << "Expected " << match->expectedArg << " after \"" << arg << "\"" << std::endl;
+                    printUsage();
+                    exit(-1);
+                }
+            }
+            else if (*match == "--db-port")
+            {
+                if (i+1 < argc && argv[i+1][0] != '-')
+                {
+                    try
+                    {
+                        dbPort = std::stoi(argv[++i]);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Received invalid option for \"" << arg << "\": \""
+                                  << argv[i] << "\"" << std::endl;
+
+                        printUsage();
+                        exit(-1);
+                    }
+                }
+                else
+                {
+                    std::cerr << "Expected " << match->expectedArg << " after \"" << arg << "\"" << std::endl;
+                    printUsage();
+                    exit(-1);
+                }
+            }
+            else if (*match == "--db-name")
+            {
+                if (i+1 < argc && argv[i+1][0] != '-')
+                {
+                    dbName = argv[++i];
+                }
+                else
+                {
+                    std::cerr << "Expected " << match->expectedArg << " after \"" << arg << "\"" << std::endl;
                     printUsage();
                     exit(-1);
                 }
@@ -171,7 +263,8 @@ namespace beewatch
             }
         }
 
-        _apiServer = std::make_unique<http::Server>(apiPort, *this);
+        _apiServer = std::make_unique<http::Server>(*this, restPort);
+        _db = std::make_unique<DB>(dbName, dbHost, dbPort);
     }
 
     void Manager::printUsage()
@@ -196,7 +289,7 @@ namespace beewatch
             std::cout << "    " << arg.helpLong() << std::endl;
         }
     }
-    
+
     //==============================================================================
     void Manager::start(bool blocking)
     {
@@ -221,7 +314,7 @@ namespace beewatch
 
         try
         {
-            g_db.setName(name);
+
         }
         catch (const std::runtime_error& e)
         {

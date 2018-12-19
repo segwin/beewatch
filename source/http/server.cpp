@@ -22,7 +22,7 @@ namespace beewatch::http
     using namespace web::json;
 
     //==============================================================================
-    Server::Server(int port, IManager& manager)
+    Server::Server(IManager& manager, uint16_t port)
         : _port(port), _manager(manager), _changingState(false)
     {
         restart();
