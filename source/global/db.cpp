@@ -7,10 +7,4 @@
 namespace beewatch
 {
 
-    //==============================================================================
-    DB::DB(std::string host)
-        : _host(host)
-    {
-    }
-
 } // namespace beewatch
