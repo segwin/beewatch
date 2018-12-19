@@ -111,9 +111,9 @@ namespace beewatch::hw
         uint16_t byte = 0;
         uint16_t mask = 0b1000'0000;
 
-        double start;
-        double now;
-        double diff;
+        double startMs;
+        double nowMs;
+        double diffMs;
 
 
         /**
@@ -134,28 +134,28 @@ namespace beewatch::hw
          * 2. DHT should signal LO (80us), then HI (80us)
          */
         // LO
-        start = g_timeRaw.now();
+        startMs = g_timeRaw.now();
 
         do
         {
-            now = g_timeRaw.now();
-            diff = now - start;
+            nowMs = g_timeRaw.now();
+            diffMs = nowMs - startMs;
 
-            if (diff > READ_TIMEOUT_US)
+            if (diffMs > READ_TIMEOUT_MS)
             {
                 return readError;
             }
         } while (_gpio->read() == LogicalState::LO);
 
         // LO
-        start = g_timeRaw.now();
+        startMs = g_timeRaw.now();
 
         do
         {
-            now = g_timeRaw.now();
-            diff = now - start;
+            nowMs = g_timeRaw.now();
+            diffMs = nowMs - startMs;
 
-            if (diff > READ_TIMEOUT_US)
+            if (diffMs > READ_TIMEOUT_MS)
             {
                 return readError;
             }
@@ -167,35 +167,35 @@ namespace beewatch::hw
         for (int i = 0; i < READ_BITS; ++i)
         { 
             // LO
-            start = g_timeRaw.now();
+            startMs = g_timeRaw.now();
 
             do
             {
-                now = g_timeRaw.now();
-                diff = now - start;
+                nowMs = g_timeRaw.now();
+                diffMs = nowMs - startMs;
 
-                if (diff > READ_TIMEOUT_US)
+                if (diffMs > READ_TIMEOUT_MS)
                 {
                     return readError;
                 }
             } while (_gpio->read() == LogicalState::LO);
 
             // HI
-            start = g_timeRaw.now();
+            startMs = g_timeRaw.now();
 
             do
             {
-                now = g_timeRaw.now();
-                diff = now - start;
+                nowMs = g_timeRaw.now();
+                diffMs = nowMs - startMs;
 
-                if (diff > READ_TIMEOUT_US)
+                if (diffMs > READ_TIMEOUT_MS)
                 {
                     return readError;
                 }
             } while (_gpio->read() == LogicalState::HI);
             
             // Mid-point between bit value times is 48.5
-            if (diff > 48.5)
+            if (diffMs > 48.5e-3)
             {
                 bytes[byte] |= mask;
             }
