@@ -26,7 +26,7 @@ using io::Tachometer;
 SCENARIO("Create a Tachometer object to read tacho input on a GPIO", "[tachometer][io][core]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a mocked GPIO")
     {

@@ -26,7 +26,7 @@ using io::GPIO;
 SCENARIO("Create a PWM object to set PWM output on a GPIO", "[pwm][io]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     static const int c_expectedPwmRange = 1024;
 

@@ -27,7 +27,7 @@ using io::Tachometer;
 SCENARIO("A Fan object can be built for a 3-pin fan (PWM only)", "[fan][hw]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a mocked PWM")
     {
@@ -61,7 +61,7 @@ SCENARIO("A Fan object can be built for a 3-pin fan (PWM only)", "[fan][hw]")
 SCENARIO("A Fan object can be built for a 4-pin fan (PWM + tachometer)", "[fan][hw]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a mocked PWM and a mocked Tachometer")
     {
@@ -96,7 +96,7 @@ SCENARIO("A Fan object can be built for a 4-pin fan (PWM + tachometer)", "[fan][
 SCENARIO("A Fan object allows reading a fan's current speed in RPM", "[fan][hw]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a Fan object with mocked PWM/Tachometer and a max speed of 4800 RPM")
     {
@@ -125,7 +125,7 @@ SCENARIO("A Fan object allows reading a fan's current speed in RPM", "[fan][hw]"
 SCENARIO("A Fan object allows controlling a fan's current speed in RPM", "[fan][hw]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a Fan object with mocked PWM/Tachometer and a max speed of 1600 RPM")
     {

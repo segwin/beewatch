@@ -29,7 +29,7 @@ static void mockCallback() {}
 SCENARIO("Claim and release GPIOs", "[gpio][io][core]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("all GPIOs are initially free")
     {
@@ -149,7 +149,7 @@ SCENARIO("Claim and release GPIOs", "[gpio][io][core]")
 SCENARIO("Configure, read & write pins using a GPIO object", "[gpio][io][core]")
 {
     // Disable logger
-    g_logger.setVerbosity(Logger::Unattainable);
+    g_logger.setVerbosity(Logger::Level::Unattainable);
 
     GIVEN("a GPIO with a mocked wiringPi implementation")
     {
