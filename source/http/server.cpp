@@ -142,7 +142,7 @@ namespace beewatch::http
                         {
                             since = std::stoi(query.at("since"));
                         }
-                        catch (const std::invalid_argument)
+                        catch (const std::invalid_argument&)
                         {
                             answer["error"] = json::value::string("Caught error while interpreting \"since\" "
                                                                   "parameter in \"GET /data/climate\" request "
@@ -165,7 +165,7 @@ namespace beewatch::http
                     size_t index = 0;
                     for (auto& sample : samples)
                     {
-                        answer["interior"]["timestamps"][index] = json::value::number(sample.first);
+                        answer["interior"]["timestamps"][index] = json::value::number((uint64_t)sample.first);
 
                         answer["interior"]["samples"][index] = json::value::object({
                                 { "temperature", sample.second.temperature },
