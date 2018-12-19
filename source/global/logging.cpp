@@ -39,13 +39,13 @@ namespace beewatch
 
     //==============================================================================
     const std::map<Logger::Level, int> mapLevelToSyslog = {
-        { Logger::Unattainable, LOG_EMERG },
-        { Logger::Fatal,        LOG_EMERG },
-        { Logger::Error,        LOG_ERR },
-        { Logger::Warning,      LOG_WARNING },
-        { Logger::Notice,       LOG_NOTICE },
-        { Logger::Info,         LOG_INFO },
-        { Logger::Debug,        LOG_DEBUG },
+        { Logger::Level::Unattainable, LOG_EMERG },
+        { Logger::Level::Fatal,        LOG_EMERG },
+        { Logger::Level::Error,        LOG_ERR },
+        { Logger::Level::Warning,      LOG_WARNING },
+        { Logger::Level::Notice,       LOG_NOTICE },
+        { Logger::Level::Info,         LOG_INFO },
+        { Logger::Level::Debug,        LOG_DEBUG },
     };
 
     //==============================================================================
@@ -53,19 +53,19 @@ namespace beewatch
     {
         // Open log file
         openlog(PROJECT_NAME, LOG_CONS | LOG_NDELAY, LOG_LOCAL4);
-        setVerbosity(Info);
+        setVerbosity(Level::Info);
 
         // Write header
         std::string divider = "============================================================";
         std::string announcement = "Beginning log: " NAME_VERSION;
 
-        log(Info, "");
-        log(Info, divider);
-        log(Info, announcement);
-        log(Info, divider);
-        log(Info, "");
+        log(Level::Info, "");
+        log(Level::Info, divider);
+        log(Level::Info, announcement);
+        log(Level::Info, divider);
+        log(Level::Info, "");
 
-        setVerbosity(Warning);
+        setVerbosity(Level::Warning);
     }
 
     Logger::~Logger()
@@ -81,7 +81,7 @@ namespace beewatch
     }
 
     //==============================================================================
-    void Logger::print(Level logLevel, const std::string& msg, bool addLevel)
+    void Logger::print(Level logLevel, std::string msg, bool addLevel)
     {
         if (logLevel > _verbosity)
         {
@@ -95,27 +95,27 @@ namespace beewatch
         {
             switch (logLevel)
             {
-            case Fatal:
+            case Level::Fatal:
                 msgFormatted = "[FATAL] ";
                 break;
 
-            case Error:
+            case Level::Error:
                 msgFormatted = "[ERROR] ";
                 break;
 
-            case Warning:
+            case Level::Warning:
                 msgFormatted = "[WARNING] ";
                 break;
 
-            case Notice:
+            case Level::Notice:
                 msgFormatted = "[NOTICE] ";
                 break;
 
-            case Info:
+            case Level::Info:
                 msgFormatted = "[INFO] ";
                 break;
 
-            case Debug:
+            case Level::Debug:
             default:
                 msgFormatted = "[DEBUG] ";
                 break;
@@ -139,8 +139,13 @@ namespace beewatch
         // Print formatted message to log file (thread-safe)
         syslog(mapLevelToSyslog.at(logLevel), "%s", msg.c_str());
     }
-
+    
     //==============================================================================
-    Logger& g_logger = Logger::get();
+    void Logger::fatal(std::string msg) { print(Level::Fatal, msg); }
+    void Logger::error(std::string msg) { print(Level::Error, msg); }
+    void Logger::warning(std::string msg) { print(Level::Warning, msg); }
+    void Logger::notice(std::string msg) { print(Level::Notice, msg); }
+    void Logger::info(std::string msg) { print(Level::Info, msg); }
+    void Logger::debug(std::string msg) { print(Level::Debug, msg); }
 
 } // namespace beewatch

@@ -93,12 +93,12 @@ namespace beewatch::ctrl
         // Validate read results
         if ( !temperatureRange.contains(_climateData.temperature) )
         {
-            g_logger.print(Logger::Warning, "Temperature is out of bounds: " + std::to_string(_climateData.temperature) + "deg Celsius");
+            g_logger.warning("Temperature is out of bounds: " + std::to_string(_climateData.temperature) + "deg Celsius");
         }
 
         if ( !humidityRange.contains(_climateData.humidity) )
         {
-            g_logger.print(Logger::Warning, "Humidity is out of bounds: got " + std::to_string(_climateData.humidity) + "%");
+            g_logger.warning("Humidity is out of bounds: got " + std::to_string(_climateData.humidity) + "%");
         }
     }
 

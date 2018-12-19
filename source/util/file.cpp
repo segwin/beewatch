@@ -58,10 +58,7 @@ namespace beewatch::file
         }
         catch (const std::exception& e)
         {
-            g_logger.print(
-                Logger::Error,
-                "Failed to get contents of directory \"" + directory + "\": " + e.what()
-            );
+            g_logger.error("Failed to get contents of directory \"" + directory + "\": " + e.what());
         }
 
         return directoryContents;

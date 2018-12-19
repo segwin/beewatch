@@ -24,8 +24,9 @@ namespace beewatch
         //==============================================================================
         ~Logger();
 
+
         //==============================================================================
-        enum Level
+        enum class Level
         {
             Unattainable = -1,
             Fatal = 0,
@@ -46,7 +47,6 @@ namespace beewatch
         */
         void setVerbosity(Level logLevel);
 
-        //==============================================================================
         /**
          * @brief Print message to console/UI and to log file
          *
@@ -57,7 +57,27 @@ namespace beewatch
          * @param [in] msg       Message to print
          * @param [in] addLevel  If true, prepend message with severity level
          */
-        void print(Level logLevel, const std::string& msg, bool addLevel = true);
+        void print(Level logLevel, std::string msg, bool addLevel = true);
+
+
+        //==============================================================================
+        /// Print message with Fatal level
+        void fatal(std::string msg);
+
+        /// Print message with Error level
+        void error(std::string msg);
+
+        /// Print message with Warning level
+        void warning(std::string msg);
+
+        /// Print message with Notice level
+        void notice(std::string msg);
+
+        /// Print message with Info level
+        void info(std::string msg);
+
+        /// Print message with Debug level
+        void debug(std::string msg);
 
     
     protected:
@@ -86,6 +106,7 @@ namespace beewatch
          * @param [in] msg      Message to print
          */
         void log(Level logLevel, const std::string& msg);
+
 
         //==============================================================================
         Level _verbosity;

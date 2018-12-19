@@ -71,7 +71,7 @@ namespace beewatch::external
 #ifdef HAS_WIRINGPI
         if (::wiringPiSetupGpio() < 0)
         {
-            g_logger.print(Logger::Fatal, "An error occurred while initialising wiringPi library, do we have root privileges?");
+            g_logger.fatal("An error occurred while initialising wiringPi library, do we have root privileges?");
             exit(-1);
         }
 #else

@@ -41,10 +41,8 @@ namespace beewatch::http
         // Only allow one state change at a time
         if (_changingState)
         {
-            g_logger.print(
-                Logger::Warning,
-                "Requested web server restart, but state change already in progress. Ignoring request."
-            );
+            g_logger.warning("Requested web server restart, but state change already "
+                             "in progress. Ignoring request.");
 
             return;
         }
@@ -66,9 +64,8 @@ namespace beewatch::http
         // Only allow one state change at a time
         if (_changingState)
         {
-            g_logger.print(
-                Logger::Warning,
-                "Requested web server stop, but state change already in progress. Ignoring request."
+            g_logger.warning("Requested web server stop, but state change already in "
+                             "progress. Ignoring request."
             );
 
             return;
@@ -123,7 +120,7 @@ namespace beewatch::http
         
         // REST API handler
         auto answerRequest = [this](http_request request) {
-            g_logger.print(Logger::Debug, "Received " + request.method() + " request");
+            g_logger.debug("Received " + request.method() + " request");
 
             // Compare uri to API values & answer accordingly
             auto answer = json::value::object();
@@ -144,11 +141,12 @@ namespace beewatch::http
                         }
                         catch (const std::invalid_argument&)
                         {
-                            answer["error"] = json::value::string("Caught error while interpreting \"since\" "
-                                                                  "parameter in \"GET /data/climate\" request "
-                                                                  "(got \"?since=" + query.at("since") + "\"");
+                            std::string errMsg = "Caught error while interpreting \"since\" "
+                                                 "parameter in \"GET /data/climate\" request "
+                                                 "(got \"?since=" + query.at("since") + "\"";
 
-                            g_logger.print(Logger::Error, answer["error"].serialize());
+                            answer["error"] = json::value::string(errMsg);
+                            g_logger.error(errMsg);
 
                             request.reply(status_codes::BadRequest, answer);
                             return;
@@ -220,11 +218,12 @@ namespace beewatch::http
                                 }
                                 catch (const json_exception& e)
                                 {
-                                    answer["error"] = json::value::string("Caught error while interpreting \"name\" "
-                                                                          "parameter in \"POST /name\" request (node: " +
-                                                                          node.second.serialize());
+                                    std::string errMsg = "Caught error while interpreting \"name\" "
+                                                         "parameter in \"POST /name\" request (node: " +
+                                                         node.second.serialize();
 
-                                    g_logger.print(Logger::Error, answer["error"].serialize());
+                                    answer["error"] = json::value::string(errMsg);
+                                    g_logger.error(errMsg);
 
                                     request.reply(status_codes::BadRequest, answer);
                                     return;
@@ -244,8 +243,10 @@ namespace beewatch::http
                     }
                     else
                     {
-                        answer["error"] = json::value::string("No value for \"name\" provided in \"POST /name\" request!");
-                        g_logger.print(Logger::Error, answer["error"].serialize());
+                        std::string errMsg = "No value for \"name\" provided in \"POST /name\" request!";
+
+                        answer["error"] = json::value::string(errMsg);
+                        g_logger.error(errMsg);
 
                         request.reply(status_codes::BadRequest, answer);
                         return;
@@ -253,8 +254,10 @@ namespace beewatch::http
                 }
             }
 
-            answer["error"] = json::value::string("Invalid API request: \"" + request.to_string() + "\"");
-            g_logger.print(Logger::Error, answer["error"].serialize());
+            std::string errMsg = "Invalid API request: \"" + request.to_string() + "\"";
+
+            answer["error"] = json::value::string(errMsg);
+            g_logger.error(errMsg);
 
             request.reply(status_codes::NotFound, answer);
             return;
@@ -271,17 +274,14 @@ namespace beewatch::http
         try
         {
             listener.open()
-                    .then([](){ g_logger.print(Logger::Debug, "Starting Server listener"); })
+                    .then([](){ g_logger.debug("Starting Server listener"); })
                     .wait();
 
             _stopCondition.wait(lock);
         }
         catch (const std::exception& e)
         {
-            std::string errMsg = "Caught exception in REST API's listener thread: ";
-            errMsg += e.what();
-
-            g_logger.print(Logger::Error, errMsg);
+            g_logger.error("Caught exception in REST API's listener thread: " + std::string(e.what()));
         }
     }
 

@@ -54,7 +54,7 @@ namespace beewatch::hw
 
             if ( std::equal(data.begin(), data.end(), readError.begin()) )
             {
-                g_logger.print(Logger::Warning, "DHT read failed: timeout reached");
+                g_logger.warning("DHT read failed: timeout reached");
 
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 continue;
@@ -62,7 +62,7 @@ namespace beewatch::hw
 
             if (!validateData(data))
             {
-                g_logger.print(Logger::Warning, "DHT read failed: bad checksum");
+                g_logger.warning("DHT read failed: bad checksum");
 
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 continue;
@@ -96,7 +96,7 @@ namespace beewatch::hw
             return result;
         }
 
-        g_logger.print(Logger::Error, "Failed to read data from DHT sensor: number of attempts exceeded");
+        g_logger.error("Failed to read data from DHT sensor: number of attempts exceeded");
         return result;
     }
 

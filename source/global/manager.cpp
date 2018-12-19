@@ -4,6 +4,7 @@
 
 #include "global/manager.h"
 
+#include "global/db.h"
 #include "global/logging.h"
 #include "global/time.hpp"
 #include "util/string.h"
@@ -160,8 +161,8 @@ namespace beewatch
             }
             else if (*match == "--debug")
             {
-                g_logger.print(Logger::Info, "Enabling debug logs");
-                g_logger.setVerbosity(Logger::Debug);
+                g_logger.info("Enabling debug logs");
+                g_logger.setVerbosity(Logger::Level::Debug);
             }
             else if (*match == "--help")
             {
@@ -217,6 +218,16 @@ namespace beewatch
     void Manager::setName(std::string name)
     {
         std::unique_lock<std::shared_mutex> writeLock(_attrMutex);
+
+        try
+        {
+            g_db.setName(name);
+        }
+        catch (const std::runtime_error& e)
+        {
+            g_logger.error("Failed to update name in DB: " + std::string(e.what()));
+        }
+
         _name = name;
     }
 
@@ -239,13 +250,13 @@ namespace beewatch
         {
             auto data = _climateSensor->read();
 
-            g_logger.print(Logger::Info, "Humidity: " + string::fromNumber(data.humidity) + " %");
-            g_logger.print(Logger::Info, "Temperature: " + string::fromNumber(data.temperature) + " deg Celsius");
+            g_logger.info("Humidity: " + string::fromNumber(data.humidity) + " %");
+            g_logger.info("Temperature: " + string::fromNumber(data.temperature) + " deg Celsius");
 
             // Measure mass
             //auto mass = hx711->read();
             //
-            //g_logger.print(Logger::Info, "Mass: " + numToStr(mass) + " kg");
+            //g_logger.info("Mass: " + numToStr(mass) + " kg");
 
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
