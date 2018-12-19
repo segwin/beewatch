@@ -86,4 +86,6 @@ namespace beewatch
         uint16_t _port;
     };
 
+    #define g_db    DB::get()
+
 } // namespace beewatch::db

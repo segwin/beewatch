@@ -91,6 +91,6 @@ namespace beewatch
         Level _verbosity;
     };
 
-    extern Logger& g_logger;
+    #define g_logger    Logger::get()
 
 } // namespace beewatch

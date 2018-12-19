@@ -94,6 +94,8 @@ namespace beewatch
         hw::HX711::Ptr _massSensor;
     };
 
+    #define g_manager   Manager::get()
+
 } // namespace beewatch
 
 
