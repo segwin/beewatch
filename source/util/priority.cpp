@@ -4,7 +4,7 @@
 
 #include "util/priority.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #ifdef __linux__
 #include <errno.h>

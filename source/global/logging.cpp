@@ -2,7 +2,7 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include "version.h"
 

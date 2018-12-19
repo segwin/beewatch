@@ -6,7 +6,7 @@
 
 #include "util/algorithms.hpp"
 #include "util/priority.h"
-#include "util/time.hpp"
+#include "global/time.hpp"
 
 #include <cassert>
 #include <iostream>

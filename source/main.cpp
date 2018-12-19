@@ -1,4 +1,4 @@
-#include "manager.h"
+#include "global/manager.h"
 
 //==============================================================================
 int main(int argc, char* argv[])

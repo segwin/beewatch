@@ -4,7 +4,7 @@
 
 #include "io/gpio.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include <algorithm>
 #include <cassert>

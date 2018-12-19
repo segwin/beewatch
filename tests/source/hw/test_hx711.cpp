@@ -4,7 +4,7 @@
 
 #include "hw/hx711.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"

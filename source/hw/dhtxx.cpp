@@ -4,9 +4,9 @@
 
 #include "hw/dhtxx.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 #include "util/priority.h"
-#include "util/time.hpp"
+#include "global/time.hpp"
 
 #include <thread>
 

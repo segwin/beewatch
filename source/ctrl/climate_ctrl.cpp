@@ -5,7 +5,7 @@
 #include "ctrl/climate_ctrl.h"
 
 #include "util/algorithms.hpp"
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include <cassert>
 

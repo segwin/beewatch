@@ -4,7 +4,7 @@
 
 #include "io/tachometer.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include "catch.hpp"
 #include "gpioMock.hpp"

@@ -4,7 +4,7 @@
 
 #include "external/wiringPi.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #ifdef HAS_WIRINGPI
 #include <wiringPi.h>

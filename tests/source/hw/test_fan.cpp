@@ -4,7 +4,7 @@
 
 #include "hw/fan.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include "catch.hpp"
 

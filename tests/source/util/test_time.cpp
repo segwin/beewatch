@@ -2,7 +2,7 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "util/time.hpp"
+#include "global/time.hpp"
 #include "util/priority.h"
 
 #include "catch.hpp"

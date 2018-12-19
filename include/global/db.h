@@ -4,13 +4,16 @@
 
 #pragma once
 
+#include "util/data_types.hpp"
 #include "util/patterns.hpp"
 
-namespace beewatch::db
+#include <map>
+
+namespace beewatch
 {
 
     //==============================================================================
-    class DB : public unique_ownership_t<DB>
+    class DB : public singleton_t<DB>
     {
     public:
         //==============================================================================
@@ -20,6 +23,10 @@ namespace beewatch::db
         ~DB();
 
         //==============================================================================
+        /// Read node from DB
+        std::map<time_t, ClimateData<double>> readClimateData(time_t since = 0) const;
+
+        /// 
 
     private:
         std::string _host;

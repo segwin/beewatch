@@ -2,11 +2,11 @@
 // Copyright (c) 2018 Eric Seguin, all rights reserved.
 //==============================================================================
 
-#include "manager.h"
+#include "global/manager.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
+#include "global/time.hpp"
 #include "util/string.h"
-#include "util/time.hpp"
 
 #include <algorithm>
 #include <chrono>

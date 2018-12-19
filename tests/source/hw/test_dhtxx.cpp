@@ -4,7 +4,7 @@
 
 #include "hw/dhtxx.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include "catch.hpp"
 #include "wiringPiMock.hpp"

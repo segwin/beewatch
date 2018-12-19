@@ -4,7 +4,7 @@
 
 #include "http/server.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 #include "util/file.h"
 #include "util/string.h"
 #include "version.h"

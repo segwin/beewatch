@@ -4,7 +4,7 @@
 
 #include "util/file.h"
 
-#include "util/logging.h"
+#include "global/logging.h"
 
 #include <cstring>
 #include <fstream>
