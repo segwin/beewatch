@@ -156,6 +156,12 @@ find_package(cpprestsdk REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 
+find_package(libmongocxx)
+
+if (libmongocxx_FOUND)
+    add_definitions(-DHAS_MONGOCXX)
+endif()
+
 
 #
 # Sources
@@ -220,12 +226,18 @@ target_include_directories(${project_lib}
 
     SYSTEM PRIVATE
     ${Boost_INCLUDE_DIRS}
+    ${LIBMONGOCXX_INCLUDE_DIRS}
 )
 
 # Set compile options
 target_compile_options(${project_lib}
     PRIVATE
     ${DEFAULT_COMPILE_OPTIONS}
+)
+
+# Set compile definitions
+target_compile_definitions(${project_lib}
+    PRIVATE ${LIBMONGOCXX_DEFINITIONS}
 )
 
 # Add web page dependency
@@ -247,6 +259,7 @@ if (UNIX AND wiringpi_lib)
 
         SYSTEM PRIVATE
         ${Boost_INCLUDE_DIRS}
+        ${LIBMONGOCXX_INCLUDE_DIRS}
     )
 
     # Link external libraries
@@ -257,6 +270,7 @@ if (UNIX AND wiringpi_lib)
         ${wiringpi_lib}
         cpprestsdk::cpprest
         ${Boost_LIBRARIES}
+        ${LIBMONGOCXX_LIBRARIES}
     )
 
 	# Set compile options
@@ -264,6 +278,11 @@ if (UNIX AND wiringpi_lib)
 		PRIVATE
 		${DEFAULT_COMPILE_OPTIONS}
 	)
+
+    # Set compile definitions
+    target_compile_definitions(${project_exe}
+        PRIVATE ${LIBMONGOCXX_DEFINITIONS}
+    )
 else()
     message(WARNING "Skipping executable: should only build on Linux with wiringPi library installed")
 endif()
@@ -317,6 +336,7 @@ target_include_directories(${tests}
     SYSTEM PRIVATE
     ${tests_lib_path}
     ${Boost_INCLUDE_DIRS}
+    ${LIBMONGOCXX_INCLUDE_DIRS}
 )
 
 # Set compile options
@@ -324,6 +344,11 @@ target_compile_options(${tests}
     PRIVATE
     ${DEFAULT_COMPILE_OPTIONS}
     ${DEFAULT_LINKER_OPTIONS}
+)
+
+# Set compile definitions
+target_compile_definitions(${tests}
+    PRIVATE ${LIBMONGOCXX_DEFINITIONS}
 )
 
 set_target_properties(${tests} PROPERTIES LINK_FLAGS "${DEFAULT_LINKER_OPTIONS}")
@@ -339,6 +364,7 @@ target_link_libraries(${tests}
     ${project_lib}
     ${wiringpi_lib}
     ${Boost_LIBRARIES}
+    ${LIBMONGOCXX_LIBRARIES}
 )
 
 
