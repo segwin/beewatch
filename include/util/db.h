@@ -38,10 +38,10 @@ namespace beewatch
 
         //==============================================================================
         /// Read climate data from DB
-        std::map<int64_t, ClimateData<double>> getClimateData(int64_t since = 0);
+        std::map<int64_t, ClimateData<double>> getClimateData(std::string sensorID, int64_t since = 0);
 
         /// Append climate data to DB
-        void addClimateData(int64_t timestamp, ClimateData<double> data);
+        void addClimateData(std::string sensorID, int64_t timestamp, ClimateData<double> data);
 
 
         //==============================================================================
@@ -52,8 +52,8 @@ namespace beewatch
         void setName(std::string name);
 
         //==============================================================================
-        static constexpr const char * DEFAULT_NAME = "beewatch";
-        static constexpr const char * DEFAULT_HOST = "localhost";
+        static constexpr auto DEFAULT_NAME = "beewatch";
+        static constexpr auto DEFAULT_HOST = "localhost";
         static constexpr uint16_t DEFAULT_PORT = 27017;
 
 

@@ -59,7 +59,21 @@ namespace beewatch
          *
          * @returns Climate data ordered by sample time
          */
-        virtual std::map<int64_t, ClimateData<double>> getClimateSamples(int64_t since = 0) const override;
+        virtual std::map<int64_t, ClimateData<double>> getClimateSamples(std::string sensorID,
+                                                                         int64_t since = 0) const override;
+
+        /**
+         * @brief Get array of sensor IDs
+         *
+         * NB: Currently returns a constant value: { "interior", "exterior" }
+         *
+         * @returns Climate sensor IDs
+         */
+        virtual std::vector<std::string> getClimateSensorIDs() const override
+        {
+            // TODO: Support a dynamic configuration eventually
+            return { "interior", "exterior" };
+        }
 
 
     protected:

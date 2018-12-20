@@ -325,15 +325,12 @@ namespace beewatch
     }
 
     //==============================================================================
-    std::map<int64_t, ClimateData<double>> Manager::getClimateSamples(int64_t since) const
+    std::map<int64_t, ClimateData<double>> Manager::getClimateSamples(std::string sensorID,
+                                                                      int64_t since) const
     {
         std::shared_lock<std::shared_mutex> readLock(_attrMutex);
 
-        // TODO: Implement storage class for sample data
-        if (since > g_timeReal.now())
-            return {};
-        else
-            return { { g_timeReal.now(), _climateSensor->read() } };
+        return _db->getClimateData(sensorID, since);
     }
 
     //==============================================================================
@@ -341,15 +338,18 @@ namespace beewatch
     {
         while (1)
         {
+            // TODO: Read data on both internal & external sensors
             auto data = _climateSensor->read();
 
-            g_logger.info("Humidity: " + string::fromNumber(data.humidity) + " %");
-            g_logger.info("Temperature: " + string::fromNumber(data.temperature) + " deg Celsius");
+            g_logger.debug("Humidity: " + string::fromNumber(data.humidity) + " %");
+            g_logger.debug("Temperature: " + string::fromNumber(data.temperature) + " deg Celsius");
+
+            _db->addClimateData("interior", g_timeReal.toUnix(g_timeReal.now()), data);
 
             // Measure mass
             //auto mass = hx711->read();
             //
-            //g_logger.info("Mass: " + numToStr(mass) + " kg");
+            //g_logger.debug("Mass: " + numToStr(mass) + " kg");
 
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }

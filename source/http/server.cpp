@@ -154,23 +154,28 @@ namespace beewatch::http
                     }
 
                     // Create JSON array from map of climate samples
-                    auto samples = _manager.getClimateSamples(since);
+                    auto sensorIDs = _manager.getClimateSensorIDs();
 
-                    answer["interior"] = json::value::object(true);
-                    answer["interior"]["timestamps"] = json::value::array(samples.size());
-                    answer["interior"]["samples"] = json::value::array(samples.size());
-
-                    size_t index = 0;
-                    for (auto& sample : samples)
+                    for (const auto& sensorID : sensorIDs)
                     {
-                        answer["interior"]["timestamps"][index] = json::value::number((uint64_t)sample.first);
+                        auto samples = _manager.getClimateSamples(sensorID, since);
 
-                        answer["interior"]["samples"][index] = json::value::object({
-                                { "temperature", sample.second.temperature },
-                                { "humidity", sample.second.humidity }
-                            }, true);
+                        answer[sensorID] = json::value::object(true);
+                        answer[sensorID]["timestamps"] = json::value::array(samples.size());
+                        answer[sensorID]["samples"] = json::value::array(samples.size());
 
-                        ++index;
+                        size_t index = 0;
+                        for (auto& sample : samples)
+                        {
+                            answer[sensorID]["timestamps"][index] = json::value::number((uint64_t)sample.first);
+
+                            answer[sensorID]["samples"][index] = json::value::object({
+                                    { "temperature", sample.second.temperature },
+                                    { "humidity", sample.second.humidity }
+                                }, true);
+
+                            ++index;
+                        }
                     }
 
                     request.reply(status_codes::OK, answer);
