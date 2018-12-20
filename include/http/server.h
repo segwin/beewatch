@@ -34,7 +34,7 @@ namespace beewatch::http
         virtual void setName(std::string name) = 0;
         
         //==============================================================================
-        virtual std::map<time_t, ClimateData<double>> getClimateSamples(time_t since = 0) const = 0;
+        virtual std::map<int64_t, ClimateData<double>> getClimateSamples(int64_t since = 0) const = 0;
     };
 
     //==============================================================================

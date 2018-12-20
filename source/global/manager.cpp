@@ -325,7 +325,7 @@ namespace beewatch
     }
 
     //==============================================================================
-    std::map<time_t, ClimateData<double>> Manager::getClimateSamples(time_t since) const
+    std::map<int64_t, ClimateData<double>> Manager::getClimateSamples(int64_t since) const
     {
         std::shared_lock<std::shared_mutex> readLock(_attrMutex);
 

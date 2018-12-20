@@ -131,7 +131,7 @@ namespace beewatch::http
                 if (uri == "data/climate")
                 {
                     auto query = getRequestQuery(request);
-                    time_t since = 0;
+                    int64_t since = 0;
 
                     if (query.find("since") != query.end())
                     {

@@ -59,7 +59,7 @@ namespace beewatch
          *
          * @returns Climate data ordered by sample time
          */
-        virtual std::map<time_t, ClimateData<double>> getClimateSamples(time_t since = 0) const override;
+        virtual std::map<int64_t, ClimateData<double>> getClimateSamples(int64_t since = 0) const override;
 
 
     protected:

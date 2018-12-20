@@ -38,10 +38,10 @@ namespace beewatch
 
         //==============================================================================
         /// Read climate data from DB
-        std::map<time_t, ClimateData<double>> getClimateData(time_t since = 0);
+        std::map<int64_t, ClimateData<double>> getClimateData(int64_t since = 0);
 
         /// Append climate data to DB
-        void addClimateData(time_t timestamp, ClimateData<double> data);
+        void addClimateData(int64_t timestamp, ClimateData<double> data);
 
 
         //==============================================================================

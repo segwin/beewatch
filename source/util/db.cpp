@@ -43,18 +43,19 @@ namespace beewatch
     }
 
     //==============================================================================
-    std::map<time_t, ClimateData<double>> DB::getClimateData(time_t /*since*/)
+    std::map<int64_t, ClimateData<double>> DB::getClimateData(int64_t since)
     {
         std::unique_lock<std::mutex> lock(_connectionMutex);
 
-        std::map<time_t, ClimateData<double>> data;
+        std::map<int64_t, ClimateData<double>> data;
+
 
         // TODO: Read data from DB
 
         return data;
     }
 
-    void DB::addClimateData(time_t /*timestamp*/, ClimateData<double> /*data*/)
+    void DB::addClimateData(int64_t timestamp, ClimateData<double> data)
     {
         std::unique_lock<std::mutex> lock(_connectionMutex);
 

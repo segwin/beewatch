@@ -107,10 +107,10 @@ namespace beewatch
          *
          * @returns Equivalent Unix timestamp
          */
-        time_t toUnix(double timeMs) const
+        int64_t toUnix(double timeMs) const
         {
             double startTimeS = _start.tv_sec + 1e9 * _start.tv_nsec;
-            return (time_t)std::round((timeMs / 1000.0) + startTimeS);
+            return (int64_t)std::round((timeMs / 1000.0) + startTimeS);
         }
 
         //==============================================================================
