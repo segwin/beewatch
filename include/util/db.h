@@ -30,11 +30,6 @@ namespace beewatch
         DB(std::string name = DEFAULT_NAME,
            std::string host = DEFAULT_HOST, uint16_t port = DEFAULT_PORT);
 
-        /**
-         * @brief Destroy DB object, closing DB connection
-         */
-        ~DB();
-
 
         //==============================================================================
         /// Read climate data from DB
