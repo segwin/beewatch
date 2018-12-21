@@ -67,7 +67,12 @@ namespace beewatch
         : _name(name), _host(host), _port(port)
     {
         // Create client for given host & database
-        pimpl = std::make_unique<impl>(_host, std::to_string(port), _name);
+        pimpl = new impl(_host, std::to_string(port), _name);
+    }
+
+    DB::~DB()
+    {
+        delete pimpl;
     }
     
     //==============================================================================

@@ -30,6 +30,8 @@ namespace beewatch
         DB(std::string name = DEFAULT_NAME,
            std::string host = DEFAULT_HOST, uint16_t port = DEFAULT_PORT);
 
+        ~DB();
+
 
         //==============================================================================
         /// Read climate data from DB
@@ -66,8 +68,7 @@ namespace beewatch
         //==============================================================================
         /// DB client implementation (pimpl)
         struct impl;
-
-        std::unique_ptr<impl> pimpl;
+        impl * pimpl;
 
         //==============================================================================
         bool _isConnected;
