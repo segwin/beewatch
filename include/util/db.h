@@ -31,7 +31,7 @@ namespace beewatch
            std::string host = DEFAULT_HOST, uint16_t port = DEFAULT_PORT);
 
         /**
-         * @brief Destroy DB object, closing MongoDB connection
+         * @brief Destroy DB object, closing DB connection
          */
         ~DB();
 
@@ -59,13 +59,22 @@ namespace beewatch
 
     private:
         //==============================================================================
-        /// MongoDB client implementation (pimpl)
+        /// Check if table exists in DB
+        bool hasTable(std::string name);
+
+        /// Create "ClimateData" table
+        void createClimateDataTable();
+
+        /// Create "About" table
+        void createAboutTable();
+
+        //==============================================================================
+        /// DB client implementation (pimpl)
         struct impl;
 
         std::unique_ptr<impl> pimpl;
 
         //==============================================================================
-        std::mutex _connectionMutex;
         bool _isConnected;
 
         std::string _name;

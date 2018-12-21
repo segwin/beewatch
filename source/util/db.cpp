@@ -5,45 +5,61 @@
 #include "util/db.h"
 
 #include "global/logging.h"
+#include "version.h"
 
-// TODO: Modify file to make sure it compiles even without mongocxx (for CI)
-#ifdef HAS_MONGOCXX
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/builder/stream/document.hpp>
-#include <mongocxx/instance.hpp>
-#include <mongocxx/client.hpp>
-#include <mongocxx/uri.hpp>
-#endif
+#include <pqxx/pqxx> 
 
 namespace beewatch
 {
 
     //==============================================================================
-    /// Global MongoDB driver instance
-    static mongocxx::instance g_dbDriver{};
-
-    //==============================================================================
-    struct DB::impl
+    struct DB::impl : public unique_ownership_t<impl>
     {
         //==============================================================================
-        /// Construct MongoDB client & get database
-        impl(std::string uri, std::string name)
+        /// Construct PostgreSQL client
+        /// TODO: Allow configuration of DB user/password
+        impl(std::string host, std::string port, std::string name,
+             std::string username = "postgres", std::string password = "postgres")
+            : _db("dbname = " + name + " " +
+                  "user = " + username + " password = " + password + " " +
+                  "hostaddr = " + host + " port = " + port)
         {
-            // Build client
-            client = mongocxx::client( mongocxx::uri(uri) );
-
-            // Get database from client
-            db = client[name];
         }
 
         //==============================================================================
-        /// MongoDB database
-        mongocxx::database db;
+        /// Execute query in a single transaction and return results
+        pqxx::result exec(std::string query, bool commit)
+        {
+            std::unique_lock<std::mutex> lock(_mutex);
+
+            pqxx::result results;
+
+            try
+            {
+                pqxx::work txn(_db);
+                results = txn.exec(query);
+
+                if (commit)
+                {
+                    txn.commit();
+                }
+            }
+            catch (std::exception& e)
+            {
+                g_logger.error("Caught exception while executing DB transaction: " +
+                               std::string(e.what()));
+            }
+
+            return results;
+        }
 
     private:
         //==============================================================================
-        /// MongoDB client
-        mongocxx::client client;
+        /// PostgreSQL database connection
+        pqxx::connection _db;
+
+        /// Transaction mutex
+        std::mutex _mutex;
     };
 
     //==============================================================================
@@ -51,52 +67,76 @@ namespace beewatch
         : _name(name), _host(host), _port(port)
     {
         // Create client for given host & database
-        std::string uri = "mongodb://" + _host + ":" + std::to_string(_port);
+        pimpl = std::make_unique<impl>(_host, std::to_string(port), _name);
+    }
+    
+    //==============================================================================
+    bool DB::hasTable(std::string name)
+    {
+        // Query information table for given table name
+        auto query = "SELECT EXISTS ("
+                     "  SELECT 1"
+                     "  FROM   pg_tables"
+                     "  WHERE  tablename = '" + name + "'"
+                     ");";
 
-        pimpl = std::make_unique<impl>(uri, _name);
+        auto results = pimpl->exec(query, false);
+
+        return !results.empty();
     }
 
-    DB::~DB()
+    void DB::createClimateDataTable()
     {
-        pimpl.reset();
+        // Create ClimateData table with unqualified schema
+        auto query = "CREATE TABLE ClimateData ("
+                     "  rowguid         SERIAL          PRIMARY KEY     NOT NULL,"
+                     "  SensorID        VARCHAR(256)                    NOT NULL,"
+                     "  Time            BIGINT                          NOT NULL,"
+                     "  Temperature     NUMERIC                         NOT NULL,"
+                     "  Humidity        NUMERIC                         NOT NULL"
+                     ");";
+
+        pimpl->exec(query, true);
+    }
+
+    void DB::createAboutTable()
+    {
+        // Create About table with unqualified schema
+        auto query = "CREATE TABLE About ("
+                     "  rowguid         SERIAL          PRIMARY KEY     NOT NULL,"
+                     "  Name            VARCHAR(256)                    NOT NULL"
+                     ");";
+
+        pimpl->exec(query, true);
     }
 
     //==============================================================================
     std::map<int64_t, ClimateData<double>> DB::getClimateData(std::string sensorID, int64_t since)
     {
-        std::unique_lock<std::mutex> lock(_connectionMutex);
+        // If ClimateData table does not exist, create it and return (no results stored yet)
+        if (!hasTable("ClimateData"))
+        {
+            createClimateDataTable();
+            return {};
+        }
 
+        // Find all data in "ClimateData" table with timestamps >= since
+        auto query = "SELECT Time, Temperature, Humidity "
+                     "FROM ClimateData "
+                     "WHERE SensorID = '" + sensorID + "'"
+                     "AND Time >= " + std::to_string(since);
+
+        auto results = pimpl->exec(query, false);
+
+        // Get sample data from results
         std::map<int64_t, ClimateData<double>> data;
 
-        // Find all data in "climate_data" collection with timestamps >= since
-        using document_stream = bsoncxx::builder::stream::document;
-        using bsoncxx::builder::stream::open_document;
-        using bsoncxx::builder::stream::close_document;
-        using bsoncxx::builder::stream::finalize;
-
-        mongocxx::collection collection = pimpl->db["climate_data"];
-        mongocxx::cursor results = collection.find(             // Filter documents:
-            document_stream{} << "sensor_id"                    //   - by sensor ID
-                                << sensorID
-                              << "time"                         //   - by timestamp (>= since)
-                                << open_document
-                                  << "$gte" << since
-                                << close_document
-                              << finalize
-        );
-
-        for (auto document : results)
+        for (auto row : results)
         {
-            // Get sample data from document
-            ClimateData<double> sample;
+            int64_t timestamp = row[0].as<int64_t>();
 
-            sample.temperature = document["temperature"].get_double();
-            sample.humidity = document["humidity"].get_double();
-
-            int64_t timestamp = document["time"].get_int64();
-
-            // Save sample
-            data[timestamp] = sample;
+            data[timestamp].temperature = row[1].as<double>();
+            data[timestamp].humidity = row[2].as<double>();
         }
 
         return data;
@@ -104,77 +144,68 @@ namespace beewatch
 
     void DB::addClimateData(std::string sensorID, int64_t timestamp, ClimateData<double> data)
     {
-        std::unique_lock<std::mutex> lock(_connectionMutex);
+        // If ClimateData table does not exist, create it and add data
+        if (!hasTable("ClimateData"))
+        {
+            createClimateDataTable();
+        }
 
         // Build document for given data
-        using document_stream = bsoncxx::builder::stream::document;
-        using bsoncxx::builder::stream::open_document;
-        using bsoncxx::builder::stream::close_document;
-        using bsoncxx::builder::stream::finalize;
+        auto query = "INSERT INTO ClimateData ("
+                     "  SensorID,"
+                     "  Time,"
+                     "  Temperature,"
+                     "  Humidity"
+                     ") "
+                     "VALUES ("
+                     "  '" + sensorID.substr(0, 256) + "',"         // VARCHAR(256)
+                     "  " + std::to_string(timestamp) + ","         // INT
+                     "  " + std::to_string(data.temperature) + ","  // NUMERIC
+                     "  " + std::to_string(data.humidity) + ","     // NUMERIC
+                     ");";
 
-        auto document = document_stream{} << "sensor_id" << sensorID
-                                          << "time" << timestamp
-                                          << "temperature" << data.temperature
-                                          << "humidity" << data.humidity
-                                          << finalize;
-
-        // Add document to DB's "climate_data" collection
-        auto collection = pimpl->db["climate_data"];
-        collection.insert_one(document.view());
+        auto results = pimpl->exec(query, true);
     }
 
     //==============================================================================
     std::string DB::getName()
     {
-        std::unique_lock<std::mutex> lock(_connectionMutex);
-
-        // Get document in "meta" collection
-        auto collection = pimpl->db["meta"];
-        auto maybeDocument = collection.find_one({});
-
-        if (maybeDocument)
+        // If About table does not exist, create it, then store & return the default name
+        if (!hasTable("About"))
         {
-            auto document = maybeDocument->view();
-            auto nameElement = document["name"];
+            createAboutTable();
+            setName(PROJECT_NAME);
 
-            if (nameElement.type() == bsoncxx::type::k_utf8)
-            {
-                // Only return name if it exists in the document as a string
-                return nameElement.get_utf8().value.data();
-            }
+            return PROJECT_NAME;
         }
 
-        return "";
+        // Find name in "About" table
+        auto query = "SELECT Name FROM About";
+        auto results = pimpl->exec(query, false);
+
+        // Always use the first match (there should only ever be one row, but who knows!)
+        if (results.size() > 0)
+        {
+            return results[0][0].as<std::string>();
+        }
+        else
+        {
+            g_logger.error("Expected 1 row in About table, got none!");
+            return "";
+        }
     }
 
     void DB::setName(std::string name)
     {
-        std::unique_lock<std::mutex> lock(_connectionMutex);
-
-        // Try to update document in "meta" collection
-        using document_stream = bsoncxx::builder::stream::document;
-        using bsoncxx::builder::stream::open_document;
-        using bsoncxx::builder::stream::close_document;
-        using bsoncxx::builder::stream::finalize;
-
-        auto collection = pimpl->db["meta"];
-        auto maybeDocument = collection.update_one(
-            {}, // Any document
-            document_stream{} << "$set"
-                                << open_document
-                                  << "name" << name
-                                << close_document
-                              << finalize
-        );
-
-        // If document was not updated (e.g. no document exists), create a new one
-        if (!maybeDocument)
+        // If About table does not exist, create it and save the given name
+        if (!hasTable("About"))
         {
-            auto newDocument = document_stream{} << "name" << name
-                                                 << finalize;
-
-            collection.insert_one(newDocument.view());
+            createAboutTable();
         }
+
+        // Update row in "About" table
+        auto query = "UPDATE About SET Name = " + name;
+        auto results = pimpl->exec(query, true);
     }
 
 } // namespace beewatch
