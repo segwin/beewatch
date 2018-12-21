@@ -79,11 +79,9 @@ namespace beewatch
     bool DB::hasTable(std::string name)
     {
         // Query information table for given table name
-        auto query = "SELECT EXISTS ("
-                     "  SELECT 1"
-                     "  FROM   pg_tables"
-                     "  WHERE  tablename = '" + name + "'"
-                     ");";
+        auto query = "SELECT 1"
+                     "FROM   pg_tables"
+                     "WHERE  tablename = '" + name + "';";
 
         auto results = pimpl->exec(query, false);
 
