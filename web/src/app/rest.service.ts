@@ -6,22 +6,24 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class RestService {
-  private endpointUri: string;
   private headers = new HttpHeaders({
     'Content-Type':  'application/json'
   });
 
   constructor(private http: HttpClient) {
-    this.endpointUri = '/api/v1/';
+  }
+
+  getEndpointUri(): string {
+    return 'http://' + window.location.hostname + ':8080/api/v1/';
   }
 
   public get<T>(uri: string, params?: HttpParams): Observable<T> {
     const options = { headers: this.headers, params: params };
-    return this.http.get<T>(this.endpointUri + uri, options);
+    return this.http.get<T>(this.getEndpointUri() + uri, options);
   }
 
   public post<T>(uri: string, data: Object): Observable<T> {
     const options = { headers: this.headers };
-    return this.http.post<T>(this.endpointUri + uri, JSON.stringify(data), options);
+    return this.http.post<T>(this.getEndpointUri() + uri, JSON.stringify(data), options);
   }
 }
