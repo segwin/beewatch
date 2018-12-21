@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Monitor } from './monitor';
-import { Chart } from 'chart.js'
+
+import { Monitor, ClimateMonitor } from './monitor';
+import { interval } from 'rxjs';
+import { startWith, switchMap } from 'rxjs/operators';
+import { ClimateService } from './climate/climate.service';
+import { ClimateData } from './climate/climate';
 
 @Component({
   selector: 'app-monitor',
@@ -9,123 +13,84 @@ import { Chart } from 'chart.js'
 })
 
 export class MonitorComponent implements OnInit {
-  constructor() {}
+  private climateData = [
+    {
+      timestamps: [],
+      samples: [ [], [] ]
+    },
+    {
+      timestamps: [],
+      samples: [ [], [] ]
+    }
+  ];
 
-  private async delay(ms: number) {
-      await new Promise(resolve => setTimeout(()=>resolve(), ms)).then(()=>console.log("fired"));
+  private lastUpdate = 0;
+
+  private monitors: Monitor[] = [
+    new ClimateMonitor('climate-interior', 'Interior climate'),
+    new ClimateMonitor('climate-exterior', 'Exterior climate')
+  ];
+
+  constructor(private climateService: ClimateService) { }
+
+  ngOnInit(): void {
+    this.initCharts().then(() =>
+      interval(5000).pipe(
+        startWith(0),
+        switchMap(() => this.climateService.getData(0))
+      )
+      .subscribe(data => this.updateClimate(data))
+    );
   }
 
-  private async initCharts() {
+  private async delay(ms: number) {
+    await new Promise(resolve => setTimeout(() => resolve(), ms))
+      .then(() => console.log('fired'));
+  }
+
+  private async initCharts(): Promise<void> {
     // TODO: How can we do this cleanly?
-    while (!document.getElementById('temperature-' + this.monitors[0].id.toString())) {
+    while (!document.getElementById('climate-interior')) {
       await this.delay(50);
     }
 
-    this.monitors.forEach((monitor) => {
-      let timeMockData = [ 1542772336, 1543772336, 1544772336, 1545772336, 1546772336 ];
-      let timeMockDataFmt : string[] = [];
-      timeMockData.forEach((res) => { timeMockDataFmt.push((new Date(res * 1000)).toLocaleTimeString('en', { year: 'numeric', month: 'short', day: 'numeric' })) });
-
-      let temperatureIntMockData = [ 5.0, 6.0, 3.0, 4.0, 3.0 ];
-      let temperatureExtMockData = [ -6.0, -2.0, 1.0, -4.0, -11.0 ];
-      let humidityIntMockData = [ 40.0, 45.0, 43.0, 52.0, 57.0 ];
-      let humidityExtMockData = [ 20.0, 22.0, 18.0, 27.0, 23.0 ];
-
-      let temperatureId = 'temperature-' + monitor.id.toString();
-      let humidityId = 'humidity-' + monitor.id.toString();
-
-      monitor.temperatureChart = new Chart(temperatureId, {
-        type: 'line',
-
-        data: {
-          labels: timeMockDataFmt,
-          datasets: [
-            {
-              label: 'Interior',
-              data: temperatureIntMockData,
-              borderColor: "#c10767",
-              pointBackgroundColor: "#c10767",
-              pointHitRadius: 6,
-              fill: false
-            },
-            {
-              label: 'Exterior',
-              data: temperatureExtMockData,
-              borderColor: "#0767c1",
-              pointBackgroundColor: "#0767c1",
-              pointHitRadius: 6,
-              fill: false
-            }
-          ]
-        },
-
-        options: {
-          legend: {
-            display: true
-          },
-          scales: {
-            xAxes: [{
-              display: false
-            }],
-            yAxes: [{
-              display: true
-            }],
-          }
-        }
-      });
-
-      monitor.humidityChart = new Chart(humidityId, {
-        type: 'line',
-
-        data: {
-          labels: timeMockDataFmt,
-          datasets: [
-            {
-              label: 'Interior',
-              data: humidityIntMockData,
-              borderColor: "#c10767",
-              pointBackgroundColor: "#c10767",
-              pointHitRadius: 6,
-              fill: false
-            },
-            {
-              label: 'Exterior',
-              data: humidityExtMockData,
-              borderColor: "#0767c1",
-              pointBackgroundColor: "#0767c1",
-              pointHitRadius: 6,
-              fill: false
-            }
-          ]
-        },
-
-        options: {
-          legend: {
-            display: true
-          },
-
-          scales: {
-            xAxes: [{
-              display: false
-            }],
-            yAxes: [{
-              display: true
-            }],
-          },
-        }
-      });
-    });
+    this.monitors.forEach(monitor => monitor.init());
   }
 
-  ngOnInit(): void {
-    this.initCharts();
+  private updateClimate(data?: ClimateData): void {
+    if (!data) {
+      return;
+    }
+
+    const newData = [data.interior, data.exterior];
+
+    for (let i = 0; i < 2; ++i) {
+      const newTimestamps = newData[i].timestamps.filter(timestamp => timestamp > this.lastUpdate);
+      const newSamples = newData[i].samples.slice(newData[i].samples.length - newTimestamps.length);
+
+      for (const newTimestamp of newTimestamps) {
+        this.climateData[i].timestamps.push(newTimestamp);
+      }
+
+      for (const newSample of newSamples) {
+        this.climateData[i].samples[0].push(newSample.temperature);
+        this.climateData[i].samples[1].push(newSample.humidity);
+      }
+    }
+
+    // Update last timestamp
+    if (data.interior.timestamps.length > 0) {
+      this.lastUpdate = data.interior.timestamps[data.interior.timestamps.length - 1];
+    }
+
+    // Update charts
+    this.updateCharts();
   }
 
-  monitors: Monitor[] = [ new Monitor(0), new Monitor(1) ];
-
-  selectedMonitor: Monitor;
-  onSelect(monitor: Monitor): void {
-    this.selectedMonitor = monitor
+  private updateCharts(): void {
+    // TODO: Add data instead of replacing it
+    for (let i = 0; i < 2; ++i) {
+      this.monitors[i].addData(this.climateData[i].timestamps, this.climateData[i].samples);
+    }
   }
-
 }
