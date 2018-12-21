@@ -4,6 +4,3 @@
 [submodule "vendor/cpprestsdk"]
 	path = vendor/cpprestsdk
 	url = https://github.com/Microsoft/cpprestsdk.git
-[submodule "vendor/mongocxx"]
-	path = vendor/mongocxx
-	url = https://github.com/mongodb/mongo-cxx-driver.git
