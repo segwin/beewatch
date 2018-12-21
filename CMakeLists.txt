@@ -156,10 +156,14 @@ find_package(cpprestsdk REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 
-find_package(libmongocxx)
+find_package(libmongoc-1.0)
 
-if (libmongocxx_FOUND)
-    add_definitions(-DHAS_MONGOCXX)
+if (libmongoc-1.0_FOUND)
+    add_definitions(-DHAS_MONGOC)
+
+    message ("--   mongoc found version \"${MONGOC_VERSION}\"")
+    message ("--   mongoc include path \"${MONGOC_INCLUDE_DIRS}\"")
+    message ("--   mongoc libraries \"${MONGOC_LIBRARIES}\"")
 endif()
 
 
@@ -226,7 +230,7 @@ target_include_directories(${project_lib}
 
     SYSTEM PRIVATE
     ${Boost_INCLUDE_DIRS}
-    ${LIBMONGOCXX_INCLUDE_DIRS}
+    ${MONGOC_INCLUDE_DIRS}
 )
 
 # Set compile options
@@ -237,7 +241,7 @@ target_compile_options(${project_lib}
 
 # Set compile definitions
 target_compile_definitions(${project_lib}
-    PRIVATE ${LIBMONGOCXX_DEFINITIONS}
+    PRIVATE ${MONGOC_DEFINITIONS}
 )
 
 # Add web page dependency
@@ -259,7 +263,7 @@ if (UNIX AND wiringpi_lib)
 
         SYSTEM PRIVATE
         ${Boost_INCLUDE_DIRS}
-        ${LIBMONGOCXX_INCLUDE_DIRS}
+        ${MONGOC_INCLUDE_DIRS}
     )
 
     # Link external libraries
@@ -270,7 +274,7 @@ if (UNIX AND wiringpi_lib)
         ${wiringpi_lib}
         cpprestsdk::cpprest
         ${Boost_LIBRARIES}
-        ${LIBMONGOCXX_LIBRARIES}
+        ${MONGOC_LIBRARIES}
     )
 
 	# Set compile options
@@ -281,7 +285,7 @@ if (UNIX AND wiringpi_lib)
 
     # Set compile definitions
     target_compile_definitions(${project_exe}
-        PRIVATE ${LIBMONGOCXX_DEFINITIONS}
+        PRIVATE ${MONGOC_DEFINITIONS}
     )
 else()
     message(WARNING "Skipping executable: should only build on Linux with wiringPi library installed")
@@ -336,7 +340,7 @@ target_include_directories(${tests}
     SYSTEM PRIVATE
     ${tests_lib_path}
     ${Boost_INCLUDE_DIRS}
-    ${LIBMONGOCXX_INCLUDE_DIRS}
+    ${MONGOC_INCLUDE_DIRS}
 )
 
 # Set compile options
@@ -348,7 +352,7 @@ target_compile_options(${tests}
 
 # Set compile definitions
 target_compile_definitions(${tests}
-    PRIVATE ${LIBMONGOCXX_DEFINITIONS}
+    PRIVATE ${MONGOC_DEFINITIONS}
 )
 
 set_target_properties(${tests} PROPERTIES LINK_FLAGS "${DEFAULT_LINKER_OPTIONS}")
@@ -364,7 +368,7 @@ target_link_libraries(${tests}
     ${project_lib}
     ${wiringpi_lib}
     ${Boost_LIBRARIES}
-    ${LIBMONGOCXX_LIBRARIES}
+    ${MONGOC_LIBRARIES}
 )
 
 
