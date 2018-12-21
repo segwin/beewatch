@@ -115,14 +115,14 @@ namespace beewatch
 
             Argument {
                 "db-host",
-                "MongoDB host (default: localhost)",
+                "MongoDB host (default: 127.0.0.1)",
                 "ip/hostname",
                 'D'
             },
 
             Argument {
                 "db-port",
-                "Port to use to connect to MongoDB (default: 27017)",
+                "Port to use to connect to MongoDB (default: 5432)",
                 "DB port",
                 'd'
             },
@@ -263,8 +263,29 @@ namespace beewatch
             }
         }
 
-        _apiServer = std::make_unique<http::Server>(*this, restPort);
-        _db = std::make_unique<DB>(dbName, dbHost, dbPort);
+        try
+        {
+            _apiServer = std::make_unique<http::Server>(*this, restPort);
+        }
+        catch (const std::exception& e)
+        {
+            g_logger.fatal("Caught exception while bringing up API server: " +
+                           std::string(e.what()));
+
+            exit(-1);
+        }
+
+        try
+        {
+            _db = std::make_unique<DB>(dbName, dbHost, dbPort);
+        }
+        catch (const std::exception& e)
+        {
+            g_logger.fatal("Caught exception while bringing up DB connection: " +
+                           std::string(e.what()));
+
+            exit(-1);
+        }
     }
 
     void Manager::printUsage()

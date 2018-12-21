@@ -50,8 +50,8 @@ namespace beewatch
 
         //==============================================================================
         static constexpr auto DEFAULT_NAME = "beewatch";
-        static constexpr auto DEFAULT_HOST = "localhost";
-        static constexpr uint16_t DEFAULT_PORT = 27017;
+        static constexpr auto DEFAULT_HOST = "127.0.0.1";
+        static constexpr uint16_t DEFAULT_PORT = 5432;
 
 
     private:

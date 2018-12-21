@@ -5,6 +5,7 @@
 #include "util/db.h"
 
 #include "global/logging.h"
+#include "util/string.h"
 #include "version.h"
 
 #include <pqxx/pqxx> 
@@ -79,9 +80,9 @@ namespace beewatch
     bool DB::hasTable(std::string name)
     {
         // Query information table for given table name
-        auto query = "SELECT 1"
-                     "FROM   pg_tables"
-                     "WHERE  tablename = '" + name + "';";
+        auto query = "SELECT 1 "
+                     "FROM   pg_tables "
+                     "WHERE  tablename = '" + string::tolower(name) + "';";
 
         auto results = pimpl->exec(query, false);
 
@@ -164,7 +165,7 @@ namespace beewatch
                      "  '" + sensorID.substr(0, 256) + "',"         // VARCHAR(256)
                      "  " + std::to_string(timestamp) + ","         // INT
                      "  " + std::to_string(data.temperature) + ","  // NUMERIC
-                     "  " + std::to_string(data.humidity) + ","     // NUMERIC
+                     "  " + std::to_string(data.humidity) +         // NUMERIC
                      ");";
 
         auto results = pimpl->exec(query, true);
