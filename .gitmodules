@@ -4,3 +4,6 @@
 [submodule "vendor/cpprestsdk"]
 	path = vendor/cpprestsdk
 	url = https://github.com/Microsoft/cpprestsdk.git
+[submodule "vendor/libpqxx"]
+	path = vendor/libpqxx
+	url = https://github.com/jtv/libpqxx.git
