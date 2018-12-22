@@ -4,6 +4,7 @@ import { catchError } from 'rxjs/operators';
 
 import { ClimateData } from './climate';
 import { RestService } from 'src/app/rest.service';
+import { HttpParams } from '@angular/common/http';
 
 const MOCK_DATA: ClimateData = {
   interior: {
@@ -36,8 +37,7 @@ export class ClimateService {
   constructor(private rest: RestService) { }
 
   getData(since: number): Observable<ClimateData> {
-    const requestParams = new URLSearchParams();
-    requestParams.append('since', (since + 1).toString());
+    const requestParams = new HttpParams().set('since', (since + 1).toString());
 
     return this.rest.get<ClimateData>('data/climate', requestParams)
                     .pipe( catchError(this.handleError<ClimateData>('ClimateService.getData')) );

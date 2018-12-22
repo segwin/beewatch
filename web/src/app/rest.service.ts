@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -17,8 +17,8 @@ export class RestService {
     return window.location.origin + '/api/v1/';
   }
 
-  public get<T>(uri: string, search?: URLSearchParams): Observable<T> {
-    const options = { headers: this.headers, search: search };
+  public get<T>(uri: string, params?: HttpParams): Observable<T> {
+    const options = { headers: this.headers, params: params };
     return this.http.get<T>(this.getEndpointUri() + uri, options);
   }
 
