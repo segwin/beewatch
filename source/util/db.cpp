@@ -127,14 +127,14 @@ namespace beewatch
     void DB::clearClimateData()
     {
         // Drop ClimateData table
-        auto query = "DROP TABLE ClimateData;"
+        auto query = "DROP TABLE ClimateData;";
         pimpl->exec(query, true);
     }
 
     void DB::clearAboutData()
     {
         // Drop About table
-        auto query = "DROP TABLE About;"
+        auto query = "DROP TABLE About;";
         pimpl->exec(query, true);
     }
 
