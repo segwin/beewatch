@@ -109,7 +109,7 @@ namespace beewatch
          */
         int64_t toUnix(double timeMs) const
         {
-            double startTimeS = _start.tv_sec + 1e9 * _start.tv_nsec;
+            double startTimeS = _start.tv_sec + (_start.tv_nsec / 1e9);
             return (int64_t)std::round((timeMs / 1000.0) + startTimeS);
         }
 
