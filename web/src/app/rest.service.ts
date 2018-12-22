@@ -14,7 +14,7 @@ export class RestService {
   }
 
   getEndpointUri(): string {
-    return 'http://' + window.location.hostname + ':8080/api/v1/';
+    return window.location.origin + '/api/v1/';
   }
 
   public get<T>(uri: string, params?: HttpParams): Observable<T> {

@@ -36,10 +36,6 @@ const MOCK_DATA: ClimateData = {
 export class ClimateService {
   constructor(private rest: RestService) { }
 
-  dateToTimestamp(date: Date): number {
-    return date.getTime() / 1000;
-  }
-
   getData(since: number): Observable<ClimateData> {
     const requestParams = new HttpParams();
     requestParams.append('since', (since + 1).toString());
