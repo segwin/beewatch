@@ -18,7 +18,7 @@ export class RestService {
   }
 
   public get<T>(relativeUri: string, params?: HttpParams): Observable<T> {
-    const uri = this.getEndpointUri() + relativeUri + params.toString();
+    const uri = this.getEndpointUri() + relativeUri + '?' + params.toString();
     return this.http.get<T>(uri, { headers: this.headers});
   }
 

@@ -62,6 +62,8 @@ export class MonitorComponent implements OnInit {
       return;
     }
 
+    console.log(data)
+
     const newData = [data.interior, data.exterior];
 
     for (let i = 0; i < 2; ++i) {
@@ -88,9 +90,8 @@ export class MonitorComponent implements OnInit {
   }
 
   private updateCharts(): void {
-    // TODO: Add data instead of replacing it
     for (let i = 0; i < 2; ++i) {
-      this.monitors[i].addData(this.climateData[i].timestamps, this.climateData[i].samples);
+      this.monitors[i].setData(this.climateData[i].timestamps, this.climateData[i].samples);
     }
   }
 }

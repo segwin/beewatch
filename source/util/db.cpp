@@ -80,9 +80,10 @@ namespace beewatch
     bool DB::hasTable(std::string name)
     {
         // Query information table for given table name
-        auto query = "SELECT 1 "
-                     "FROM   pg_tables "
-                     "WHERE  tablename = '" + string::tolower(name) + "';";
+        auto query = "SELECT 1"
+                     "  FROM   pg_tables"
+                     "  WHERE  tablename = '" + string::tolower(name) + "'"
+                     ";";
 
         auto results = pimpl->exec(query, false);
 
@@ -98,7 +99,8 @@ namespace beewatch
                      "  Time            BIGINT                          NOT NULL,"
                      "  Temperature     NUMERIC                         NOT NULL,"
                      "  Humidity        NUMERIC                         NOT NULL"
-                     ");";
+                     "  )"
+                     ";";
 
         pimpl->exec(query, true);
     }
@@ -109,7 +111,8 @@ namespace beewatch
         auto query = "CREATE TABLE About ("
                      "  rowguid         SERIAL          PRIMARY KEY     NOT NULL,"
                      "  Name            VARCHAR(256)                    NOT NULL"
-                     ");";
+                     "  )"
+                     ";";
 
         pimpl->exec(query, true);
     }
@@ -125,10 +128,11 @@ namespace beewatch
         }
 
         // Find all data in "ClimateData" table with timestamps >= since
-        auto query = "SELECT Time, Temperature, Humidity "
-                     "FROM ClimateData "
-                     "WHERE SensorID = '" + sensorID + "'"
-                     "AND Time >= " + std::to_string(since);
+        auto query = "SELECT Time, Temperature, Humidity"
+                     "  FROM ClimateData"
+                     "  WHERE SensorID = '" + sensorID + "'"
+                     "  AND Time >= " + std::to_string(since) +
+                     ";";
 
         auto results = pimpl->exec(query, false);
 
@@ -156,17 +160,18 @@ namespace beewatch
 
         // Build document for given data
         auto query = "INSERT INTO ClimateData ("
-                     "  SensorID,"
-                     "  Time,"
-                     "  Temperature,"
-                     "  Humidity"
-                     ") "
-                     "VALUES ("
-                     "  '" + sensorID.substr(0, 256) + "',"         // VARCHAR(256)
-                     "  " + std::to_string(timestamp) + ","         // INT
-                     "  " + std::to_string(data.temperature) + ","  // NUMERIC
-                     "  " + std::to_string(data.humidity) +         // NUMERIC
-                     ");";
+                     "    SensorID,"
+                     "    Time,"
+                     "    Temperature,"
+                     "    Humidity"
+                     "  )"
+                     "  VALUES ("
+                     "    '" + sensorID.substr(0, 256) + "',"         // VARCHAR(256)
+                     "    " + std::to_string(timestamp) + ","         // INT
+                     "    " + std::to_string(data.temperature) + ","  // NUMERIC
+                     "    " + std::to_string(data.humidity) +         // NUMERIC
+                     "  )"
+                     ";";
 
         auto results = pimpl->exec(query, true);
     }
@@ -184,7 +189,7 @@ namespace beewatch
         }
 
         // Find name in "About" table
-        auto query = "SELECT Name FROM About";
+        auto query = "SELECT Name FROM About;";
         auto results = pimpl->exec(query, false);
 
         // Always use the first match (there should only ever be one row, but who knows!)
@@ -208,7 +213,7 @@ namespace beewatch
         }
 
         // Update row in "About" table
-        auto query = "UPDATE About SET Name = " + name;
+        auto query = "UPDATE About SET Name = " + name + ";";
         auto results = pimpl->exec(query, true);
     }
 
