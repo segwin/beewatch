@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -37,7 +36,7 @@ export class ClimateService {
   constructor(private rest: RestService) { }
 
   getData(since: number): Observable<ClimateData> {
-    const requestParams = new HttpParams();
+    const requestParams = new URLSearchParams();
     requestParams.append('since', (since + 1).toString());
 
     return this.rest.get<ClimateData>('data/climate', requestParams)
