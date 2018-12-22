@@ -17,13 +17,13 @@ export class RestService {
     return window.location.origin + '/api/v1/';
   }
 
-  public get<T>(uri: string, params?: HttpParams): Observable<T> {
-    const options = { headers: this.headers, params: params };
-    return this.http.get<T>(this.getEndpointUri() + uri, options);
+  public get<T>(relativeUri: string, params?: HttpParams): Observable<T> {
+    const uri = this.getEndpointUri() + relativeUri + params.toString();
+    return this.http.get<T>(uri, { headers: this.headers});
   }
 
-  public post<T>(uri: string, data: Object): Observable<T> {
-    const options = { headers: this.headers };
-    return this.http.post<T>(this.getEndpointUri() + uri, JSON.stringify(data), options);
+  public put<T>(relativeUri: string, data: Object): Observable<T> {
+    const uri = this.getEndpointUri() + relativeUri;
+    return this.http.put<T>(uri, JSON.stringify(data), { headers: this.headers});
   }
 }
