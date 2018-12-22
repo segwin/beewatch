@@ -1,0 +1,8 @@
+<div id="version-component">
+  <div *ngIf="!foundVersion">
+    <mat-progress-bar mode='query'></mat-progress-bar>
+  </div>
+  <mat-toolbar id="footer" class="full-width centered">
+    <p>{{ fullVersion }}</p>
+  </mat-toolbar>
+</div>

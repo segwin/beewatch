@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-export const pages: string[] = [ "Monitor", "Settings" ];
+export const pages: string[] = [ 'Monitor', 'Settings' ];
 
 @Component({
   selector: 'app-root',
@@ -8,6 +8,6 @@ export const pages: string[] = [ "Monitor", "Settings" ];
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  name: string = "Your Hive";
-  editingName: boolean = false;
+  name = 'Your Hive';
+  editingName = false;
 }

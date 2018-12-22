@@ -1,0 +1,19 @@
+@import "../app.theme.scss";
+
+#version-component {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#footer {
+    height: 48px;
+    font-size: 1em;
+    color: mat-color($neutral, 100);
+    background-color: mat-color($neutral, 700);
+}
+
+#footer p {
+    width: 100%;
+}

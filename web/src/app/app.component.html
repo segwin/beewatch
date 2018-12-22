@@ -10,19 +10,9 @@
     </div>
   </mat-toolbar>
 
-  <!--<mat-sidenav-container id="content-container">
-    <mat-sidenav #drawer id="sidenav" [opened]="screenWidth > 840" [mode]="(screenWidth > 840) ? 'side' : 'over'">
-      <button mat-ripple mat-button color="accent"
-              *ngFor="let page of pages"
-              class="nav-button"
-              [class.active]="page == currentPage"
-              (click)="changePage(page)">
-        {{ page }}
-      </button>
-    </mat-sidenav>
-
-  </mat-sidenav-container>-->
-  <div class="content-wrap full-height full-width centered">
+  <div id="main" class="content-wrap full-height full-width centered">
     <app-monitor></app-monitor>
+
+    <app-version class="full-width"></app-version>
   </div>
 </div>

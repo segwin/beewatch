@@ -30,7 +30,7 @@ cmake/*/*
 cmake_install.cmake
 Makefile
 
-VERSION
+./VERSION
 source/include/
 
 # Qt cache
