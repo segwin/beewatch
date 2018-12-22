@@ -37,7 +37,7 @@ export class MonitorComponent implements OnInit {
     this.initCharts().then(() =>
       interval(5000).pipe(
         startWith(0),
-        switchMap(() => this.climateService.getData(0))
+        switchMap(() => this.climateService.getData(this.lastUpdate))
       )
       .subscribe(data => this.updateClimate(data))
     );
