@@ -55,6 +55,14 @@ the enclosure.
 }
 ```
 
+## Delete climate data
+
+### URI:
+`DELETE /api/v1/data/climate`
+
+### Response:
+200 OK, no body
+
 
 ## Get device name
 

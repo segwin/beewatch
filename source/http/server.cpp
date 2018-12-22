@@ -258,6 +258,16 @@ namespace beewatch::http
                     }
                 }
             }
+            else if (request.method() == methods::DEL)
+            {
+                if (uri == "data/climate")
+                {
+                    _manager.clearClimateData();
+
+                    request.reply(status_codes::OK);
+                    return;
+                }
+            }
 
             std::string errMsg = "Invalid API request: \"" + request.to_string() + "\"";
 
@@ -272,8 +282,9 @@ namespace beewatch::http
         // Create listener and add handler for supported methods
         http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/api/v1/");
 
-        listener.support(methods::GET,  answerRequest);
+        listener.support(methods::GET, answerRequest);
         listener.support(methods::PUT, answerRequest);
+        listener.support(methods::DEL, answerRequest);
 
         // Loop until stop signal received
         try

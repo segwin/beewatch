@@ -349,10 +349,20 @@ namespace beewatch
     std::map<int64_t, ClimateData<double>> Manager::getClimateSamples(std::string sensorID,
                                                                       int64_t since) const
     {
-        std::shared_lock<std::shared_mutex> readLock(_attrMutex);
-
         return _db->getClimateData(sensorID, since);
     }
+
+    std::vector<std::string> Manager::getClimateSensorIDs() const
+    {
+        // TODO: Support a dynamic configuration eventually
+        return { "interior", "exterior" };
+    }
+
+    void Manager::clearClimateData()
+    {
+        _db->clearClimateData();
+    }
+    
 
     //==============================================================================
     void Manager::ctrlLoop()

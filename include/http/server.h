@@ -38,6 +38,8 @@ namespace beewatch::http
                                                                          int64_t since = 0) const = 0;
 
         virtual std::vector<std::string> getClimateSensorIDs() const = 0;
+        
+        virtual void clearClimateData() = 0;
     };
 
     //==============================================================================
