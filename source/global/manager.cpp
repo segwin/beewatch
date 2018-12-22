@@ -372,7 +372,7 @@ namespace beewatch
             //
             //g_logger.debug("Mass: " + numToStr(mass) + " kg");
 
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::minutes(5));
         }
     }
 
