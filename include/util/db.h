@@ -34,11 +34,19 @@ namespace beewatch
 
 
         //==============================================================================
+        /// Drop all tables from DB
+        void clear();
+
+
+        //==============================================================================
         /// Read climate data from DB
         std::map<int64_t, ClimateData<double>> getClimateData(std::string sensorID, int64_t since = 0);
 
         /// Append climate data to DB
         void addClimateData(std::string sensorID, int64_t timestamp, ClimateData<double> data);
+
+        /// Drop climate data table from DB
+        void clearClimateData();
 
 
         //==============================================================================
@@ -48,6 +56,10 @@ namespace beewatch
         /// Update device name in DB
         void setName(std::string name);
 
+        /// Drop About table from DB
+        void clearAboutData();
+
+        
         //==============================================================================
         static constexpr auto DEFAULT_NAME = "beewatch";
         static constexpr auto DEFAULT_HOST = "127.0.0.1";
@@ -65,10 +77,12 @@ namespace beewatch
         /// Create "About" table
         void createAboutTable();
 
+
         //==============================================================================
         /// DB client implementation (pimpl)
         struct impl;
         impl * pimpl;
+
 
         //==============================================================================
         bool _isConnected;

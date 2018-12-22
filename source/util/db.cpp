@@ -116,6 +116,27 @@ namespace beewatch
 
         pimpl->exec(query, true);
     }
+    
+    //==============================================================================
+    void DB::clear()
+    {
+        clearClimateData();
+        clearAboutData();
+    }
+
+    void DB::clearClimateData()
+    {
+        // Drop ClimateData table
+        auto query = "DROP TABLE ClimateData;"
+        pimpl->exec(query, true);
+    }
+
+    void DB::clearAboutData()
+    {
+        // Drop About table
+        auto query = "DROP TABLE About;"
+        pimpl->exec(query, true);
+    }
 
     //==============================================================================
     std::map<int64_t, ClimateData<double>> DB::getClimateData(std::string sensorID, int64_t since)
