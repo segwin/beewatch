@@ -167,7 +167,7 @@ namespace beewatch::http
                         size_t index = 0;
                         for (auto& sample : samples)
                         {
-                            answer[sensorID]["timestamps"][index] = json::value::number((uint64_t)sample.first);
+                            answer[sensorID]["timestamps"][index] = json::value::number((int64_t)sample.first);
 
                             answer[sensorID]["samples"][index] = json::value::object({
                                     { "temperature", sample.second.temperature },
@@ -201,7 +201,7 @@ namespace beewatch::http
                     return;
                 }
             }
-            else if (request.method() == methods::POST)
+            else if (request.method() == methods::PUT)
             {
                 if (uri == "name")
                 {
@@ -224,7 +224,7 @@ namespace beewatch::http
                                 catch (const json_exception& e)
                                 {
                                     std::string errMsg = "Caught error while interpreting \"name\" "
-                                                         "parameter in \"POST /name\" request (node: " +
+                                                         "parameter in \"PUT /name\" request (node: " +
                                                          node.second.serialize();
 
                                     answer["error"] = json::value::string(errMsg);
@@ -248,7 +248,7 @@ namespace beewatch::http
                     }
                     else
                     {
-                        std::string errMsg = "No value for \"name\" provided in \"POST /name\" request!";
+                        std::string errMsg = "No value for \"name\" provided in \"PUT /name\" request!";
 
                         answer["error"] = json::value::string(errMsg);
                         g_logger.error(errMsg);
@@ -273,7 +273,7 @@ namespace beewatch::http
         http_listener listener("http://0.0.0.0:" + std::to_string(_port) + "/api/v1/");
 
         listener.support(methods::GET,  answerRequest);
-        listener.support(methods::POST, answerRequest);
+        listener.support(methods::PUT, answerRequest);
 
         // Loop until stop signal received
         try

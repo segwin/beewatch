@@ -74,7 +74,7 @@ Current device name.
 ## Set device name
 
 ### URI:
-`POST /api/v1/name`
+`PUT /api/v1/name`
 
 ### Parameters:
 
