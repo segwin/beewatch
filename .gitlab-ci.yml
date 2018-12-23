@@ -21,6 +21,8 @@ build:
       - web/dist
 
 test:
+  before_script:
+    - apt update && apt -y install libpq-dev libpqxx-dev
   stage: test
   script:
     - bin/testbeewatch
