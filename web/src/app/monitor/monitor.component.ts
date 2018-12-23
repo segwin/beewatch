@@ -5,13 +5,25 @@ import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 import { ClimateService } from './climate/climate.service';
 import { ClimateData } from './climate/climate';
+import { MatDialogRef, MatDialog } from '@angular/material';
+
+@Component({
+  selector: 'app-confirm-reset-dialog',
+  templateUrl: 'confirm-reset-dialog.component.html'
+})
+export class ConfirmResetDialogComponent {
+  constructor(public dialogRef: MatDialogRef<ConfirmResetDialogComponent>) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+}
 
 @Component({
   selector: 'app-monitor',
   templateUrl: './monitor.component.html',
   styleUrls: ['./monitor.component.css']
 })
-
 export class MonitorComponent implements OnInit {
   private climateData = [
     {
@@ -31,7 +43,7 @@ export class MonitorComponent implements OnInit {
     new ClimateMonitor('climate-exterior', 'Exterior climate')
   ];
 
-  constructor(private climateService: ClimateService) { }
+  constructor(private climateService: ClimateService, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.initCharts().then(() =>
@@ -62,8 +74,6 @@ export class MonitorComponent implements OnInit {
       return;
     }
 
-    console.log(data)
-
     const newData = [data.interior, data.exterior];
 
     for (let i = 0; i < 2; ++i) {
@@ -93,5 +103,26 @@ export class MonitorComponent implements OnInit {
     for (let i = 0; i < 2; ++i) {
       this.monitors[i].setData(this.climateData[i].timestamps, this.climateData[i].samples);
     }
+  }
+
+  private confirmDataReset(): void {
+    const dialogRef = this.dialog.open(ConfirmResetDialogComponent);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.resetData();
+      }
+    });
+  }
+
+  private resetData(): void {
+    console.log('Monitor.resetData() called, clearing climate data');
+
+    this.climateService.deleteData();
+
+    this.climateData.forEach(data => {
+      data.timestamps.length = 0;
+      data.samples.forEach(samples => samples.length = 0);
+    });
   }
 }

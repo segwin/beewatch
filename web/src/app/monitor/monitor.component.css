@@ -21,3 +21,10 @@
     border-bottom: 1px dotted #ccc;
     margin: 1em 0;
 }
+
+.monitor-list .chart-options {
+    width: 524px;
+    margin-left: -24px; 
+    max-width: calc(100% - 24px);
+    display: inline-block;
+}

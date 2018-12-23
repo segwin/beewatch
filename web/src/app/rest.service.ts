@@ -33,7 +33,12 @@ export class RestService {
   }
 
   public delete<T>(relativeUri: string, params?: HttpParams): Observable<T> {
-    const uri = this.getEndpointUri() + relativeUri + '?' + params.toString();
+    let uri = this.getEndpointUri() + relativeUri;
+
+    if (params) {
+      uri += '?' + params.toString();
+    }
+
     return this.http.delete<T>(uri, { headers: this.headers});
   }
 

@@ -1,0 +1,8 @@
+<div mat-dialog-content>
+  <p><b>Warning: this action is irreversible.</b></p>
+  <p>Are you sure you want to reset all climate data?</p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button color="warn" [mat-dialog-close]="true" cdkFocusInitial>Yes, reset all data</button>
+</div>
