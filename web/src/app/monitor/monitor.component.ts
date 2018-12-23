@@ -118,7 +118,7 @@ export class MonitorComponent implements OnInit {
   private resetData(): void {
     console.log('Monitor.resetData() called, clearing climate data');
 
-    this.climateService.deleteData();
+    this.climateService.deleteData().subscribe();
 
     this.climateData.forEach(data => {
       data.timestamps.length = 0;
