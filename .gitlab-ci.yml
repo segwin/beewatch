@@ -4,7 +4,7 @@ build:
   stage: build
   before_script:
     # Install build dependencies
-    - apt update && apt -y install build-essential cmake libcpprest-dev npm git libcurl4 libsasl2-dev libpq-dev libpqxx-dev
+    - apt update && apt -y install build-essential cmake git npm libcpprest-dev libpq-dev libpqxx-dev
     - gcc --version
     - cmake --version
 
@@ -28,7 +28,7 @@ test:
 pages:
   stage: deploy
   before_script:
-    - apt update && apt -y install build-essential cmake doxygen graphviz libcpprest-dev
+    - apt update && apt -y install build-essential cmake doxygen graphviz libcpprest-dev libpq-dev libpqxx-dev
   script:
     - cmake . -G "Unix Makefiles"
     - make doc
