@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { VersionService } from './version.service';
 import { Version } from './version';
+import { startWith, switchMap } from 'rxjs/operators';
+import { interval } from 'rxjs';
 
 @Component({
   selector: 'app-version',
@@ -11,13 +13,17 @@ export class VersionComponent implements OnInit {
   private fullVersion: string;
   private foundVersion: boolean;
 
-  constructor(private version: VersionService) { }
+  constructor(private versionService: VersionService) { }
 
   ngOnInit() {
     this.update();
 
-    this.version.get()
-                .subscribe(version => this.update(version));
+    interval(30000)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.versionService.get())
+      )
+      .subscribe(version => this.update(version));
   }
 
   private update(version?: Version): void {

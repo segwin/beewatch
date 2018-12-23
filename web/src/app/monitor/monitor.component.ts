@@ -35,7 +35,7 @@ export class MonitorComponent implements OnInit {
 
   ngOnInit(): void {
     this.initCharts().then(() =>
-      interval(5000).pipe(
+      interval(30000).pipe(
         startWith(0),
         switchMap(() => this.climateService.getData(this.lastUpdate))
       )
