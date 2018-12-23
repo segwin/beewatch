@@ -124,5 +124,7 @@ export class MonitorComponent implements OnInit {
       data.timestamps.length = 0;
       data.samples.forEach(samples => samples.length = 0);
     });
+
+    this.updateCharts();
   }
 }

@@ -19,8 +19,8 @@ export class ClimateService {
                     .pipe( retry(3), catchError(this.rest.handleError<ClimateData>('ClimateService.getData')) );
   }
 
-  deleteData(): Observable<{}> {
-    return this.rest.delete<{}>('data/climate')
-                    .pipe( retry(3), catchError(this.rest.handleError<{}>('ClimateService.getData')) );
+  deleteData(): Observable<void> {
+    return this.rest.delete<void>('data/climate')
+                    .pipe( retry(3), catchError(this.rest.handleError<void>('ClimateService.getData')) );
   }
 }
