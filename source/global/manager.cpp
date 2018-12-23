@@ -95,10 +95,9 @@ namespace beewatch
     Manager::Manager()
     {
         // Initialise DHT11
-        _climateSensor = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, io::GPIO::claim(16));
-
-        // Initialise HX711
-        //hx711 = std::make_unique<hw::HX711>(io::GPIO::claim(5), io::GPIO::claim(6));
+        // TODO: Support a dynamic configuration eventually
+        _climateSensors["interior"] = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, io::GPIO::claim(14));
+        _climateSensors["exterior"] = std::make_unique<hw::DHTxx>(hw::DHTxx::Type::DHT22, io::GPIO::claim(16));
     }
 
     //==============================================================================
@@ -352,15 +351,21 @@ namespace beewatch
         return _db->getClimateData(sensorID, since);
     }
 
-    std::vector<std::string> Manager::getClimateSensorIDs() const
-    {
-        // TODO: Support a dynamic configuration eventually
-        return { "interior", "exterior" };
-    }
-
     void Manager::clearClimateData()
     {
         _db->clearClimateData();
+    }
+
+    std::vector<std::string> Manager::getClimateSensorIDs() const
+    {
+        std::vector<std::string> sensorIDs;
+
+        for (auto& climateSensor: _climateSensors)
+        {
+            sensorIDs.push_back(climateSensor.first);
+        }
+
+        return sensorIDs;
     }
     
 
@@ -370,12 +375,18 @@ namespace beewatch
         while (1)
         {
             // TODO: Read data on both internal & external sensors
-            auto data = _climateSensor->read();
+            for (auto& climateSensor: _climateSensors)
+            {
+                auto& id = climateSensor.first;
+                auto& sensor = climateSensor.second;
 
-            g_logger.debug("Humidity: " + string::fromNumber(data.humidity) + " %");
-            g_logger.debug("Temperature: " + string::fromNumber(data.temperature) + " deg Celsius");
+                auto data = sensor->read();
 
-            _db->addClimateData("interior", g_timeReal.toUnix(g_timeReal.now()), data);
+                g_logger.debug("Humidity (" + id + "): " + string::fromNumber(data.humidity) + " %");
+                g_logger.debug("Temperature (" + id + "): " + string::fromNumber(data.temperature) + " deg Celsius");
+
+                _db->addClimateData(id, g_timeReal.toUnix(g_timeReal.now()), data);
+            }
 
             // Measure mass
             //auto mass = hx711->read();

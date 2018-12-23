@@ -112,8 +112,7 @@ namespace beewatch
 
         //==============================================================================
         // Sensors
-        hw::DHTxx::Ptr _climateSensor;
-        hw::HX711::Ptr _massSensor;
+        std::map<std::string, hw::DHTxx::Ptr> _climateSensors;
     };
 
     #define g_manager   Manager::get()
