@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { MonitorType, Monitor, ClimateMonitor } from './monitor';
+import { Monitor, ClimateMonitor } from './monitor';
 import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 import { ClimateService } from './climate/climate.service';
