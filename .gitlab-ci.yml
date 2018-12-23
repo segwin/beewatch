@@ -22,7 +22,7 @@ build:
 
 test:
   before_script:
-    - apt update && apt -y install libpq-dev libpqxx-dev
+    - apt update && apt -y install libcpprest-dev libpq-dev libpqxx-dev
   stage: test
   script:
     - bin/testbeewatch
