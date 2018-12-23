@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Monitor, ClimateMonitor } from './monitor';
+import { MonitorType, Monitor, ClimateMonitor } from './monitor';
 import { interval } from 'rxjs';
 import { startWith, switchMap } from 'rxjs/operators';
 import { ClimateService } from './climate/climate.service';
@@ -8,34 +8,11 @@ import { ClimateData } from './climate/climate';
 import { MatDialogRef, MatDialog } from '@angular/material';
 
 @Component({
-  selector: 'app-confirm-reset-dialog',
-  templateUrl: 'confirm-reset-dialog.component.html'
-})
-export class ConfirmResetDialogComponent {
-  constructor(public dialogRef: MatDialogRef<ConfirmResetDialogComponent>) {}
-
-  onNoClick(): void {
-    this.dialogRef.close();
-  }
-}
-
-@Component({
   selector: 'app-monitor',
   templateUrl: './monitor.component.html',
   styleUrls: ['./monitor.component.css']
 })
 export class MonitorComponent implements OnInit {
-  private climateData = [
-    {
-      timestamps: [],
-      samples: [ [], [] ]
-    },
-    {
-      timestamps: [],
-      samples: [ [], [] ]
-    }
-  ];
-
   private lastUpdate = 0;
 
   private monitors: Monitor[] = [
@@ -81,12 +58,12 @@ export class MonitorComponent implements OnInit {
       const newSamples = newData[i].samples.slice(newData[i].samples.length - newTimestamps.length);
 
       for (const newTimestamp of newTimestamps) {
-        this.climateData[i].timestamps.push(newTimestamp);
+        this.monitors[i].data.timestamps.push(newTimestamp);
       }
 
       for (const newSample of newSamples) {
-        this.climateData[i].samples[0].push(newSample.temperature);
-        this.climateData[i].samples[1].push(newSample.humidity);
+        this.monitors[i].data.datasets[0].push(newSample.temperature);
+        this.monitors[i].data.datasets[1].push(newSample.humidity);
       }
     }
 
@@ -100,18 +77,14 @@ export class MonitorComponent implements OnInit {
   }
 
   private updateCharts(): void {
-    for (let i = 0; i < 2; ++i) {
-      this.monitors[i].setData(this.climateData[i].timestamps, this.climateData[i].samples);
-    }
+    this.monitors.forEach(monitor => monitor.updateData());
   }
 
   private confirmDataReset(): void {
     const dialogRef = this.dialog.open(ConfirmResetDialogComponent);
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.resetData();
-      }
+      if (result) { this.resetData(); }
     });
   }
 
@@ -120,11 +93,20 @@ export class MonitorComponent implements OnInit {
 
     this.climateService.deleteData().subscribe();
 
-    this.climateData.forEach(data => {
-      data.timestamps.length = 0;
-      data.samples.forEach(samples => samples.length = 0);
-    });
+    this.monitors.forEach(monitor => monitor.resetData());
 
     this.updateCharts();
+  }
+}
+
+@Component({
+  selector: 'app-confirm-reset-dialog',
+  templateUrl: 'confirm-reset-dialog.component.html'
+})
+export class ConfirmResetDialogComponent {
+  constructor(public dialogRef: MatDialogRef<ConfirmResetDialogComponent>) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 }

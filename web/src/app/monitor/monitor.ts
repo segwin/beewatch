@@ -1,35 +1,48 @@
 import { Chart } from 'chart.js';
 import { formatDate } from '@angular/common';
 
+export interface MonitorData {
+    timestamps: number[];
+    datasets: number[][];
+}
+
 export abstract class Monitor {
     id: string;
     title: string;
+
+    data: MonitorData;
 
     chart: Chart = null;
 
     constructor(id: string, title: string) {
         this.id = id;
         this.title = title;
+
+        this.data = { timestamps: [], datasets: [] };
     }
 
+    // Interface methods
+    abstract getType(): string;
     abstract async init(): Promise<void>;
 
+    // Utility methods
     private formatTime(timestamp: number): string {
         return formatDate(new Date(timestamp * 1000), 'short', 'en-CA');
     }
 
-    validateData(timestamps: number[], datasetSamples: number[][]): boolean {
-        if (datasetSamples.length !== this.chart.data.datasets.length) {
+    // Data manipulation methods
+    private validateData(): boolean {
+        if (this.data.datasets.length !== this.chart.data.datasets.length) {
             console.error('Invalid request on monitor ' + this.id + ': mismatch between given data array & chart datasets length ' +
-                '(' + datasetSamples.length.toString() + ' vs. ' + this.chart.data.datasets.length.toString() + ')');
+                '(' + this.data.datasets.length.toString() + ' vs. ' + this.chart.data.datasets.length.toString() + ')');
 
             return false;
         }
 
-        datasetSamples.forEach((data, index) => {
-            if (timestamps.length !== data.length) {
+        this.data.datasets.forEach((data, index) => {
+            if (this.data.timestamps.length !== data.length) {
                 console.error('Invalid request on monitor ' + this.id + ': mismatch between timestamps & data array lengths ' +
-                    '(' + timestamps.length.toString() + ' vs. ' + data.length.toString() + ')');
+                    '(' + this.data.timestamps.length.toString() + ' vs. ' + data.length.toString() + ')');
 
                 return false;
             }
@@ -38,36 +51,41 @@ export abstract class Monitor {
         return true;
     }
 
-    async setData(timestamps: number[], datasetSamples: number[][]): Promise<void> {
-        this.validateData(timestamps, datasetSamples);
+    async updateData(): Promise<void> {
+        if (!this.validateData()) {
+            return;
+        }
 
         // Clear existing data
         this.chart.data.labels = [];
-        datasetSamples.forEach((data, i) => this.chart.data.datasets[i].data = []);
-
-        // Add new data & update chart
-        this.addData(timestamps, datasetSamples);
-    }
-
-    async addData(timestamps: number[], datasetSamples: number[][]): Promise<void> {
-        this.validateData(timestamps, datasetSamples);
+        this.data.datasets.forEach((dataset, i) => this.chart.data.datasets[i].data = []);
 
         // Add timestamps
-        timestamps.forEach(timestamp => this.chart.data.labels.push(this.formatTime(timestamp)));
+        this.data.timestamps.forEach(timestamp => this.chart.data.labels.push(this.formatTime(timestamp)));
 
         // Add data samples
-        datasetSamples.forEach((data, i) =>
-            data.forEach(sample => this.chart.data.datasets[i].data.push(sample))
+        this.data.datasets.forEach((dataset, i) =>
+            dataset.forEach(sample => this.chart.data.datasets[i].data.push(sample))
         );
 
         // Update chart
         this.chart.update();
+    }
+
+    async resetData(): Promise<void> {
+      this.data.timestamps.length = 0;
+      this.data.datasets.forEach(samples => samples.length = 0);
     }
 }
 
 export class ClimateMonitor extends Monitor {
     constructor(id: string, title: string) {
         super(id, title);
+    }
+
+    // Interface methods
+    getType(): string {
+        return 'climate';
     }
 
     async init(): Promise<void> {

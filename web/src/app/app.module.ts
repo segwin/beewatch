@@ -3,8 +3,9 @@ import { NgModule } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonModule, MatCardModule, MatDialogModule, MatGridListModule,
-         MatIconModule, MatInputModule, MatProgressBarModule, MatToolbarModule } from '@angular/material';
+import { MatButtonModule, MatCardModule, MatDialogModule, MatDividerModule,
+         MatGridListModule, MatIconModule, MatInputModule, MatProgressBarModule,
+         MatToolbarModule } from '@angular/material';
 
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
@@ -24,8 +25,8 @@ import { VersionComponent } from './version/version.component';
     BrowserModule,
     FormsModule,
     BrowserAnimationsModule,
-    MatButtonModule, MatCardModule, MatDialogModule, MatGridListModule,
-    MatIconModule, MatInputModule, MatProgressBarModule, MatToolbarModule,
+    MatButtonModule, MatCardModule, MatDialogModule, MatDividerModule,
+    MatGridListModule, MatIconModule, MatInputModule, MatProgressBarModule, MatToolbarModule,
     HttpClientModule,
   ],
   providers: [],
