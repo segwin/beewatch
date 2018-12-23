@@ -6,8 +6,7 @@
     display: inline-block;
     max-width: 800px;
     max-width: calc(100% - 60px);
-    margin-right: 24px;
-    margin-bottom: 24px;
+    margin: 0 24px 12px 0;
 }
 
 .monitor-list .monitor .charts {
@@ -27,4 +26,24 @@
     margin-left: -24px; 
     max-width: calc(100% - 24px);
     display: inline-block;
+}
+
+@media only screen and (max-width: 600px) {
+    .monitor-list {
+        padding: 12px 0 0 0;
+    }
+
+    .monitor-list .monitor {
+        margin: 0;
+    }
+    
+    .monitor-list .chart {
+        max-width: calc(100% - 16px);
+        padding: 8px;
+    }
+    
+    .monitor-list .chart-options {
+        margin: 0;
+        max-width: 100%;
+    }
 }

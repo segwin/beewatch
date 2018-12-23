@@ -61,7 +61,7 @@ export abstract class Monitor {
         this.data.datasets.forEach((dataset, i) => this.chart.data.datasets[i].data = []);
 
         // Add timestamps
-        this.data.timestamps.forEach(timestamp => this.chart.data.labels.push(this.formatTime(timestamp)));
+        this.data.timestamps.forEach(timestamp => this.chart.data.labels.push(new Date(timestamp * 1000)));
 
         // Add data samples
         this.data.datasets.forEach((dataset, i) =>
@@ -122,24 +122,23 @@ export class ClimateMonitor extends Monitor {
 
             options: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'top',
                 },
+
+                aspectRatio: 1.5,
 
                 scales: {
                     xAxes: [{
+                        type: 'time',
                         display: true,
                     }],
                     yAxes: [
                         {
+                            label: 'Humidity (%)',
                             id: 'temperature',
                             type: 'linear',
                             position: 'left',
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Temperature (°C)',
-                                fontColor: 'rgba(235,0,78,1)',
-                                fontStyle: 'bold'
-                            },
                             ticks: {
                                 suggestedMin: 0,
                                 suggestedMax: 10,
@@ -147,15 +146,10 @@ export class ClimateMonitor extends Monitor {
                             }
                         },
                         {
+                            label: 'Humidity (%)',
                             id: 'humidity',
                             type: 'linear',
                             position: 'right',
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Humidity (%)',
-                                fontColor: 'rgba(0,156,235,1)',
-                                fontStyle: 'bold'
-                            },
                             ticks: {
                                 min: 0,
                                 max: 100,
