@@ -7,9 +7,12 @@
         <mat-card-title>{{monitor.title}}</mat-card-title>
         <mat-card-content>
           <div *ngIf="monitor.getType() == 'climate' && monitor.data.timestamps.length > 0">
-            Temperature: {{ monitor.data.datasets[0][monitor.data.datasets.length - 1] }} &deg;C
-            Humidity: {{ monitor.data.datasets[1][monitor.data.datasets.length - 1] }} %
+              <b>Temperature:</b> {{ monitor.data.datasets[0][monitor.data.datasets[0].length - 1] }} &deg;C
+              <span style="display: inline-block; width: 0.8em;"></span>
+              <b>Humidity:</b> {{ monitor.data.datasets[1][monitor.data.datasets[0].length - 1] }} %
           </div>
+
+          <br>
 
           <canvas [id]="monitor.id"></canvas>
         </mat-card-content>

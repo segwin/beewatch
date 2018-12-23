@@ -89,6 +89,8 @@ export class ClimateMonitor extends Monitor {
     }
 
     async init(): Promise<void> {
+        this.data.datasets = [ [], [] ];
+
         this.chart = new Chart(this.id, {
             type: 'line',
 
@@ -102,6 +104,7 @@ export class ClimateMonitor extends Monitor {
                         fill: false,
                         borderColor: 'rgba(235,0,78,0.9)',
                         backgroundColor: 'rgba(235,0,78,0.25)',
+                        pointRadius: 0,
                         pointHitRadius: 6,
                     },
                     {
@@ -111,6 +114,7 @@ export class ClimateMonitor extends Monitor {
                         fill: true,
                         borderColor: 'rgba(0,156,235,0.9)',
                         backgroundColor: 'rgba(0,156,235,0.25)',
+                        pointRadius: 0,
                         pointHitRadius: 6,
                     }
                 ]
