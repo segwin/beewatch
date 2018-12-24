@@ -48,7 +48,7 @@ namespace beewatch::hw
         PriorityGuard realtime(Priority::RealTime);
 
         int i = 0;
-        while (i++ < 10)
+        while (i++ < 25)
         {
             auto data = readData();
 
