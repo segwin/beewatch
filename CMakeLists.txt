@@ -203,9 +203,15 @@ source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp
 # Web app
 #
 
+set(ng_opt_args "")
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    set(ng_opt_args "--prod")
+    message(STATUS "Enabling release optimisations for Angular build")
+endif()
+
 add_custom_target(${project_web}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/web
-    COMMAND ng build --progress=true
+    COMMAND ng build --progress=true ${ng_opt_args}
 )
 
 

@@ -10,8 +10,8 @@ import { interval } from 'rxjs';
   styleUrls: ['./version.component.scss']
 })
 export class VersionComponent implements OnInit {
-  private fullVersion: string;
-  private foundVersion: boolean;
+  public fullVersion: string;
+  public foundVersion: boolean;
 
   constructor(private versionService: VersionService) { }
 

@@ -15,7 +15,7 @@ import { MatDialogRef, MatDialog } from '@angular/material';
 export class MonitorComponent implements OnInit {
   private lastUpdate = 0;
 
-  private monitors: Monitor[] = [
+  public monitors: Monitor[] = [
     new ClimateMonitor('climate-interior', 'Interior climate'),
     new ClimateMonitor('climate-exterior', 'Exterior climate')
   ];
@@ -80,7 +80,7 @@ export class MonitorComponent implements OnInit {
     this.monitors.forEach(monitor => monitor.updateData());
   }
 
-  private confirmDataReset(): void {
+  public confirmDataReset(): void {
     const dialogRef = this.dialog.open(ConfirmResetDialogComponent);
 
     dialogRef.afterClosed().subscribe(result => {
