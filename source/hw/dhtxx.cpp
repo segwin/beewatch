@@ -56,7 +56,7 @@ namespace beewatch::hw
             {
                 g_logger.warning("DHT read failed: timeout reached");
 
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+                reset();
                 continue;
             }
 
@@ -64,7 +64,7 @@ namespace beewatch::hw
             {
                 g_logger.warning("DHT read failed: bad checksum");
 
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+                reset();
                 continue;
             }
             
@@ -98,6 +98,14 @@ namespace beewatch::hw
 
         g_logger.error("Failed to read data from DHT sensor: number of attempts exceeded");
         return result;
+    }
+
+    void DHTxx::reset()
+    {
+        _gpio->setMode(GPIO::Mode::Output);
+
+        _gpio->write(LogicalState::HI);
+        g_timeRaw.wait(500);
     }
 
     std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readData()

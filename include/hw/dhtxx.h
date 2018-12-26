@@ -78,6 +78,8 @@ namespace beewatch::hw
 
         static constexpr double READ_TIMEOUT_MS = 0.1;
 
+        void reset();
+
         std::array<uint8_t, READ_BYTES> readData();
         static bool validateData(const std::array<uint8_t, READ_BYTES>& data);
 
