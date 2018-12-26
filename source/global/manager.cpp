@@ -374,6 +374,8 @@ namespace beewatch
     {
         while (1)
         {
+            auto start = std::chrono::steady_clock::now();
+
             // TODO: Read data on both internal & external sensors
             for (auto& climateSensor: _climateSensors)
             {
@@ -393,7 +395,7 @@ namespace beewatch
             //
             //g_logger.debug("Mass: " + numToStr(mass) + " kg");
 
-            std::this_thread::sleep_for(std::chrono::minutes(5));
+            std::this_thread::sleep_until(start + std::chrono::minutes(5));
         }
     }
 

@@ -43,7 +43,7 @@ namespace beewatch::hw
         // Sample DHTxx output N times
         std::vector<Data> samples;
 
-        for (size_t i = 0; i < 5; ++i)
+        for (size_t i = 0; i < 10; ++i)
         {
             samples.push_back(readSample());
             g_timeReal.wait(1e3);
@@ -129,13 +129,18 @@ namespace beewatch::hw
 
     void DHTxx::reset()
     {
+        /**
+         * Output LO for 20ms (>18ms given in spec sheet)
+         */
         _gpio->setMode(GPIO::Mode::Output);
-        
+
         _gpio->write(LogicalState::LO);
-        g_timeRaw.wait(250);
+        g_timeRaw.wait(20.0);
 
         _gpio->write(LogicalState::HI);
-        g_timeRaw.wait(1000);
+        g_timeRaw.wait(30e-3);
+
+        _gpio->setMode(GPIO::Mode::Input);
     }
 
     std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readRaw()
@@ -145,8 +150,6 @@ namespace beewatch::hw
          */
         std::array<uint8_t, READ_BYTES> bytes;
         bytes.fill(0);
-
-        bool failed = false;
 
         uint16_t byte = 0;
         uint16_t mask = 0b1000'0000;
@@ -165,7 +168,7 @@ namespace beewatch::hw
         g_timeRaw.wait(20.0);
 
         _gpio->write(LogicalState::HI);
-        g_timeRaw.wait(40e-3);
+        g_timeRaw.wait(30e-3);
 
         _gpio->setMode(GPIO::Mode::Input);
 
@@ -183,7 +186,7 @@ namespace beewatch::hw
 
             if (diffMs > READ_TIMEOUT_MS)
             {
-                failed = true;
+                return readError;
             }
         } while (_gpio->read() == LogicalState::LO);
 
@@ -197,7 +200,7 @@ namespace beewatch::hw
 
             if (diffMs > READ_TIMEOUT_MS)
             {
-                failed = true;
+                return readError;
             }
         } while (_gpio->read() == LogicalState::HI);
 
@@ -216,7 +219,7 @@ namespace beewatch::hw
 
                 if (diffMs > READ_TIMEOUT_MS)
                 {
-                    failed = true;
+                    return readError;
                 }
             } while (_gpio->read() == LogicalState::LO);
 
@@ -230,7 +233,7 @@ namespace beewatch::hw
 
                 if (diffMs > READ_TIMEOUT_MS)
                 {
-                    failed = true;
+                    return readError;
                 }
             } while (_gpio->read() == LogicalState::HI);
             
@@ -248,14 +251,7 @@ namespace beewatch::hw
             }
         }
 
-        if (failed)
-        {
-            return readError;
-        }
-        else
-        {
-            return bytes;
-        }
+        return bytes;
     }
 
     bool DHTxx::validateData(const std::array<uint8_t, READ_BYTES>& data)
