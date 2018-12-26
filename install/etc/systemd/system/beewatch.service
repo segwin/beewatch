@@ -1,7 +1,7 @@
 
 [Unit]
 Description=Beewatch Monitor Service
-After=syslog.target network.target postgresql.service
+After=syslog.target network.target postgresql.service nginx.service rc-local.service
 
 [Service]
 Type=simple
