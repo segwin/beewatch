@@ -5,8 +5,9 @@
 #include "hw/dhtxx.h"
 
 #include "global/logging.h"
-#include "util/priority.h"
 #include "global/time.hpp"
+#include "util/priority.h"
+#include "util/algorithms.hpp"
 
 #include <thread>
 
@@ -39,6 +40,32 @@ namespace beewatch::hw
 
     DHTxx::Data DHTxx::read()
     {
+        // Sample DHTxx output N times
+        std::vector<Data> samples;
+
+        for (size_t i = 0; i < 5; ++i)
+        {
+            samples.push_back(readSample());
+            g_timeReal.wait(1e3);
+        }
+
+        // Compute average and filter outliers
+        Data avg = average(samples.begin(), samples.end());
+        filter(samples, [&](Data sample) {
+                return sample.temperature > 1.25 * avg.temperature ||
+                       sample.temperature < 0.75 * avg.temperature ||
+                       sample.humidity > 1.25 * avg.humidity ||
+                       sample.humidity < 0.75 * avg.humidity; }
+            );
+
+        // Recalculate average
+        avg = average(samples.begin(), samples.end());
+
+        return avg;
+    }
+
+    DHTxx::Data DHTxx::readSample()
+    {
         Data result;
 
         // Only one read is allowed at a time
@@ -50,7 +77,7 @@ namespace beewatch::hw
         int i = 0;
         while (i++ < 25)
         {
-            auto data = readData();
+            auto data = readRaw();
 
             if ( std::equal(data.begin(), data.end(), readError.begin()) )
             {
@@ -103,18 +130,23 @@ namespace beewatch::hw
     void DHTxx::reset()
     {
         _gpio->setMode(GPIO::Mode::Output);
+        
+        _gpio->write(LogicalState::LO);
+        g_timeRaw.wait(250);
 
         _gpio->write(LogicalState::HI);
-        g_timeRaw.wait(500);
+        g_timeRaw.wait(1000);
     }
 
-    std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readData()
+    std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readRaw()
     {
         /**
          * 0. Allocate memory for data and timestamps
          */
         std::array<uint8_t, READ_BYTES> bytes;
         bytes.fill(0);
+
+        bool failed = false;
 
         uint16_t byte = 0;
         uint16_t mask = 0b1000'0000;
@@ -151,7 +183,7 @@ namespace beewatch::hw
 
             if (diffMs > READ_TIMEOUT_MS)
             {
-                return readError;
+                failed = true;
             }
         } while (_gpio->read() == LogicalState::LO);
 
@@ -165,7 +197,7 @@ namespace beewatch::hw
 
             if (diffMs > READ_TIMEOUT_MS)
             {
-                return readError;
+                failed = true;
             }
         } while (_gpio->read() == LogicalState::HI);
 
@@ -184,7 +216,7 @@ namespace beewatch::hw
 
                 if (diffMs > READ_TIMEOUT_MS)
                 {
-                    return readError;
+                    failed = true;
                 }
             } while (_gpio->read() == LogicalState::LO);
 
@@ -198,7 +230,7 @@ namespace beewatch::hw
 
                 if (diffMs > READ_TIMEOUT_MS)
                 {
-                    return readError;
+                    failed = true;
                 }
             } while (_gpio->read() == LogicalState::HI);
             
@@ -216,7 +248,14 @@ namespace beewatch::hw
             }
         }
 
-        return bytes;
+        if (failed)
+        {
+            return readError;
+        }
+        else
+        {
+            return bytes;
+        }
     }
 
     bool DHTxx::validateData(const std::array<uint8_t, READ_BYTES>& data)

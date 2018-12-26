@@ -40,11 +40,16 @@ namespace beewatch
     inline constexpr typename std::iterator_traits<InputIterator>::value_type average(InputIterator first, InputIterator last)
     {
         using ValueType = typename std::iterator_traits<InputIterator>::value_type;
-        auto size = std::distance(first, last);
-        
-        std::transform(first, last, first, [size](ValueType value) { return value / size; });
 
-        return std::accumulate(first, last, 0);
+        auto size = std::distance(first, last);
+        auto result = ValueType{};
+        
+        for (auto it = first; it != last; ++it)
+        {
+            result += *it / size;
+        }
+
+        return result;
     }
 
     //==============================================================================

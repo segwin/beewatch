@@ -80,7 +80,9 @@ namespace beewatch::hw
 
         void reset();
 
-        std::array<uint8_t, READ_BYTES> readData();
+        Data readSample();
+
+        std::array<uint8_t, READ_BYTES> readRaw();
         static bool validateData(const std::array<uint8_t, READ_BYTES>& data);
 
         static inline uint16_t buildU16(uint8_t high8, uint8_t low8)
