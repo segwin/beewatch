@@ -1,12 +1,15 @@
 <div id="root" class="full-width full-height">
   <mat-toolbar id="nav" color="primary">
     <div class="content-wrap full-width centered">
+      <p>{{ name }}</p>
+      <!--
       <mat-form-field id="name-editor" [class.active]="editingName" class="name-editor centered">
         <input #nameEditor matInput [(ngModel)]="name" maxlength="256"
                (focus)="editingName = true;"
                (blur)="editingName = false;"
                (keyup.enter)="nameEditor.blur()"> 
       </mat-form-field>
+      -->
     </div>
   </mat-toolbar>
 

@@ -8,6 +8,6 @@ export const pages: string[] = [ 'Monitor', 'Settings' ];
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  name = 'Your Hive';
+  name = 'Your Bee Monitor';
   editingName = false;
 }
