@@ -5,6 +5,8 @@ After=syslog.target network.target postgresql.service
 
 [Service]
 Type=simple
+#Nice=-15
+CPUWeight=5000
 ExecStart=/usr/local/sbin/beewatch
 Restart=always
 RestartSec=5
