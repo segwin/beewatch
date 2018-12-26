@@ -387,7 +387,14 @@ namespace beewatch
                 g_logger.debug("Humidity (" + id + "): " + string::fromNumber(data.humidity) + " %");
                 g_logger.debug("Temperature (" + id + "): " + string::fromNumber(data.temperature) + " deg Celsius");
 
+                if (data.temperature < 60.0 && data.humidity <= 100.0)
+                {
                 _db->addClimateData(id, g_timeReal.toUnix(g_timeReal.now()), data);
+                }
+                else
+                {
+                    g_logger.warning("DHTxx read failed on sensor " + id);
+                }
             }
 
             // Measure mass

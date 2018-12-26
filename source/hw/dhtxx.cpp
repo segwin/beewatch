@@ -52,21 +52,31 @@ namespace beewatch::hw
         // Compute average and filter outliers
         Data avg = average(samples.begin(), samples.end());
         filter(samples, [&](Data sample) {
-                return sample.temperature > 1.25 * avg.temperature ||
+                return (sample.temperature > 60.0 && sample.humidity > 100.0) ||
+                       sample.temperature > 1.25 * avg.temperature ||
                        sample.temperature < 0.75 * avg.temperature ||
                        sample.humidity > 1.25 * avg.humidity ||
                        sample.humidity < 0.75 * avg.humidity; }
             );
+        
+        if (samples.empty())
+        {
+            return { BAD_READ, BAD_READ };
+        }
 
         // Recalculate average
         avg = average(samples.begin(), samples.end());
+
+        // Round values (nearest 0.5 for temperature, nearest 1.0 for humidity)
+        avg.temperature = std::round(avg.temperature * 2.0) / 2.0;
+        avg.humidity = std::round(avg.humidity);
 
         return avg;
     }
 
     DHTxx::Data DHTxx::readSample()
     {
-        Data result;
+        Data result = { BAD_READ, BAD_READ };
 
         // Only one read is allowed at a time
         std::lock_guard<std::mutex> lock(_readMutex);
@@ -141,6 +151,8 @@ namespace beewatch::hw
         g_timeRaw.wait(30e-3);
 
         _gpio->setMode(GPIO::Mode::Input);
+
+        g_timeRaw.wait(2e3);    // Wait a full 2s between attempts
     }
 
     std::array<uint8_t, DHTxx::READ_BYTES> DHTxx::readRaw()
