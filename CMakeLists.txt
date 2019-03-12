@@ -242,7 +242,7 @@ target_compile_options(${project_lib}
 )
 
 # Add web page dependency
-#add_dependencies(${project_lib} ${project_web})
+add_dependencies(${project_lib} ${project_web})
 
 
 #
