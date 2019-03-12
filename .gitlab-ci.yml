@@ -25,7 +25,10 @@ test:
     - apt update && apt -y install libcpprest-dev libpq-dev libpqxx-dev
   stage: test
   script:
-    - bin/testbeewatch
+    - bin/testbeewatch -r junit -s -o test_results.xml
+  artifacts:
+    reports:
+      junit: test_results.xml
 
 pages:
   stage: deploy
