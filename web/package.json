@@ -13,6 +13,7 @@
   "dependencies": {
     "@angular/animations": "^7.2.8",
     "@angular/cdk": "^7.3.4",
+    "@angular/cli": "^7.3.5",
     "@angular/common": "^7.2.8",
     "@angular/compiler": "^7.2.8",
     "@angular/core": "^7.2.8",
@@ -27,7 +28,7 @@
     "moment": "^2.24.0",
     "rxjs": "~6.4.0",
     "typescript": "^3.2.4",
-    "zone.js": "~0.8.29"
+    "zone.js": "^0.8.29"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.13.5",
@@ -48,7 +49,6 @@
     "npm-check-updates": "^3.0.4",
     "protractor": "~5.4.2",
     "ts-node": "~8.0.3",
-    "tslint": "~5.13.1",
-    "typescript": "~3.3.3333"
+    "tslint": "~5.13.1"
   }
 }
