@@ -8,9 +8,6 @@ build:
     - gcc --version
     - cmake --version
 
-    # FIXME: Uninstall global instance of npm: fall back on node.js version
-    - npm uninstall -g npm
-
     # Install Angular dependencies
     - npm install -g @angular/cli
     - cd web/ && npm install && npm update && npm install && cd ../
