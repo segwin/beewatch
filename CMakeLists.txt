@@ -204,7 +204,7 @@ source_group_by_path(${global_source_path}   "\\\\.cpp$|\\\\.c$|\\\\.h$|\\\\.hpp
 #
 
 set(ng_opt_args "")
-if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
     set(ng_opt_args "--prod")
     message(STATUS "Enabling release optimisations for Angular build")
 endif()
